@@ -143,7 +143,7 @@ tr:hover td{background:rgba(255,255,255,.012)}
 <div class="hdr">
   <div class="hdr-left">
     <h1>Flawless Fine Jewelry — Attribution Dashboard</h1>
-    <p>Google Ads &nbsp;·&nbsp; Account 274-520-4480 &nbsp;·&nbsp; <span id="headerPeriodLabel">31 May – 27 Jun 2026</span></p>
+    <p>Google Ads &nbsp;·&nbsp; Account 274-520-4480 &nbsp;·&nbsp; <span id="headerPeriodLabel">31 May – 27 Jun 2026</span> &nbsp;·&nbsp; <span id="lastUpdated" style="color:var(--muted)">loading data…</span></p>
   </div>
   <div class="hdr-right">
     <button class="qbtn active" id="qb28" onclick="setPeriod('28')">28D</button>
@@ -201,7 +201,7 @@ tr:hover td{background:rgba(255,255,255,.012)}
   <div class="sec-label">Campaign Role Intelligence</div>
 
   <!-- Role summary cards -->
-  <div class="grid3" style="margin-bottom:14px">
+  <div class="grid3" id="roleCards" style="margin-bottom:14px">
     <div class="role-card" style="background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.2)">
       <div class="role-tag" style="color:#c084fc">Introducer</div>
       <div class="role-name">Flawless Shopping</div>
@@ -250,6 +250,7 @@ tr:hover td{background:rgba(255,255,255,.012)}
           <tr><td><b>Jewellers London</b></td><td><span class="badge ba">Assist</span></td><td>4</td><td>3</td><td>0.75</td></tr>
           <tr><td><b>Hatton Garden Updated</b></td><td><span class="badge bc">Closer</span></td><td>5</td><td>2</td><td style="color:var(--green)">0.40</td></tr>
           <tr><td><b>Hatton Garden Mobile</b></td><td><span class="badge bc">Closer</span></td><td>9</td><td>1</td><td style="color:var(--green)">0.11</td></tr>
+          <!-- dynamic rows injected by initDashboard() -->
         </tbody>
       </table>
     </div>
@@ -401,7 +402,7 @@ tr:hover td{background:rgba(255,255,255,.012)}
       <div class="tbl-wrap" style="margin-bottom:12px">
         <table>
           <thead><tr><th>Days</th><th>Conv.</th><th>% Conv.</th><th>Revenue</th><th>Rev/Conv</th></tr></thead>
-          <tbody>
+          <tbody id="timeLagTableBody">
             <tr><td>&lt;1 day</td><td>178</td><td class="gold">68.7%</td><td>£47,272</td><td class="dim">£266</td></tr>
             <tr><td>1 day</td><td>15</td><td>5.8%</td><td>£10,412</td><td>£694</td></tr>
             <tr><td>2 days</td><td>9</td><td>3.5%</td><td>£5,846</td><td>£649</td></tr>
@@ -416,7 +417,7 @@ tr:hover td{background:rgba(255,255,255,.012)}
       <div class="tbl-wrap">
         <table>
           <thead><tr><th>Top Conversion Paths</th><th>Conv.</th><th>Revenue</th></tr></thead>
-          <tbody>
+          <tbody id="convPathsTableBody">
             <tr><td><div class="pchips"><span class="pc">Retargeting</span></div></td><td><b>62</b></td><td>£41,888</td></tr>
             <tr><td><div class="pchips"><span class="pc">Sales-PMax</span></div></td><td><b>35</b></td><td class="dim">—</td></tr>
             <tr><td><div class="pchips"><span class="pc">Flawless Shopping</span></div></td><td>12</td><td>£1</td></tr>
@@ -708,6 +709,210 @@ function applyCustom(){
 }
 
 setPeriod('28');
+
+/* ═══════════════════════════════════════════
+   DYNAMIC DATA — fetches from data/*.json
+   (generated daily by GitHub Actions → BigQuery)
+═══════════════════════════════════════════ */
+async function initDashboard() {
+  // Works on GitHub Pages (/flawless-attribution/) and local root (/)
+  const base = document.location.origin + (document.location.pathname.endsWith('/') ? document.location.pathname : document.location.pathname.replace(/\/[^/]*$/, '/')) + 'data';
+
+  async function loadJSON(file) {
+    try {
+      const r = await fetch(base + '/' + file + '?t=' + Date.now());
+      if (!r.ok) return null;
+      return r.json();
+    } catch(e) { return null; }
+  }
+
+  const [meta, assistedRaw, timeLagRaw, pathsRaw] = await Promise.all([
+    loadJSON('meta'),
+    loadJSON('assisted_conv'),
+    loadJSON('time_lag'),
+    loadJSON('conv_paths'),
+  ]);
+
+  // ── Meta / last updated ─────────────────────
+  if (meta && meta.last_updated) {
+    const el = document.getElementById('lastUpdated');
+    if (el) el.textContent = 'Updated ' + meta.last_updated;
+  }
+
+  // ── Assisted conversions (role table + chart + cards) ──
+  const assisted = assistedRaw && assistedRaw.rows && assistedRaw.rows.length > 0
+    ? assistedRaw.rows : null;
+
+  if (assisted) {
+    // Sort by assist_ratio desc (caps 99 = pure introducer at top)
+    const sorted = [...assisted].sort((a,b) => {
+      const ar = a.assist_ratio === 99 ? 999 : a.assist_ratio;
+      const br2 = b.assist_ratio === 99 ? 999 : b.assist_ratio;
+      return br2 - ar;
+    });
+
+    // Role badge helper
+    const roleBadge = (row) => {
+      if (row.campaign_role === 'Pure Introducer' || row.campaign_role === 'Introducer') return '<span class="badge bi">Introducer</span>';
+      if (row.campaign_role === 'Assist') return '<span class="badge ba">Assist</span>';
+      return '<span class="badge bc">Closer</span>';
+    };
+    const ratioColor = (r) => r >= 1.5 ? 'var(--purple)' : r >= 0.5 ? 'var(--blue)' : 'var(--green)';
+    const ratioStr   = (r) => r >= 99 ? '∞' : r.toFixed(2);
+    const gbp        = (v) => v > 0 ? '£' + Math.round(v).toLocaleString('en-GB') : '—';
+
+    // Update role table
+    const tbody = document.getElementById('roleTableBody');
+    // Find tbody — use the one that has the comment sentinel
+    const allTbodys = document.querySelectorAll('tbody');
+    let roleTbody = null;
+    allTbodys.forEach(tb => {
+      if (tb.innerHTML.includes('dynamic rows injected')) roleTbody = tb;
+    });
+    if (roleTbody) {
+      roleTbody.innerHTML = sorted.map(r => {
+        const highlight = r.campaign_role === 'Closer' && r.last_click_conv > 50 ? ' style="color:var(--gold2)"' : '';
+        return `<tr>
+          <td><b${highlight}>${r.campaign}</b></td>
+          <td>${roleBadge(r)}</td>
+          <td>${Math.round(r.last_click_conv)}</td>
+          <td><b>${Math.round(r.assists)}</b></td>
+          <td style="font-weight:700;color:${ratioColor(r.assist_ratio)}">${ratioStr(r.assist_ratio)}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // Update role summary cards
+    const roleCardsEl = document.getElementById('roleCards');
+    if (roleCardsEl) {
+      const introducer = sorted.find(r => r.campaign_role === 'Introducer' || r.campaign_role === 'Pure Introducer');
+      const assist     = sorted.find(r => r.campaign_role === 'Assist');
+      const closer     = sorted.reduce((best, r) => {
+        if (r.campaign_role !== 'Closer') return best;
+        return (!best || r.last_click_conv > best.last_click_conv) ? r : best;
+      }, null);
+
+      const card = (role, colorVar, borderAlpha, c) => {
+        if (!c) return '';
+        const lcRoas = c.lc_roas ? c.lc_roas.toFixed(1) + '×' : '—';
+        const mtaRoas = c.mta_roas ? c.mta_roas.toFixed(1) + '×' : '—';
+        const isTopCloser = c.last_click_value > 50000;
+        const tag = isTopCloser && role === 'Closer' ? '★ Revenue Closer' : role;
+        const tagColor = role === 'Introducer' ? '#c084fc' : role === 'Assist' ? '#60a5fa' : 'var(--gold2)';
+        const bg = role === 'Introducer' ? 'rgba(168,85,247,.07)' : role === 'Assist' ? 'rgba(59,130,246,.07)' : 'rgba(201,168,76,.07)';
+        const border = role === 'Introducer' ? 'rgba(168,85,247,.2)' : role === 'Assist' ? 'rgba(59,130,246,.2)' : 'rgba(201,168,76,.3)';
+        return `<div class="role-card" style="background:${bg};border:1px solid ${border}">
+          <div class="role-tag" style="color:${tagColor}">${tag}</div>
+          <div class="role-name">${c.campaign}</div>
+          <div class="role-stats">
+            <b>${Math.round(c.assists)} assists</b> · ${Math.round(c.last_click_conv)} closes · Ratio ${ratioStr(c.assist_ratio)}<br>
+            Last-Click ROAS <b>${lcRoas}</b> → True <b>${mtaRoas}</b>
+          </div>
+        </div>`;
+      };
+      roleCardsEl.innerHTML = card('Introducer','purple','.2',introducer) +
+                              card('Assist','blue','.2',assist) +
+                              card('Closer','gold','.3',closer);
+    }
+
+    // Rebuild assist ratio chart
+    const existingChart = Chart.getChart('assistRatioChart');
+    if (existingChart) existingChart.destroy();
+    const topCamps = sorted.filter(r => r.spend > 0 || r.all_conversions > 0).slice(0, 10).reverse();
+    new Chart(document.getElementById('assistRatioChart'), {
+      type: 'bar',
+      data: {
+        labels: topCamps.map(d => d.campaign),
+        datasets: [{
+          label: 'Assist Ratio',
+          data: topCamps.map(d => d.assist_ratio >= 99 ? 6 : d.assist_ratio),
+          backgroundColor: topCamps.map(d => d.assist_ratio >= 1.5 ? C.PURPLE+'88' : d.assist_ratio >= 0.5 ? C.BLUE+'88' : C.GREEN+'88'),
+          borderColor:     topCamps.map(d => d.assist_ratio >= 1.5 ? C.PURPLE : d.assist_ratio >= 0.5 ? C.BLUE : C.GREEN),
+          borderWidth: 1, borderRadius: 4
+        }]
+      },
+      options: {
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: '#1f223560' }, title: { display: true, text: 'Assists per Last-Click Conversion', color: '#636880' } },
+          y: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // ── Time Lag chart + table ───────────────────
+  const timeLag = timeLagRaw && timeLagRaw.rows && timeLagRaw.rows.length > 0
+    ? timeLagRaw.rows : null;
+
+  if (timeLag) {
+    const totalConv = timeLag.reduce((s, r) => s + r.conversions, 0);
+
+    // Update time lag table
+    const tlTbody = document.getElementById('timeLagTableBody');
+    if (tlTbody) {
+      tlTbody.innerHTML = timeLag.map(r => {
+        const pct  = totalConv > 0 ? ((r.conversions / totalConv) * 100).toFixed(1) + '%' : '—';
+        const rev  = r.conversion_value > 0 ? '£' + Math.round(r.conversion_value).toLocaleString('en-GB') : '—';
+        const rpc  = r.conversions > 0 && r.conversion_value > 0
+          ? '£' + Math.round(r.conversion_value / r.conversions).toLocaleString('en-GB') : '—';
+        const isHighValue = r.conversion_value > 20000;
+        const style = isHighValue ? ' style="background:rgba(201,168,76,.04)"' : '';
+        const labelTd = r.bucket === 0 ? '<1 day' : r.label;
+        return `<tr${style}><td>${isHighValue?'<b>':''}${labelTd}${isHighValue?'</b>':''}</td>
+          <td>${r.conversions}</td>
+          <td class="${r.bucket===0?'gold':''}">${pct}</td>
+          <td${isHighValue?' class="gold"':''}>${rev}</td>
+          <td${isHighValue?' class="gold"':''}>${rpc}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // Rebuild time lag chart
+    const existingTL = Chart.getChart('timeLagConvChart');
+    if (existingTL) existingTL.destroy();
+    new Chart(document.getElementById('timeLagConvChart'), {
+      type: 'bar',
+      data: {
+        labels: timeLag.map(r => r.bucket === 0 ? '<1d' : r.label.replace(' days','d').replace(' day','d')),
+        datasets: [{
+          label: 'Conversions',
+          data: timeLag.map(r => r.conversions),
+          backgroundColor: timeLag.map((r,i) => i===0?C.GOLD+'cc':r.conversion_value>20000?C.ORANGE+'cc':C.BLUE+'55'),
+          borderColor:     timeLag.map((r,i) => i===0?C.GOLD:r.conversion_value>20000?C.ORANGE:C.BLUE),
+          borderWidth: 1, borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false } },
+          y: { grid: { color: '#1f223560' } }
+        }
+      }
+    });
+  }
+
+  // ── Conversion Paths table ──────────────────
+  const paths = pathsRaw && pathsRaw.rows && pathsRaw.rows.length > 0
+    ? pathsRaw.rows : null;
+
+  if (paths) {
+    const cpTbody = document.getElementById('convPathsTableBody');
+    if (cpTbody) {
+      cpTbody.innerHTML = paths.map(r => {
+        const chips = r.path.split(' > ').map(s => `<span class="pc">${s}</span><span class="pa">→</span>`).join('');
+        const rev   = r.conversion_value > 0 ? '£' + Math.round(r.conversion_value).toLocaleString('en-GB') : '—';
+        return `<tr><td><div class="pchips">${chips.replace(/<span class="pa">→<\/span>$/, '')}</div></td>
+          <td><b>${r.conversions}</b></td><td>${rev}</td></tr>`;
+      }).join('');
+    }
+  }
+}
+
+initDashboard();
 </script>
 </body>
 </html>
