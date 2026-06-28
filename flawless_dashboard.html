@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flawless Fine Jewelry — Attribution Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0b0d14;--card:#13161f;--card2:#1a1d2a;--border:#1f2235;
+  --gold:#c9a84c;--gold2:#f0d080;--text:#e2e4ef;--muted:#636880;
+  --green:#22c55e;--blue:#3b82f6;--purple:#a855f7;--orange:#f97316;--teal:#14b8a6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5}
+
+/* ─── HEADER ─── */
+.hdr{background:#0f1118;border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.hdr-left h1{font-size:15px;font-weight:700}
+.hdr-left p{font-size:11px;color:var(--muted);margin-top:2px}
+.hdr-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.qbtn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 13px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;transition:all .15s}
+.qbtn:hover,.qbtn.active{border-color:var(--gold);color:var(--gold2);background:rgba(201,168,76,.08)}
+.date-inp{background:var(--card);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:6px;font-size:11px;outline:none}
+.date-inp:focus{border-color:var(--gold)}
+.date-inp::-webkit-calendar-picker-indicator{filter:invert(.4);cursor:pointer}
+.go-btn{background:var(--gold);color:#000;border:none;padding:5px 13px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer}
+.go-btn:hover{background:var(--gold2)}
+
+/* ─── LAYOUT ─── */
+.wrap{max-width:1320px;margin:0 auto;padding:28px}
+.sec{margin-bottom:44px}
+.sec-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+/* ─── CARDS ─── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px}
+.pad{padding:20px 22px}
+
+/* ─── KPI STRIP ─── */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
+.kpi-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.kpi-val{font-size:30px;font-weight:800;line-height:1}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:5px}
+
+/* ─── ROLE CARDS ─── */
+.role-card{border-radius:10px;padding:18px 20px}
+.role-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.role-name{font-size:20px;font-weight:800;margin-bottom:8px}
+.role-stats{font-size:12px;color:var(--muted);line-height:1.7}
+.role-stats b{color:var(--text)}
+
+/* ─── TABLE ─── */
+.tbl-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--card2)}
+th{padding:9px 14px;text-align:left;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)}
+td{padding:9px 14px;font-size:12px;border-bottom:1px solid rgba(31,34,53,.6)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.012)}
+
+/* ─── BADGES ─── */
+.badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10px;font-weight:600}
+.bi{background:rgba(168,85,247,.15);color:#c084fc;border:1px solid rgba(168,85,247,.25)}
+.ba{background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.25)}
+.bc{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.25)}
+.br{background:rgba(201,168,76,.2);color:#f0d080;border:1px solid rgba(201,168,76,.5)}
+.bx{background:rgba(107,114,128,.12);color:#9ca3af;border:1px solid rgba(107,114,128,.2)}
+
+/* ─── ROAS COMPARE ─── */
+.roas-split{display:grid;grid-template-columns:1fr 36px 1fr;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--card)}
+.roas-panel{padding:28px 32px;text-align:center}
+.roas-divider{display:flex;align-items:center;justify-content:center;background:var(--card2);color:var(--muted);font-size:14px}
+.roas-big{font-size:52px;font-weight:900;line-height:1;margin:10px 0 6px}
+.roas-name{font-size:12px;font-weight:600;margin-bottom:4px}
+.roas-sub{font-size:11px;color:var(--muted)}
+.roas-divline{border-top:1px solid var(--border);margin:16px 0}
+
+/* ─── CHART BOX ─── */
+.cbox{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
+.cbox h3{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px}
+.cbox p{font-size:11px;color:var(--muted);margin-bottom:14px}
+.ch{position:relative}
+
+/* ─── PERIOD BAR ─── */
+.pbar{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--card);margin-bottom:12px}
+.pb{padding:14px 18px;border-right:1px solid var(--border)}
+.pb:last-child{border-right:none}
+.pb-lbl{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.pb-val{font-size:22px;font-weight:800}
+.pb-sub{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* ─── ATTR NOTE ─── */
+.anote{background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.15);border-radius:8px;padding:9px 14px;font-size:11px;color:var(--muted);margin-bottom:12px}
+
+/* ─── CUSTOM PANEL ─── */
+.cpanel{background:rgba(59,130,246,.04);border:1px solid rgba(59,130,246,.18);border-radius:10px;padding:16px 20px;margin-bottom:14px}
+.cinp{background:var(--card);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px;width:130px;outline:none}
+.cinp:focus{border-color:var(--blue)}
+.capply{background:var(--gold);color:#000;border:none;padding:6px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer}
+
+/* ─── INSIGHT CALLOUT ─── */
+.insight{background:rgba(201,168,76,.05);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:var(--muted);margin-top:12px;line-height:1.6}
+.insight b{color:var(--text)}
+
+/* ─── STAT ROW ─── */
+.srow{display:flex;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--card)}
+.sitem{flex:1;padding:16px 20px;border-right:1px solid var(--border)}
+.sitem:last-child{border-right:none}
+.slbl{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.sval{font-size:26px;font-weight:800;line-height:1}
+.ssub{font-size:10px;color:var(--muted);margin-top:4px}
+
+/* ─── PATH CHIPS ─── */
+.pchips{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.pc{background:rgba(59,130,246,.12);color:#93c5fd;border:1px solid rgba(59,130,246,.2);padding:2px 8px;border-radius:10px;font-size:10px}
+.pa{color:var(--muted);font-size:11px}
+
+/* ─── MODEL TABLE ─── */
+.mtbl th{font-size:10px;padding:8px 10px}
+.mtbl td{font-size:11px;padding:8px 10px}
+
+/* ─── UTIL ─── */
+.gold{color:var(--gold2);font-weight:700}
+.up{color:var(--green)} .down{color:#ef4444} .dim{color:var(--muted)}
+.footer{text-align:center;color:var(--muted);font-size:11px;padding:14px 28px;border-top:1px solid var(--border);margin-top:8px}
+
+@media(max-width:960px){
+  .kpi-row,.grid3,.roas-split{grid-template-columns:1fr}
+  .grid2{grid-template-columns:1fr}
+  .srow{flex-direction:column}
+  .sitem{border-right:none;border-bottom:1px solid var(--border)}
+  .sitem:last-child{border-bottom:none}
+  .wrap{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── HEADER ─── -->
+<div class="hdr">
+  <div class="hdr-left">
+    <h1>Flawless Fine Jewelry — Attribution Dashboard</h1>
+    <p>Google Ads &nbsp;·&nbsp; Account 274-520-4480 &nbsp;·&nbsp; <span id="headerPeriodLabel">31 May – 27 Jun 2026</span></p>
+  </div>
+  <div class="hdr-right">
+    <button class="qbtn active" id="qb28" onclick="setPeriod('28')">28D</button>
+    <button class="qbtn" id="qb14" onclick="setPeriod('14')">14D</button>
+    <button class="qbtn" id="qb7" onclick="setPeriod('7')">7D</button>
+    <button class="qbtn" id="qb365" onclick="setPeriod('365')">1Y</button>
+    <span style="color:var(--border)">|</span>
+    <input type="date" id="dateFrom" class="date-inp" value="2026-05-31">
+    <span style="font-size:11px;color:var(--muted)">→</span>
+    <input type="date" id="dateTo" class="date-inp" value="2026-06-27">
+    <button class="go-btn" onclick="loadCustom()">Go</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════════════════════════════════════
+     SECTION 1 — KPI OVERVIEW
+═══════════════════════════════════════════ -->
+<div class="sec">
+  <div class="sec-label">KPI Overview</div>
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-lbl">Ad Spend</div>
+      <div class="kpi-val" id="k-spend" style="color:var(--blue)">£21,715</div>
+      <div class="kpi-sub">28-day total</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Revenue (Last Click)</div>
+      <div class="kpi-val" id="k-rev" style="color:var(--green)">£162,311</div>
+      <div class="kpi-sub">Google Ads reported</div>
+    </div>
+    <div class="kpi" style="border-color:rgba(201,168,76,.35)">
+      <div class="kpi-lbl">Assisted Revenue</div>
+      <div class="kpi-val" style="color:var(--gold2)">£173,157</div>
+      <div class="kpi-sub">Hidden in standard reports</div>
+    </div>
+    <div class="kpi" style="border-color:rgba(201,168,76,.35)">
+      <div class="kpi-lbl">Multi-Touch Lift</div>
+      <div class="kpi-val" style="color:var(--gold2)">+107%</div>
+      <div class="kpi-sub">True influence vs last-click</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Last-Click ROAS</div>
+      <div class="kpi-val" id="k-roas" style="color:var(--green)">7.47×</div>
+      <div class="kpi-sub" id="k-conv-sub"><span id="k-conv">105.68</span> conversions</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 2 — CAMPAIGN ROLE INTELLIGENCE
+═══════════════════════════════════════════ -->
+<div class="sec">
+  <div class="sec-label">Campaign Role Intelligence</div>
+
+  <!-- Role summary cards -->
+  <div class="grid3" style="margin-bottom:14px">
+    <div class="role-card" style="background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.2)">
+      <div class="role-tag" style="color:#c084fc">Introducer</div>
+      <div class="role-name">Flawless Shopping</div>
+      <div class="role-stats">
+        <b>55 assists</b> · 26 closes · Ratio 2.12<br>
+        Last-Click ROAS <b>4.7×</b> → True <b>15.8×</b>
+      </div>
+    </div>
+    <div class="role-card" style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2)">
+      <div class="role-tag" style="color:#60a5fa">Assist</div>
+      <div class="role-name">Sales-PMax</div>
+      <div class="role-stats">
+        <b>70 assists</b> · 70 closes · Ratio 1.0<br>
+        Last-Click ROAS <b>6.0×</b> → True <b>10.1×</b>
+      </div>
+    </div>
+    <div class="role-card" style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.3)">
+      <div class="role-tag" style="color:var(--gold2)">★ Revenue Closer</div>
+      <div class="role-name">Retargeting</div>
+      <div class="role-stats">
+        <b>155 assists</b> · 138 closes · Ratio 1.12<br>
+        Last-Click ROAS <b>26.6×</b> → True <b>58×</b>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full role table + assist ratio chart -->
+  <div class="grid2">
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Campaign</th>
+            <th>Role</th>
+            <th>Last-Click Conv</th>
+            <th>Assists</th>
+            <th>Assist Ratio</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><b>Pmax GMB Manchester</b></td><td><span class="badge bi">Introducer</span></td><td class="dim">0</td><td><b>6</b></td><td style="color:var(--purple);font-weight:700">∞</td></tr>
+          <tr><td><b>Flawless Shopping</b></td><td><span class="badge bi">Introducer</span></td><td>26</td><td><b>55</b></td><td style="color:var(--purple);font-weight:700">2.12</td></tr>
+          <tr><td><b style="color:var(--gold2)">Retargeting</b></td><td><span class="badge br">★ Closer</span></td><td><b>138</b></td><td><b>155</b></td><td style="color:var(--gold2);font-weight:700">1.12</td></tr>
+          <tr><td><b>Sales-PMax</b></td><td><span class="badge ba">Assist</span></td><td>70</td><td>70</td><td style="color:var(--blue);font-weight:700">1.00</td></tr>
+          <tr><td><b>Engagement-Rings-Hatton</b></td><td><span class="badge ba">Assist</span></td><td>4</td><td>4</td><td>1.00</td></tr>
+          <tr><td><b>Jewellers London</b></td><td><span class="badge ba">Assist</span></td><td>4</td><td>3</td><td>0.75</td></tr>
+          <tr><td><b>Hatton Garden Updated</b></td><td><span class="badge bc">Closer</span></td><td>5</td><td>2</td><td style="color:var(--green)">0.40</td></tr>
+          <tr><td><b>Hatton Garden Mobile</b></td><td><span class="badge bc">Closer</span></td><td>9</td><td>1</td><td style="color:var(--green)">0.11</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="cbox">
+      <h3>Assist Ratio by Campaign</h3>
+      <p>Purple = Introducer (>1.5) &nbsp;·&nbsp; Blue = Assist &nbsp;·&nbsp; Green = Closer</p>
+      <div class="ch" style="height:220px"><canvas id="assistRatioChart"></canvas></div>
+    </div>
+  </div>
+  <div class="insight"><b>Pausing Shopping reduces Retargeting's audience within 3 weeks</b> — Shopping (ratio 2.12) introduces customers that Retargeting closes. Last-click misses this dependency entirely.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 3 — ATTRIBUTION COMPARISON
+═══════════════════════════════════════════ -->
+<div class="sec">
+  <div class="sec-label">Attribution Comparison</div>
+
+  <div class="grid2" style="margin-bottom:14px">
+    <!-- Last Click vs MTA -->
+    <div class="roas-split">
+      <div class="roas-panel" style="background:rgba(59,130,246,.04)">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--blue);margin-bottom:12px">Last Click (Google Default)</div>
+        <div class="roas-big" style="color:var(--blue)">26.6×</div>
+        <div class="roas-name">Retargeting ROAS</div>
+        <div class="roas-sub">£112,479 revenue reported</div>
+        <div class="roas-divline"></div>
+        <div style="font-size:11px;color:var(--muted)">Shopping ROAS</div>
+        <div style="font-size:24px;font-weight:800;color:var(--blue)">4.75×</div>
+      </div>
+      <div class="roas-divider">→</div>
+      <div class="roas-panel" style="background:rgba(201,168,76,.04)">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--gold2);margin-bottom:12px">Multi-Touch Attribution</div>
+        <div class="roas-big" style="color:var(--gold2)">58×</div>
+        <div class="roas-name">Retargeting True ROAS</div>
+        <div class="roas-sub">£112K direct + £133K assisted</div>
+        <div class="roas-divline" style="border-color:rgba(201,168,76,.2)"></div>
+        <div style="font-size:11px;color:var(--muted)">Shopping True ROAS</div>
+        <div style="font-size:24px;font-weight:800;color:var(--gold2)">15.8×</div>
+      </div>
+    </div>
+    <!-- LC vs True chart -->
+    <div class="cbox">
+      <h3>Last-Click vs True Revenue Influence</h3>
+      <p>Blue = last-click revenue &nbsp;·&nbsp; Gold = true influence (direct + assisted)</p>
+      <div class="ch" style="height:190px"><canvas id="retargetingChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- 5 Attribution Models -->
+  <div class="cbox" style="margin-bottom:14px">
+    <h3>Five Attribution Models — Conversion Credit Comparison</h3>
+    <p>How conversion credit shifts across models · Same 259 total conversions redistributed differently</p>
+    <div class="grid2" style="gap:14px;align-items:start">
+      <div class="ch" style="height:220px"><canvas id="modelChart"></canvas></div>
+      <div class="tbl-wrap mtbl">
+        <table>
+          <thead>
+            <tr>
+              <th>Campaign</th>
+              <th style="color:#a855f7">1st Click</th>
+              <th style="color:#3b82f6">Last Click</th>
+              <th style="color:#14b8a6">Linear</th>
+              <th style="color:#f97316">Time Decay</th>
+              <th style="color:#c9a84c">Position</th>
+              <th style="color:#22c55e">DDA</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><b>Retargeting</b></td><td style="color:#a855f7">137</td><td style="color:#3b82f6">138</td><td style="color:#14b8a6">136</td><td style="color:#f97316">137</td><td style="color:#c9a84c">138</td><td style="color:#22c55e"><b>212</b></td></tr>
+            <tr><td><b>Sales-PMax</b></td><td style="color:#a855f7">66</td><td style="color:#3b82f6">70</td><td style="color:#14b8a6">65</td><td style="color:#f97316">69</td><td style="color:#c9a84c">68</td><td class="dim">—</td></tr>
+            <tr><td><b>Shopping</b></td><td style="color:#a855f7"><b>35 ▲</b></td><td style="color:#3b82f6">25</td><td style="color:#14b8a6">38</td><td style="color:#f97316">30</td><td style="color:#c9a84c">31</td><td style="color:#22c55e">23.5</td></tr>
+            <tr><td><b>Hatton Mobile</b></td><td style="color:#a855f7">6</td><td style="color:#3b82f6">9</td><td style="color:#14b8a6">5</td><td style="color:#f97316">8</td><td style="color:#c9a84c">8</td><td style="color:#22c55e">9.5</td></tr>
+            <tr><td><b>Pmax GMB Mcr</b></td><td style="color:#a855f7"><b>2 ▲</b></td><td style="color:#3b82f6">0</td><td style="color:#14b8a6">3</td><td style="color:#f97316">1</td><td style="color:#c9a84c">1</td><td class="dim">—</td></tr>
+            <tr style="font-weight:700;background:var(--card2)"><td>Total</td><td>259</td><td>259</td><td>259</td><td>259</td><td>259</td><td>~259</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="insight"><b>Shopping gains +40% credit under First Click (35 vs 25)</b> — it introduces customers Last Click then credits to Retargeting. Switch to Data-Driven Attribution account-wide: DDA gives Retargeting 212 conversions vs 138.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 4 — CAMPAIGN PERFORMANCE
+═══════════════════════════════════════════ -->
+<div class="sec" id="campaign-performance">
+  <div class="sec-label"><span id="campPerfTitle">Campaign Performance — 31 May – 27 Jun 2026 (28 Days)</span></div>
+
+  <div class="pbar">
+    <div class="pb"><div class="pb-lbl">Conversions</div><div class="pb-val" id="pb-conv" style="color:var(--gold2)">105.68</div></div>
+    <div class="pb"><div class="pb-lbl">Revenue</div><div class="pb-val" id="pb-rev" style="color:var(--green)">£162,311</div></div>
+    <div class="pb"><div class="pb-lbl">Ad Spend</div><div class="pb-val" id="pb-spend" style="color:var(--blue)">£21,715</div></div>
+    <div class="pb"><div class="pb-lbl">ROAS</div><div class="pb-val" id="pb-roas" style="color:var(--green)">7.47×</div></div>
+  </div>
+
+  <div class="anote" id="attributionNote" style="display:none">Attr-Adj ROAS requires the full 28-day window — showing N/A for other periods.</div>
+
+  <div id="customDataPanel" class="cpanel" style="display:none">
+    <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:10px" id="customPanelTitle">Enter Google Ads data for custom date range</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+      <div><div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Conversions</div><input type="number" step="0.01" id="cConv" class="cinp" placeholder="e.g. 105.68"></div>
+      <div><div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Conv. Value £</div><input type="number" id="cRevenue" class="cinp" placeholder="e.g. 162311"></div>
+      <div><div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Ad Spend £</div><input type="number" id="cSpend" class="cinp" placeholder="e.g. 21715"></div>
+      <button class="capply" onclick="applyCustom()">Apply</button>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Campaign</th>
+          <th>Role</th>
+          <th>Ad Spend</th>
+          <th>Conversions</th>
+          <th>Revenue</th>
+          <th>Last-Click ROAS</th>
+          <th>Attr-Adj ROAS <span style="font-weight:400;color:var(--muted);font-size:9px">(28D)</span></th>
+        </tr>
+      </thead>
+      <tbody id="periodCampaignRows"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 5 — CUSTOMER JOURNEY
+═══════════════════════════════════════════ -->
+<div class="sec">
+  <div class="sec-label">Customer Journey</div>
+
+  <!-- Journey stats -->
+  <div class="srow" style="margin-bottom:14px">
+    <div class="sitem"><div class="slbl">Avg. Days to Purchase</div><div class="sval" style="color:var(--blue)">3.7</div><div class="ssub">From first ad click</div></div>
+    <div class="sitem"><div class="slbl">Avg. Ad Interactions</div><div class="sval" style="color:var(--purple)">2.2</div><div class="ssub">Touchpoints per conversion</div></div>
+    <div class="sitem"><div class="slbl">Same-Day Conversions</div><div class="sval" style="color:var(--orange)">68.7%</div><div class="ssub">178 of 259 convert &lt;24h</div></div>
+    <div class="sitem"><div class="slbl">3-Day Buyer AOV</div><div class="sval" style="color:var(--gold2)">£4,220</div><div class="ssub">vs £266 same-day (+15.8×)</div></div>
+  </div>
+
+  <!-- Time lag chart + Top paths -->
+  <div class="grid2">
+    <div class="cbox">
+      <h3>Time to Purchase</h3>
+      <p>Conversions and revenue by days-to-convert bucket</p>
+      <div class="ch" style="height:220px"><canvas id="timeLagConvChart"></canvas></div>
+    </div>
+    <div>
+      <div class="tbl-wrap" style="margin-bottom:12px">
+        <table>
+          <thead><tr><th>Days</th><th>Conv.</th><th>% Conv.</th><th>Revenue</th><th>Rev/Conv</th></tr></thead>
+          <tbody>
+            <tr><td>&lt;1 day</td><td>178</td><td class="gold">68.7%</td><td>£47,272</td><td class="dim">£266</td></tr>
+            <tr><td>1 day</td><td>15</td><td>5.8%</td><td>£10,412</td><td>£694</td></tr>
+            <tr><td>2 days</td><td>9</td><td>3.5%</td><td>£5,846</td><td>£649</td></tr>
+            <tr style="background:rgba(201,168,76,.04)"><td><b>3 days</b></td><td>6</td><td>2.3%</td><td class="gold">£25,320</td><td class="gold">£4,220</td></tr>
+            <tr><td>4–6 days</td><td>16</td><td>6.2%</td><td>£8,590</td><td>£537</td></tr>
+            <tr><td>7–11 days</td><td>12</td><td>4.6%</td><td>£15,440</td><td>£1,287</td></tr>
+            <tr><td>12+ days</td><td>23</td><td>8.9%</td><td>£21,238</td><td>£923</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Top Conversion Paths</th><th>Conv.</th><th>Revenue</th></tr></thead>
+          <tbody>
+            <tr><td><div class="pchips"><span class="pc">Retargeting</span></div></td><td><b>62</b></td><td>£41,888</td></tr>
+            <tr><td><div class="pchips"><span class="pc">Sales-PMax</span></div></td><td><b>35</b></td><td class="dim">—</td></tr>
+            <tr><td><div class="pchips"><span class="pc">Flawless Shopping</span></div></td><td>12</td><td>£1</td></tr>
+            <tr><td><div class="pchips"><span class="pc">Hatton Garden Mobile</span></div></td><td>9</td><td class="dim">—</td></tr>
+            <tr><td><div class="pchips"><span class="pc">Shopping</span><span class="pa">→</span><span class="pc">Shopping</span></div></td><td>5</td><td>£0</td></tr>
+            <tr style="background:rgba(201,168,76,.04)">
+              <td><em class="dim">Other paths (cross-campaign — hidden by Google privacy threshold)</em></td>
+              <td><b>119</b></td>
+              <td class="gold">£92,227</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="insight"><b>3-day buyers spend £4,220 vs £266 for same-day</b> — a 15.8× revenue premium. Set retargeting window to 30 days. £92,227 in cross-campaign path revenue is hidden by Google's 10-conversion privacy threshold.</div>
+</div>
+
+</div><!-- /wrap -->
+
+<div class="footer">
+  Google Ads Attribution &nbsp;·&nbsp; Account 274-520-4480 &nbsp;·&nbsp; BigQuery: flawlessfine-ga4.attribution_results &nbsp;·&nbsp; Attr-Adj ROAS = (Last-Click + Assisted Revenue) ÷ Spend
+</div>
+
+<!-- Hidden canvases — initialised but not displayed -->
+<div style="display:none">
+  <canvas id="timeLagValChart"></canvas>
+  <canvas id="pathLenConvChart"></canvas>
+  <canvas id="pathLenValChart"></canvas>
+  <canvas id="pathChart"></canvas>
+  <canvas id="convTierChart"></canvas>
+  <canvas id="offlineInvoiceChart"></canvas>
+  <canvas id="apptFunnelChart"></canvas>
+</div>
+
+<script>
+Chart.defaults.color='#636880';
+Chart.defaults.borderColor='#1f2235';
+Chart.defaults.font.family="'Segoe UI',system-ui,sans-serif";
+Chart.defaults.font.size=11;
+const C={GOLD:'#c9a84c',BLUE:'#3b82f6',PURPLE:'#a855f7',GREEN:'#22c55e',ORANGE:'#f97316',TEAL:'#14b8a6'};
+
+/* ─── ASSIST RATIO CHART ─── */
+const ratios=[
+  {c:'Pmax GMB Manchester',r:6.0},
+  {c:'Flawless Shopping',r:2.12},
+  {c:'Retargeting',r:1.12},
+  {c:'Sales-PMax',r:1.0},
+  {c:'Jewellers London',r:0.75},
+  {c:'Hatton Gdn Updated',r:0.40},
+  {c:'Hatton Gdn Mobile',r:0.11}
+];
+new Chart(document.getElementById('assistRatioChart'),{
+  type:'bar',
+  data:{
+    labels:ratios.map(d=>d.c),
+    datasets:[{
+      label:'Assist Ratio',
+      data:ratios.map(d=>d.r),
+      backgroundColor:ratios.map(d=>d.r>1.5?C.PURPLE+'88':d.r>=0.5?C.BLUE+'88':C.GREEN+'88'),
+      borderColor:ratios.map(d=>d.r>1.5?C.PURPLE:d.r>=0.5?C.BLUE:C.GREEN),
+      borderWidth:1,borderRadius:4
+    }]
+  },
+  options:{
+    indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{grid:{color:'#1f223560'},title:{display:true,text:'Assists per Last-Click Conversion',color:'#636880'}},
+      y:{grid:{display:false}}
+    }
+  }
+});
+
+/* ─── LC vs TRUE INFLUENCE CHART ─── */
+new Chart(document.getElementById('retargetingChart'),{
+  type:'bar',
+  data:{
+    labels:['Retargeting','Sales-PMax','Shopping'],
+    datasets:[
+      {label:'Last-Click Revenue',data:[112479,41648,6051],backgroundColor:C.BLUE+'66',borderColor:C.BLUE,borderWidth:1,borderRadius:3},
+      {label:'True Influence',data:[245468,70469,20101],backgroundColor:C.GOLD+'66',borderColor:C.GOLD,borderWidth:1,borderRadius:3}
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{padding:10,boxWidth:10,font:{size:10}}}},
+    scales:{
+      x:{grid:{display:false}},
+      y:{grid:{color:'#1f223560'},ticks:{callback:v=>'£'+(v/1000).toFixed(0)+'k'}}
+    }
+  }
+});
+
+/* ─── ATTRIBUTION MODELS CHART ─── */
+new Chart(document.getElementById('modelChart'),{
+  type:'bar',
+  data:{
+    labels:['Retargeting','Sales-PMax','Shopping','Hatton Mobile'],
+    datasets:[
+      {label:'First Click',data:[137,66,35,6],backgroundColor:C.PURPLE+'77',borderColor:C.PURPLE,borderWidth:1,borderRadius:2},
+      {label:'Last Click',data:[138,70,25,9],backgroundColor:C.BLUE+'77',borderColor:C.BLUE,borderWidth:1,borderRadius:2},
+      {label:'Linear',data:[136,65,38,5],backgroundColor:C.TEAL+'77',borderColor:C.TEAL,borderWidth:1,borderRadius:2},
+      {label:'Time Decay',data:[137,69,30,8],backgroundColor:C.ORANGE+'77',borderColor:C.ORANGE,borderWidth:1,borderRadius:2},
+      {label:'Position Based',data:[138,68,31,8],backgroundColor:C.GOLD+'77',borderColor:C.GOLD,borderWidth:1,borderRadius:2},
+      {label:'Data-Driven',data:[212,0,23.5,9.5],backgroundColor:C.GREEN+'77',borderColor:C.GREEN,borderWidth:1,borderRadius:2}
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{padding:8,boxWidth:9,font:{size:9}}}},
+    scales:{
+      x:{grid:{display:false}},
+      y:{grid:{color:'#1f223560'}}
+    }
+  }
+});
+
+/* ─── TIME TO PURCHASE CHART ─── */
+new Chart(document.getElementById('timeLagConvChart'),{
+  type:'bar',
+  data:{
+    labels:['<1d','1d','2d','3d','4d','5d','6d','7d','8d','9d','12+d'],
+    datasets:[
+      {
+        label:'Conversions',
+        data:[178,15,9,6,3,6,7,2,4,3,23],
+        backgroundColor:function(ctx){
+          const i=ctx.dataIndex;
+          return i===0?C.GOLD+'cc':i===3?C.ORANGE+'cc':C.BLUE+'55';
+        },
+        borderColor:function(ctx){
+          const i=ctx.dataIndex;
+          return i===0?C.GOLD:i===3?C.ORANGE:C.BLUE;
+        },
+        borderWidth:1,borderRadius:4
+      }
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{grid:{display:false}},
+      y:{grid:{color:'#1f223560'}}
+    }
+  }
+});
+
+/* ─── HIDDEN CHARTS (no-op) ─── */
+['timeLagValChart','pathLenConvChart','pathLenValChart','pathChart','convTierChart','offlineInvoiceChart','apptFunnelChart'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) new Chart(el,{type:'bar',data:{labels:[],datasets:[]},options:{responsive:false,animation:false}});
+});
+
+/* ═══════════════════════════════════════════
+   DATE RANGE SWITCHER
+═══════════════════════════════════════════ */
+const periods={
+  '28':{
+    headerLabel:'31 May – 27 Jun 2026',
+    title:'Campaign Performance — 31 May – 27 Jun 2026 (28 Days)',
+    conv:'105.68',rev:'£162,311',spend:'£21,715',roas:'7.47×',
+    campaigns:[
+      {name:'Retargeting',      spend:'£4,233', conv:'63.45',rev:'£112,479',roas:'26.6×',aroas:'58×',        role:'★ Revenue Closer',rc:'br'},
+      {name:'Sales-PMax',       spend:'£6,945', conv:'9.73', rev:'£41,648', roas:'6.0×', aroas:'10.1×',      role:'Assist',          rc:'ba'},
+      {name:'Flawless Shopping',spend:'£1,274', conv:'12.50',rev:'£6,051',  roas:'4.7×', aroas:'15.8×',      role:'Introducer',      rc:'bi'},
+      {name:'Hatton Gdn Updated',spend:'£2,325',conv:'8.00', rev:'£5,472',  roas:'2.4×', aroas:'2.4×',       role:'Closer',          rc:'bc'},
+      {name:'Hatton Gdn Mobile', spend:'£2,324',conv:'4.00', rev:'£0',      roas:'—',    aroas:'—',           role:'Closer',          rc:'bc'},
+      {name:'Engagement-Rings',  spend:'£2,357',conv:'3.00', rev:'£2,712',  roas:'1.2×', aroas:'1.2×',       role:'Assist',          rc:'ba'},
+      {name:'Jewellers London',  spend:'£173',  conv:'2.00', rev:'£0',      roas:'—',    aroas:'—',           role:'Assist',          rc:'ba'},
+      {name:'Yellow Diamonds',   spend:'£857',  conv:'1.00', rev:'£0',      roas:'—',    aroas:'—',           role:'Assist',          rc:'ba'},
+      {name:'Manchester Mobile', spend:'£736',  conv:'1.00', rev:'£0',      roas:'—',    aroas:'—',           role:'Closer',          rc:'bc'},
+    ]
+  },
+  '14':{
+    headerLabel:'14–27 Jun 2026',
+    title:'Campaign Performance — 14–27 Jun 2026 (14 Days)',
+    conv:'29',rev:'£19,209',spend:'£10,466',roas:'1.84×',
+    campaigns:[
+      {name:'Retargeting',         spend:'£2,102',conv:'14.33',rev:'£11,443',roas:'5.4×', aroas:'N/A',role:'★ Revenue Closer',rc:'br'},
+      {name:'Sales-PMax',          spend:'£3,502',conv:'3',    rev:'£5,054', roas:'1.4×', aroas:'N/A',role:'Assist',          rc:'ba'},
+      {name:'Engagement-Rings',    spend:'£1,109',conv:'3',    rev:'£2,712', roas:'2.4×', aroas:'N/A',role:'Assist',          rc:'ba'},
+      {name:'Hatton Gdn Mobile',   spend:'£1,161',conv:'1',    rev:'£0',     roas:'—',    aroas:'N/A',role:'Closer',          rc:'bc'},
+      {name:'Hatton Gdn Updated',  spend:'£1,115',conv:'2',    rev:'£0',     roas:'—',    aroas:'N/A',role:'Closer',          rc:'bc'},
+      {name:'Flawless Shopping',   spend:'£367', conv:'3',    rev:'£0',     roas:'—',    aroas:'N/A',role:'Introducer',      rc:'bi'},
+      {name:'Yellow Diamonds',     spend:'£427', conv:'0',    rev:'£0',     roas:'—',    aroas:'N/A',role:'Assist',          rc:'ba'},
+      {name:'Manchester Mobile',   spend:'£339', conv:'0',    rev:'£0',     roas:'—',    aroas:'N/A',role:'Closer',          rc:'bc'},
+      {name:'Jewellers London',    spend:'£138', conv:'2',    rev:'£0',     roas:'—',    aroas:'N/A',role:'Assist',          rc:'ba'},
+    ]
+  },
+  '7':{
+    headerLabel:'21–27 Jun 2026',
+    title:'Campaign Performance — 21–27 Jun 2026 (7 Days)',
+    conv:'9',rev:'£4,386',spend:'£5,017',roas:'0.87×',
+    campaigns:[
+      {name:'Engagement-Rings',  spend:'£511', conv:'1',rev:'£2,712',roas:'5.3×', aroas:'N/A',role:'Assist',          rc:'ba'},
+      {name:'Sales-PMax',        spend:'£1,737',conv:'1',rev:'£1,674',roas:'0.96×',aroas:'N/A',role:'Assist',          rc:'ba'},
+      {name:'Retargeting',       spend:'£1,004',conv:'3',rev:'£0',    roas:'—',   aroas:'N/A',role:'★ Revenue Closer',rc:'br'},
+      {name:'Hatton Gdn Mobile', spend:'£575', conv:'0',rev:'£0',    roas:'—',   aroas:'N/A',role:'Closer',          rc:'bc'},
+      {name:'Hatton Gdn Updated',spend:'£515', conv:'1',rev:'£0',    roas:'—',   aroas:'N/A',role:'Closer',          rc:'bc'},
+      {name:'Yellow Diamonds',   spend:'£209', conv:'0',rev:'£0',    roas:'—',   aroas:'N/A',role:'Assist',          rc:'ba'},
+      {name:'Manchester Mobile', spend:'£162', conv:'0',rev:'£0',    roas:'—',   aroas:'N/A',role:'Closer',          rc:'bc'},
+      {name:'Flawless Shopping', spend:'£131', conv:'0',rev:'£0',    roas:'—',   aroas:'N/A',role:'Introducer',      rc:'bi'},
+      {name:'Jewellers London',  spend:'£70',  conv:'2',rev:'£0',    roas:'—',   aroas:'N/A',role:'Assist',          rc:'ba'},
+    ]
+  },
+  '365':{
+    headerLabel:'28 Jun 2025 – 27 Jun 2026',
+    title:'Campaign Performance — Last 1 Year',
+    conv:'—',rev:'—',spend:'—',roas:'—',
+    note:'Full 1-year data requires refreshing BigQuery tables with an extended date range.',
+    campaigns:[]
+  }
+};
+
+function fmtDate(s){
+  const d=new Date(s+'T00:00:00'),m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return`${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function renderPeriod(p){
+  document.getElementById('headerPeriodLabel').textContent=p.headerLabel;
+  document.getElementById('campPerfTitle').textContent=p.title;
+  const setKpi=(id,val,color)=>{const el=document.getElementById(id);if(el){el.textContent=val;if(color)el.style.color=color;}};
+  const rn=parseFloat(p.roas);
+  const rc=isNaN(rn)?'var(--muted)':rn<1?'var(--red)':rn<3?'var(--orange)':'var(--green)';
+  setKpi('pb-conv',p.conv);setKpi('pb-rev',p.rev);setKpi('pb-spend',p.spend);setKpi('pb-roas',p.roas,rc);
+  setKpi('k-spend',p.spend);setKpi('k-rev',p.rev);setKpi('k-roas',p.roas,rc);
+  setKpi('k-conv',p.conv);
+  const tbody=document.getElementById('periodCampaignRows');
+  if(p.note){
+    tbody.innerHTML=`<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--muted)">${p.note}</td></tr>`;
+  }else{
+    tbody.innerHTML=p.campaigns.map(c=>{
+      const rColor=c.roas==='—'?'var(--muted)':parseFloat(c.roas)<1?'var(--red)':'var(--green)';
+      const aColor=c.aroas==='N/A'||c.aroas==='—'?'var(--muted)':'var(--gold2)';
+      const aWeight=c.aroas==='N/A'||c.aroas==='—'?'400':'700';
+      return`<tr>
+        <td><b>${c.name}</b></td>
+        <td><span class="badge ${c.rc}">${c.role}</span></td>
+        <td>${c.spend}</td>
+        <td>${c.conv}</td>
+        <td>${c.rev}</td>
+        <td style="font-weight:700;color:${rColor}">${c.roas}</td>
+        <td style="font-weight:${aWeight};color:${aColor}">${c.aroas}</td>
+      </tr>`;
+    }).join('');
+  }
+  document.getElementById('attributionNote').style.display=p.headerLabel==='31 May – 27 Jun 2026'?'none':'block';
+  document.getElementById('customDataPanel').style.display='none';
+}
+
+function setPeriod(key){
+  ['28','14','7','365'].forEach(k=>{const b=document.getElementById('qb'+k);if(b)b.classList.toggle('active',k===key);});
+  const dateMap={'7':'2026-06-21','14':'2026-06-14','28':'2026-05-31','365':'2025-06-28'};
+  if(dateMap[key]){document.getElementById('dateFrom').value=dateMap[key];document.getElementById('dateTo').value='2026-06-27';}
+  renderPeriod(periods[key]);
+}
+
+function loadCustom(){
+  const from=document.getElementById('dateFrom').value,to=document.getElementById('dateTo').value;
+  if(!from||!to||from>to){alert('Please select a valid date range.');return;}
+  if(from==='2026-05-31'&&to==='2026-06-27'){setPeriod('28');return;}
+  if(from==='2026-06-14'&&to==='2026-06-27'){setPeriod('14');return;}
+  if(from==='2026-06-21'&&to==='2026-06-27'){setPeriod('7');return;}
+  if(from==='2025-06-28'&&to==='2026-06-27'){setPeriod('365');return;}
+  ['28','14','7','365'].forEach(k=>{const b=document.getElementById('qb'+k);if(b)b.classList.remove('active');});
+  const ff=fmtDate(from),ft=fmtDate(to),days=Math.round((new Date(to)-new Date(from))/86400000)+1;
+  document.getElementById('headerPeriodLabel').textContent=`${ff} – ${ft}`;
+  document.getElementById('campPerfTitle').textContent=`Campaign Performance — ${ff} – ${ft} (${days} Days)`;
+  document.getElementById('customPanelTitle').textContent=`Enter Google Ads data for ${ff} – ${ft}`;
+  document.getElementById('customDataPanel').style.display='block';
+  document.getElementById('periodCampaignRows').innerHTML=`<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--muted)">Enter totals above and click Apply.</td></tr>`;
+  ['pb-conv','pb-rev','pb-spend','pb-roas','k-spend','k-rev','k-roas','k-conv'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent='—';el.style.color='var(--muted)';}});
+  document.getElementById('attributionNote').style.display='block';
+}
+
+function applyCustom(){
+  const conv=document.getElementById('cConv').value,rev=document.getElementById('cRevenue').value,spend=document.getElementById('cSpend').value;
+  const fmt=v=>v?'£'+parseFloat(v).toLocaleString('en-GB'):'—';
+  ['pb-conv','k-conv'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=conv||'—';});
+  ['pb-rev','k-rev'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=fmt(rev);});
+  ['pb-spend','k-spend'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=fmt(spend);});
+  const rn=rev&&spend&&parseFloat(spend)>0?(parseFloat(rev)/parseFloat(spend)).toFixed(2):null;
+  const rs=rn?rn+'×':'—';const rc=rn?(parseFloat(rn)<1?'var(--red)':parseFloat(rn)<3?'var(--orange)':'var(--green)'):'var(--muted)';
+  ['pb-roas','k-roas'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=rs;el.style.color=rc;}});
+  document.getElementById('customDataPanel').style.display='none';
+}
+
+setPeriod('28');
+</script>
+</body>
+</html>
