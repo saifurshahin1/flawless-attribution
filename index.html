@@ -848,10 +848,7 @@ async function initDashboard() {
       const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       const d1 = new Date(parts[0]+'T00:00:00'), d2 = new Date(parts[1]+'T00:00:00');
       const label = d1.getDate()+' '+MN[d1.getMonth()]+' – '+d2.getDate()+' '+MN[d2.getMonth()]+' '+d2.getFullYear()+' · fixed window';
-      ['badge-role','badge-attr','badge-journey'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = label;
-      });
+      document.querySelectorAll('.fixed-badge').forEach(el => { el.textContent = label; });
     }
   }
 
