@@ -277,7 +277,7 @@ tr:hover td{background:rgba(255,255,255,.012)}
      SECTION 2 — CAMPAIGN ROLE INTELLIGENCE
 ═══════════════════════════════════════════ -->
 <div class="sec">
-  <div class="sec-label">Campaign Role Intelligence <span class="fixed-badge">90D fixed · not date-filtered</span></div>
+  <div class="sec-label">Campaign Role Intelligence <span class="fixed-badge" id="badge-role">90D fixed · not date-filtered</span></div>
 
   <!-- Role summary cards -->
   <div class="grid3" id="roleCards" style="margin-bottom:14px">
@@ -346,7 +346,7 @@ tr:hover td{background:rgba(255,255,255,.012)}
      SECTION 3 — ATTRIBUTION COMPARISON
 ═══════════════════════════════════════════ -->
 <div class="sec">
-  <div class="sec-label">Attribution Comparison <span class="fixed-badge">90D fixed · not date-filtered</span></div>
+  <div class="sec-label">Attribution Comparison <span class="fixed-badge" id="badge-attr">90D fixed · not date-filtered</span></div>
 
   <div class="grid2" style="margin-bottom:14px">
     <!-- Last Click vs MTA -->
@@ -460,7 +460,7 @@ tr:hover td{background:rgba(255,255,255,.012)}
      SECTION 5 — CUSTOMER JOURNEY
 ═══════════════════════════════════════════ -->
 <div class="sec">
-  <div class="sec-label">Customer Journey <span class="fixed-badge">90D fixed · not date-filtered</span></div>
+  <div class="sec-label">Customer Journey <span class="fixed-badge" id="badge-journey">90D fixed · not date-filtered</span></div>
 
   <!-- Journey stats -->
   <div class="srow" style="margin-bottom:14px">
@@ -838,6 +838,21 @@ async function initDashboard() {
   if (meta && meta.last_updated) {
     const el = document.getElementById('lastUpdated');
     if (el) el.textContent = 'Updated ' + meta.last_updated;
+  }
+
+  // ── Fixed-window badge date range ───────────
+  if (assistedRaw && assistedRaw.rows && assistedRaw.rows[0] && assistedRaw.rows[0].date_range) {
+    const dr = assistedRaw.rows[0].date_range; // e.g. "2026-03-31 to 2026-06-28"
+    const parts = dr.split(' to ');
+    if (parts.length === 2) {
+      const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const d1 = new Date(parts[0]+'T00:00:00'), d2 = new Date(parts[1]+'T00:00:00');
+      const label = d1.getDate()+' '+MN[d1.getMonth()]+' – '+d2.getDate()+' '+MN[d2.getMonth()]+' '+d2.getFullYear()+' · fixed window';
+      ['badge-role','badge-attr','badge-journey'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = label;
+      });
+    }
   }
 
   // ── Assisted conversions (role table + chart + cards) ──
