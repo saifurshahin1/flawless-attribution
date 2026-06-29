@@ -65,25 +65,68 @@ def gen_campaign_stats():
         print("  ads_campaign_stats not found - skipping")
         return
 
-    # Column name adapters
-    conv_col  = "conversions"        if "conversions"        in c else "conversions_lastclick"
-    rev_col   = "revenue"            if "revenue"            in c else "revenue_lastclick"
-    allv_col  = "all_conversions_value" if "all_conversions_value" in c else "all_conv_value"
+    # Column name adapters (v3 schema vs old schema)
+    conv_col = "conversions"           if "conversions"           in c else "conversions_lastclick"
+    rev_col  = "revenue"               if "revenue"               in c else "revenue_lastclick"
+    allv_col = "all_conversions_value" if "all_conversions_value" in c else "all_conv_value"
 
-    sql = f"""
-    SELECT
-        CAST(date AS STRING)      AS date,
-        campaign,
-        SUM(cost_gbp)             AS spend,
-        SUM({conv_col})           AS conversions,
-        SUM({rev_col})            AS revenue,
-        SUM(all_conversions)      AS all_conversions,
-        SUM({allv_col})           AS all_conv_value
-    FROM `{PROJECT}.{DATASET}.ads_campaign_stats`
-    WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 365 DAY)
-    GROUP BY date, campaign
-    ORDER BY date DESC, spend DESC
-    """
+    live = cols("ads_campaign_stats_live")
+
+    if live:
+        # Live table exists (hourly script is running).
+        # Use live data for the last 3 days; historical table for everything older.
+        # This avoids double-counting: live dates replace the same dates in hist.
+        live_conv = "conversions"           if "conversions"           in live else conv_col
+        live_rev  = "revenue"               if "revenue"               in live else rev_col
+        live_allv = "all_conversions_value" if "all_conversions_value" in live else allv_col
+
+        sql = f"""
+        WITH live AS (
+          SELECT
+            CAST(date AS STRING) AS date,
+            campaign,
+            SUM(cost_gbp)                AS spend,
+            SUM({live_conv})             AS conversions,
+            SUM({live_rev})              AS revenue,
+            SUM(all_conversions)         AS all_conversions,
+            SUM({live_allv})             AS all_conv_value
+          FROM `{PROJECT}.{DATASET}.ads_campaign_stats_live`
+          GROUP BY date, campaign
+        ),
+        hist AS (
+          SELECT
+            CAST(date AS STRING) AS date,
+            campaign,
+            SUM(cost_gbp)                AS spend,
+            SUM({conv_col})              AS conversions,
+            SUM({rev_col})               AS revenue,
+            SUM(all_conversions)         AS all_conversions,
+            SUM({allv_col})              AS all_conv_value
+          FROM `{PROJECT}.{DATASET}.ads_campaign_stats`
+          WHERE CAST(date AS STRING) NOT IN (SELECT DISTINCT date FROM live)
+            AND date >= DATE_SUB(CURRENT_DATE(), INTERVAL 365 DAY)
+          GROUP BY date, campaign
+        )
+        SELECT date, campaign, spend, conversions, revenue, all_conversions, all_conv_value
+        FROM (SELECT * FROM live UNION ALL SELECT * FROM hist)
+        ORDER BY date DESC, spend DESC
+        """
+    else:
+        sql = f"""
+        SELECT
+            CAST(date AS STRING)      AS date,
+            campaign,
+            SUM(cost_gbp)             AS spend,
+            SUM({conv_col})           AS conversions,
+            SUM({rev_col})            AS revenue,
+            SUM(all_conversions)      AS all_conversions,
+            SUM({allv_col})           AS all_conv_value
+        FROM `{PROJECT}.{DATASET}.ads_campaign_stats`
+        WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 365 DAY)
+        GROUP BY date, campaign
+        ORDER BY date DESC, spend DESC
+        """
+
     rows = q(sql)
     for r in rows:
         for k in ["spend","conversions","revenue","all_conversions","all_conv_value"]:
