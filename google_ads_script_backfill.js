@@ -114,7 +114,7 @@ function replaceTable(rows) {
   try {
     BigQuery.Tables.remove(CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET, CONFIG.TABLE);
     Logger.log('Dropped existing ' + CONFIG.TABLE + ' table.');
-    Utilities.sleep(2000);
+    Utilities.sleep(8000); // wait for BQ to propagate the delete
   } catch(e) {
     Logger.log('Table did not exist yet — will create fresh.');
   }
@@ -132,7 +132,9 @@ function replaceTable(rows) {
     CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET
   );
   Logger.log('Created fresh ' + CONFIG.TABLE + ' table.');
-  Utilities.sleep(2000);
+  // BigQuery streaming needs ~20s after table creation before accepting inserts
+  Logger.log('Waiting 20s for BigQuery table to be ready...');
+  Utilities.sleep(20000);
 
   // Insert in batches
   var total  = rows.length;
