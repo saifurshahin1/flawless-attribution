@@ -26,6 +26,48 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .date-inp::-webkit-calendar-picker-indicator{filter:invert(.4);cursor:pointer}
 .go-btn{background:var(--gold);color:#000;border:none;padding:5px 13px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer}
 .go-btn:hover{background:var(--gold2)}
+/* ── Google Ads-style Date Picker ── */
+.dp-wrap{position:relative;display:inline-block}
+.dp-btn{background:#0e1026;border:1px solid var(--border);color:var(--text);padding:4px 11px;border-radius:5px;cursor:pointer;font-size:12px;white-space:nowrap;display:flex;align-items:center;gap:6px;line-height:22px}
+.dp-btn:hover{border-color:var(--blue)}
+.dp-panel{position:absolute;top:calc(100% + 6px);right:0;background:#12152e;border:1px solid #2a2e50;border-radius:8px;display:flex;box-shadow:0 8px 40px rgba(0,0,0,.65);z-index:500;min-width:660px}
+.dp-presets{width:188px;padding:6px 0;border-right:1px solid #2a2e50;flex-shrink:0}
+.dp-preset{padding:6px 16px;cursor:pointer;font-size:12px;color:var(--text);line-height:1.4}
+.dp-preset:hover{background:rgba(255,255,255,.05)}
+.dp-preset.dp-active{color:var(--blue);background:rgba(59,130,246,.12)}
+.dp-days-row{padding:5px 16px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dp-days-inp{width:38px;background:#1a1d35;border:1px solid var(--border);color:var(--text);border-radius:3px;padding:2px 4px;font-size:11px;text-align:center}
+.dp-cal-section{flex:1;padding:14px 16px}
+.dp-date-inputs{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #2a2e50}
+.dp-date-box{border:1px solid var(--border);border-radius:4px;padding:5px 10px;min-width:120px;cursor:default}
+.dp-date-box.dp-box-active{border-color:var(--blue)}
+.dp-date-lbl{font-size:9px;color:var(--muted);margin-bottom:1px;text-transform:uppercase;letter-spacing:.04em}
+.dp-date-val{font-size:12px;color:var(--text);font-weight:500}
+.dp-date-sep{color:var(--muted);font-size:13px}
+.dp-cals{display:flex;gap:20px}
+.dp-cal{flex:1}
+.dp-cal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.dp-month-lbl{font-size:12px;font-weight:600;color:var(--text)}
+.dp-nav{background:none;border:none;color:var(--text);cursor:pointer;font-size:16px;padding:2px 7px;line-height:1;border-radius:3px}
+.dp-nav:hover{background:rgba(255,255,255,.1)}
+.dp-nav-ph{width:26px;display:inline-block}
+.dp-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+.dp-dow{text-align:center;font-size:10px;color:var(--muted);padding:2px 0;margin-bottom:2px}
+.dp-day{text-align:center;padding:5px 2px;font-size:11px;cursor:pointer;color:var(--text);border-radius:0;user-select:none}
+.dp-day:hover{background:rgba(255,255,255,.12);border-radius:3px}
+.dp-in-range{background:rgba(59,130,246,.18)}
+.dp-in-range:hover{background:rgba(59,130,246,.3)}
+.dp-sel{background:var(--blue)!important;color:#fff!important;font-weight:700}
+.dp-start-sel{border-radius:50% 0 0 50%}
+.dp-end-sel{border-radius:0 50% 50% 0}
+.dp-single-sel{border-radius:50%}
+.dp-today-dot{position:relative}
+.dp-today-dot::after{content:'';position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:3px;height:3px;border-radius:50%;background:var(--blue)}
+.dp-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid #2a2e50}
+.dp-cancel-btn{background:none;border:1px solid var(--border);color:var(--text);padding:5px 16px;border-radius:4px;cursor:pointer;font-size:12px}
+.dp-cancel-btn:hover{border-color:var(--text)}
+.dp-apply-btn{background:var(--blue);border:none;color:#fff;padding:5px 18px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:700}
+.dp-apply-btn:hover{background:#2563eb}
 
 /* ─── LAYOUT ─── */
 .wrap{max-width:1320px;margin:0 auto;padding:28px}
@@ -151,10 +193,43 @@ tr:hover td{background:rgba(255,255,255,.012)}
     <button class="qbtn" id="qb7" onclick="setPeriod('7')">7D</button>
     <button class="qbtn" id="qb365" onclick="setPeriod('365')">1Y</button>
     <span style="color:var(--border)">|</span>
-    <input type="date" id="dateFrom" class="date-inp" value="2026-05-31">
-    <span style="font-size:11px;color:var(--muted)">→</span>
-    <input type="date" id="dateTo" class="date-inp" value="2026-06-27">
-    <button class="go-btn" onclick="loadCustom()">Go</button>
+    <div class="dp-wrap" id="dpWrap">
+      <button class="dp-btn" id="dpBtn" onclick="dpToggle()"><span id="dpBtnLabel">31 May – 27 Jun 2026</span> ▾</button>
+      <div class="dp-panel" id="dpPanel" style="display:none">
+        <div class="dp-presets">
+          <div class="dp-preset dp-active" id="dpp-custom"     onclick="dpPreset('custom')">Custom</div>
+          <div class="dp-preset"           id="dpp-today"      onclick="dpPreset('today')">Today</div>
+          <div class="dp-preset"           id="dpp-yesterday"  onclick="dpPreset('yesterday')">Yesterday</div>
+          <div class="dp-preset"           id="dpp-thisweek"   onclick="dpPreset('thisweek')">This week (Mon – Today)</div>
+          <div class="dp-preset"           id="dpp-last7"      onclick="dpPreset('last7')">Last 7 days</div>
+          <div class="dp-preset"           id="dpp-lastweek"   onclick="dpPreset('lastweek')">Last week (Mon – Sun)</div>
+          <div class="dp-preset"           id="dpp-last14"     onclick="dpPreset('last14')">Last 14 days</div>
+          <div class="dp-preset"           id="dpp-thismonth"  onclick="dpPreset('thismonth')">This month</div>
+          <div class="dp-preset"           id="dpp-last30"     onclick="dpPreset('last30')">Last 30 days</div>
+          <div class="dp-preset"           id="dpp-lastmonth"  onclick="dpPreset('lastmonth')">Last month</div>
+          <div class="dp-preset"           id="dpp-alltime"    onclick="dpPreset('alltime')">All time</div>
+          <div class="dp-days-row"><input type="number" id="dpN1" value="30" min="1" max="730" class="dp-days-inp" oninput="dpDays('today')"> days up to today</div>
+          <div class="dp-days-row"><input type="number" id="dpN2" value="30" min="1" max="730" class="dp-days-inp" oninput="dpDays('yest')"> days up to yesterday</div>
+        </div>
+        <div class="dp-cal-section">
+          <div class="dp-date-inputs">
+            <div class="dp-date-box dp-box-active" id="dpBox1"><div class="dp-date-lbl">Start date*</div><div class="dp-date-val" id="dpS">31 May 2026</div></div>
+            <div class="dp-date-sep">—</div>
+            <div class="dp-date-box" id="dpBox2"><div class="dp-date-lbl">End date*</div><div class="dp-date-val" id="dpE">27 Jun 2026</div></div>
+          </div>
+          <div class="dp-cals">
+            <div class="dp-cal" id="dpCal1"></div>
+            <div class="dp-cal" id="dpCal2"></div>
+          </div>
+          <div class="dp-actions">
+            <button class="dp-cancel-btn" onclick="dpCancel()">Cancel</button>
+            <button class="dp-apply-btn"  onclick="dpApply()">Apply</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <input type="hidden" id="dateFrom" value="2026-05-31">
+    <input type="hidden" id="dateTo"   value="2026-06-27">
   </div>
 </div>
 
@@ -1031,6 +1106,11 @@ async function initDashboard() {
       document.getElementById('attributionNote').style.display = 'none';
     }
 
+    // Expose globally so the date picker can call it
+    window._renderRealPeriod = renderRealPeriod;
+    // Update date picker with actual data range
+    if (meta) { _DP.dataFrom = meta.data_from || _DP.dataFrom; _DP.dataTo = meta.data_to || _DP.dataTo; }
+
     // Override the period buttons to use real data
     const realPeriodEnd = maxDate;
     window._realRenderPeriod = function(key) {
@@ -1078,6 +1158,195 @@ async function initDashboard() {
     });
   }
 }
+
+// ── Google Ads-style Date Picker ─────────────────────────────────────────────
+const _DP = {
+  open:false, picking:'start',
+  startDate:'2026-05-31', endDate:'2026-06-27', hoverDate:null,
+  viewYear:2026, viewMonth:4,   // 4 = May (0-indexed); shows May+Jun
+  dataFrom:'2026-03-31', dataTo:'2026-06-28'
+};
+
+function _dpFmt(s) {                          // "2026-05-31" → "31 May 2026"
+  if (!s) return '';
+  const d = new Date(s + 'T00:00:00');
+  const M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return d.getDate() + ' ' + M[d.getMonth()] + ' ' + d.getFullYear();
+}
+function _dpToday() { return new Date().toISOString().slice(0,10); }
+function _dpAdd(s, n) {
+  const d = new Date(s + 'T00:00:00'); d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0,10);
+}
+function _dpPad(n) { return n < 10 ? '0'+n : ''+n; }
+function _dpStr(d) { return d.getFullYear()+'-'+_dpPad(d.getMonth()+1)+'-'+_dpPad(d.getDate()); }
+
+function dpToggle() { _DP.open ? dpClose() : dpOpen(); }
+function dpOpen() {
+  _DP.open = true;
+  const p = document.getElementById('dpPanel');
+  if (p) { p.style.display = 'flex'; dpRenderCals(); }
+}
+function dpClose() {
+  _DP.open = false;
+  const p = document.getElementById('dpPanel');
+  if (p) p.style.display = 'none';
+}
+function dpCancel() { dpClose(); }
+
+function dpPreset(name) {
+  document.querySelectorAll('.dp-preset').forEach(el => el.classList.remove('dp-active'));
+  const el = document.getElementById('dpp-' + name); if (el) el.classList.add('dp-active');
+  const today = _dpToday(), yest = _dpAdd(today, -1);
+  let s, e;
+  switch(name) {
+    case 'today':     s = today; e = today; break;
+    case 'yesterday': s = yest;  e = yest;  break;
+    case 'last7':     s = _dpAdd(today,-7);  e = yest; break;
+    case 'last14':    s = _dpAdd(today,-14); e = yest; break;
+    case 'last30':    s = _dpAdd(today,-30); e = yest; break;
+    case 'thisweek': {
+      const d = new Date(today+'T00:00:00'), day = d.getDay();
+      const diff = day===0 ? -6 : 1-day;
+      const mon = new Date(d); mon.setDate(d.getDate()+diff);
+      s = _dpStr(mon); e = today; break;
+    }
+    case 'lastweek': {
+      const d = new Date(today+'T00:00:00'), day = d.getDay();
+      const diff = day===0 ? -6 : 1-day;
+      const mon = new Date(d); mon.setDate(d.getDate()+diff);
+      const lm = new Date(mon); lm.setDate(mon.getDate()-7);
+      const ls = new Date(mon); ls.setDate(mon.getDate()-1);
+      s = _dpStr(lm); e = _dpStr(ls); break;
+    }
+    case 'thismonth': {
+      const d = new Date(today+'T00:00:00');
+      s = d.getFullYear()+'-'+_dpPad(d.getMonth()+1)+'-01'; e = today; break;
+    }
+    case 'lastmonth': {
+      const d = new Date(today+'T00:00:00'); d.setDate(0);
+      e = _dpStr(d);
+      s = d.getFullYear()+'-'+_dpPad(d.getMonth()+1)+'-01'; break;
+    }
+    case 'alltime': s = _DP.dataFrom; e = _DP.dataTo; break;
+    default: return;
+  }
+  _DP.startDate = s; _DP.endDate = e; _DP.hoverDate = null; _DP.picking = 'start';
+  const sd = new Date(s+'T00:00:00');
+  _DP.viewYear = sd.getFullYear(); _DP.viewMonth = sd.getMonth();
+  dpRenderCals();
+}
+
+function dpDays(mode) {
+  const n = parseInt(document.getElementById(mode==='today'?'dpN1':'dpN2').value)||30;
+  const today = _dpToday(), yest = _dpAdd(today,-1);
+  if (mode==='today')   { _DP.startDate=_dpAdd(today,-(n-1)); _DP.endDate=today; }
+  else                  { _DP.startDate=_dpAdd(yest,-(n-1));  _DP.endDate=yest;  }
+  _DP.hoverDate=null; _DP.picking='start';
+  document.querySelectorAll('.dp-preset').forEach(el=>el.classList.remove('dp-active'));
+  dpRenderCals();
+}
+
+function dpClickDay(ds) {
+  if (_DP.picking==='start') {
+    _DP.startDate=ds; _DP.endDate=null; _DP.hoverDate=null; _DP.picking='end';
+    document.getElementById('dpBox1')?.classList.add('dp-box-active');
+    document.getElementById('dpBox2')?.classList.remove('dp-box-active');
+  } else {
+    if (ds < _DP.startDate) { _DP.startDate=ds; _DP.endDate=null; _DP.picking='end'; }
+    else { _DP.endDate=ds; _DP.hoverDate=null; _DP.picking='start';
+      document.getElementById('dpBox1')?.classList.remove('dp-box-active');
+      document.getElementById('dpBox2')?.classList.add('dp-box-active');
+    }
+  }
+  dpRenderCals();
+}
+
+function dpHover(ds) {
+  if (_DP.picking==='end') { _DP.hoverDate=ds; dpRenderCals(); }
+}
+
+function dpNavMonth(delta) {
+  _DP.viewMonth += delta;
+  if (_DP.viewMonth>11) { _DP.viewMonth=0; _DP.viewYear++; }
+  if (_DP.viewMonth<0)  { _DP.viewMonth=11; _DP.viewYear--; }
+  dpRenderCals();
+}
+
+function dpRenderOneCal(elId, yr, mo, showPrev, showNext) {
+  const el = document.getElementById(elId); if (!el) return;
+  const MN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const dim = new Date(yr,mo+1,0).getDate();
+  const fdow = (new Date(yr,mo,1).getDay()+6)%7; // 0=Mon
+  const s = _DP.startDate, e = _DP.endDate||_DP.hoverDate;
+  const today = _dpToday();
+
+  let h = `<div class="dp-cal-hdr">`;
+  h += showPrev ? `<button class="dp-nav" onclick="dpNavMonth(-1)">&#8249;</button>` : `<span class="dp-nav-ph"></span>`;
+  h += `<span class="dp-month-lbl">${MN[mo]} ${yr}</span>`;
+  h += showNext ? `<button class="dp-nav" onclick="dpNavMonth(1)">&#8250;</button>` : `<span class="dp-nav-ph"></span>`;
+  h += `</div><div class="dp-cal-grid">`;
+  ['M','T','W','T','F','S','S'].forEach(d => h += `<div class="dp-dow">${d}</div>`);
+  for (let i=0; i<fdow; i++) h += `<div></div>`;
+  for (let d=1; d<=dim; d++) {
+    const ds = yr+'-'+_dpPad(mo+1)+'-'+_dpPad(d);
+    const isS = ds===s, isE = e&&ds===e;
+    const eff = (e&&e>=s) ? e : s;
+    const inR = s&&e&&ds>s&&ds<eff&&e>=s;
+    const isTd = ds===today;
+    let cls = 'dp-day';
+    if (isTd) cls += ' dp-today-dot';
+    if (isS&&isE)     cls += ' dp-sel dp-single-sel';
+    else if (isS)     cls += ' dp-sel dp-start-sel';
+    else if (isE)     cls += ' dp-sel dp-end-sel';
+    else if (inR)     cls += ' dp-in-range';
+    h += `<div class="${cls}" onclick="dpClickDay('${ds}')" onmouseenter="dpHover('${ds}')">${d}</div>`;
+  }
+  h += `</div>`;
+  el.innerHTML = h;
+}
+
+function dpRenderCals() {
+  let m2=_DP.viewMonth+1, y2=_DP.viewYear;
+  if (m2>11) { m2=0; y2++; }
+  dpRenderOneCal('dpCal1', _DP.viewYear, _DP.viewMonth, true, false);
+  dpRenderOneCal('dpCal2', y2, m2, false, true);
+  // Update date display boxes
+  const sEl=document.getElementById('dpS'), eEl=document.getElementById('dpE');
+  if (sEl) sEl.textContent = _DP.startDate ? _dpFmt(_DP.startDate) : 'Start date';
+  if (eEl) eEl.textContent = _DP.endDate   ? _dpFmt(_DP.endDate)   : 'End date';
+  // Update button label if both set
+  const btn=document.getElementById('dpBtnLabel');
+  if (btn&&_DP.startDate&&_DP.endDate) {
+    const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const d1=new Date(_DP.startDate+'T00:00:00'), d2=new Date(_DP.endDate+'T00:00:00');
+    btn.textContent=d1.getDate()+' '+M[d1.getMonth()]+' – '+d2.getDate()+' '+M[d2.getMonth()]+' '+d2.getFullYear();
+  }
+}
+
+function dpApply() {
+  if (!_DP.startDate||!_DP.endDate) { alert('Select both start and end dates.'); return; }
+  document.getElementById('dateFrom').value=_DP.startDate;
+  document.getElementById('dateTo').value=_DP.endDate;
+  // Clear period quick-buttons
+  ['28','14','7','365'].forEach(k=>document.getElementById('qb'+k)?.classList.remove('active'));
+  window._activePeriodKey=null;
+  // Update header
+  const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const d1=new Date(_DP.startDate+'T00:00:00'), d2=new Date(_DP.endDate+'T00:00:00');
+  const days=Math.round((d2-d1)/86400000)+1;
+  const label=_dpFmt(_DP.startDate)+' – '+_dpFmt(_DP.endDate)+' ('+days+'D)';
+  const hdr=document.getElementById('headerPeriodLabel');
+  if (hdr) hdr.textContent=d1.getDate()+' '+M[d1.getMonth()]+' – '+d2.getDate()+' '+M[d2.getMonth()]+' '+d2.getFullYear();
+  // Render dashboard
+  if (window._renderRealPeriod) window._renderRealPeriod(_DP.startDate, _DP.endDate, label);
+  dpClose();
+}
+
+// Close picker on outside click
+document.addEventListener('click', e => {
+  if (_DP.open && !document.getElementById('dpWrap')?.contains(e.target)) dpClose();
+});
 
 // ── Auto-refresh & staleness tracking ────────────────────────────────────────
 window._activePeriodKey = '28';
