@@ -70,62 +70,83 @@ def gen_campaign_stats():
     rev_col  = "revenue"               if "revenue"               in c else "revenue_lastclick"
     allv_col = "all_conversions_value" if "all_conversions_value" in c else "all_conv_value"
 
-    live = cols("ads_campaign_stats_live")
+    live     = cols("ads_campaign_stats_live")
+    history  = cols("ads_campaign_stats_history")
 
-    if live:
-        # Live table exists (hourly script is running).
-        # Use live data for the last 3 days; historical table for everything older.
-        # This avoids double-counting: live dates replace the same dates in hist.
-        live_conv = "conversions"           if "conversions"           in live else conv_col
-        live_rev  = "revenue"               if "revenue"               in live else rev_col
-        live_allv = "all_conversions_value" if "all_conversions_value" in live else allv_col
+    live_conv = "conversions"           if live and "conversions"           in live else conv_col
+    live_rev  = "revenue"               if live and "revenue"               in live else rev_col
+    live_allv = "all_conversions_value" if live and "all_conversions_value" in live else allv_col
 
-        sql = f"""
-        WITH live AS (
-          SELECT
-            CAST(date AS STRING) AS date,
-            campaign,
-            SUM(cost_gbp)                AS spend,
-            SUM({live_conv})             AS conversions,
-            SUM({live_rev})              AS revenue,
-            SUM(all_conversions)         AS all_conversions,
-            SUM({live_allv})             AS all_conv_value
-          FROM `{PROJECT}.{DATASET}.ads_campaign_stats_live`
-          GROUP BY date, campaign
-        ),
-        hist AS (
-          SELECT
-            CAST(date AS STRING) AS date,
-            campaign,
-            SUM(cost_gbp)                AS spend,
-            SUM({conv_col})              AS conversions,
-            SUM({rev_col})               AS revenue,
-            SUM(all_conversions)         AS all_conversions,
-            SUM({allv_col})              AS all_conv_value
-          FROM `{PROJECT}.{DATASET}.ads_campaign_stats`
-          WHERE CAST(date AS STRING) NOT IN (SELECT DISTINCT date FROM live)
-            AND date >= DATE_SUB(CURRENT_DATE(), INTERVAL 365 DAY)
-          GROUP BY date, campaign
-        )
-        SELECT date, campaign, spend, conversions, revenue, all_conversions, all_conv_value
-        FROM (SELECT * FROM live UNION ALL SELECT * FROM hist)
-        ORDER BY date DESC, spend DESC
-        """
-    else:
-        sql = f"""
+    # ── BUILD CTEs ───────────────────────────────────────────────────────────
+    # live   = last 3 days (hourly script), highest priority
+    # recent = ads_campaign_stats (90 days), excludes live dates
+    # hist   = ads_campaign_stats_history (all time backfill), excludes recent dates
+
+    live_cte = f"""
+      live AS (
         SELECT
-            CAST(date AS STRING)      AS date,
-            campaign,
-            SUM(cost_gbp)             AS spend,
-            SUM({conv_col})           AS conversions,
-            SUM({rev_col})            AS revenue,
-            SUM(all_conversions)      AS all_conversions,
-            SUM({allv_col})           AS all_conv_value
-        FROM `{PROJECT}.{DATASET}.ads_campaign_stats`
-        WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 365 DAY)
+          CAST(date AS STRING) AS date, campaign,
+          SUM(cost_gbp)                AS spend,
+          SUM({live_conv})             AS conversions,
+          SUM({live_rev})              AS revenue,
+          SUM(all_conversions)         AS all_conversions,
+          SUM({live_allv})             AS all_conv_value
+        FROM `{PROJECT}.{DATASET}.ads_campaign_stats_live`
         GROUP BY date, campaign
-        ORDER BY date DESC, spend DESC
-        """
+      )""" if live else """
+      live AS (SELECT CAST('1970-01-01' AS STRING) AS date, '' AS campaign,
+        0.0 AS spend, 0.0 AS conversions, 0.0 AS revenue,
+        0.0 AS all_conversions, 0.0 AS all_conv_value WHERE FALSE)"""
+
+    recent_cte = f"""
+      recent AS (
+        SELECT
+          CAST(date AS STRING) AS date, campaign,
+          SUM(cost_gbp)                AS spend,
+          SUM({conv_col})              AS conversions,
+          SUM({rev_col})               AS revenue,
+          SUM(all_conversions)         AS all_conversions,
+          SUM({allv_col})              AS all_conv_value
+        FROM `{PROJECT}.{DATASET}.ads_campaign_stats`
+        WHERE CAST(date AS STRING) NOT IN (SELECT DISTINCT date FROM live)
+        GROUP BY date, campaign
+      )"""
+
+    if history:
+        hist_cte = f"""
+      history AS (
+        SELECT
+          CAST(date AS STRING) AS date, campaign,
+          SUM(cost_gbp)                AS spend,
+          SUM(conversions)             AS conversions,
+          SUM(revenue)                 AS revenue,
+          SUM(all_conversions)         AS all_conversions,
+          SUM(all_conversions_value)   AS all_conv_value
+        FROM `{PROJECT}.{DATASET}.ads_campaign_stats_history`
+        WHERE CAST(date AS STRING) NOT IN (
+          SELECT DISTINCT date FROM recent
+          UNION DISTINCT
+          SELECT DISTINCT date FROM live
+        )
+        GROUP BY date, campaign
+      )"""
+        union_part = "SELECT * FROM live UNION ALL SELECT * FROM recent UNION ALL SELECT * FROM history"
+        print("  Using ads_campaign_stats_history (backfill) + recent + live")
+    else:
+        hist_cte   = None
+        union_part = "SELECT * FROM live UNION ALL SELECT * FROM recent"
+        print("  No history table yet — using recent + live only")
+
+    ctes = f"WITH {live_cte}, {recent_cte}"
+    if hist_cte:
+        ctes += f", {hist_cte}"
+
+    sql = f"""
+    {ctes}
+    SELECT date, campaign, spend, conversions, revenue, all_conversions, all_conv_value
+    FROM ({union_part})
+    ORDER BY date DESC, spend DESC
+    """
 
     rows = q(sql)
     for r in rows:
@@ -348,13 +369,28 @@ def gen_conv_breakdown():
 # 7. META
 # ─────────────────────────────────────────────────────────────────────────────
 def gen_meta():
-    sql = f"""
-    SELECT
-        CAST(MIN(date) AS STRING) AS data_from,
-        CAST(MAX(date) AS STRING) AS data_to,
-        COUNT(DISTINCT date)      AS days_available
-    FROM `{PROJECT}.{DATASET}.ads_campaign_stats`
-    """
+    # Include history table in date range if it exists
+    history = cols("ads_campaign_stats_history")
+    if history:
+        sql = f"""
+        SELECT
+            CAST(MIN(date) AS STRING) AS data_from,
+            CAST(MAX(date) AS STRING) AS data_to,
+            COUNT(DISTINCT date)      AS days_available
+        FROM (
+          SELECT date FROM `{PROJECT}.{DATASET}.ads_campaign_stats`
+          UNION DISTINCT
+          SELECT date FROM `{PROJECT}.{DATASET}.ads_campaign_stats_history`
+        )
+        """
+    else:
+        sql = f"""
+        SELECT
+            CAST(MIN(date) AS STRING) AS data_from,
+            CAST(MAX(date) AS STRING) AS data_to,
+            COUNT(DISTINCT date)      AS days_available
+        FROM `{PROJECT}.{DATASET}.ads_campaign_stats`
+        """
     rows = q(sql)
     meta = rows[0] if rows else {"data_from": None, "data_to": None, "days_available": 0}
     meta["last_updated"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
