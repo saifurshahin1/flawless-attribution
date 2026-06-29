@@ -244,7 +244,7 @@ tr:hover td{background:rgba(255,255,255,.012)}
     <div class="kpi">
       <div class="kpi-lbl">Ad Spend</div>
       <div class="kpi-val" id="k-spend" style="color:var(--blue)">£21,715</div>
-      <div class="kpi-sub">28-day total</div>
+      <div class="kpi-sub" id="k-spend-sub">28-day total</div>
     </div>
     <div class="kpi">
       <div class="kpi-lbl">Revenue (Last Click)</div>
@@ -1078,6 +1078,8 @@ async function initDashboard() {
       fmt('pb-rev',   fmtGbp(totals.rev));
       fmt('pb-roas',  totalRoas, roasColor(totalRoas));
       fmt('pb-conv',  totals.conv.toFixed(0));
+      const subEl = document.getElementById('k-spend-sub');
+      if (subEl) subEl.textContent = labelStr.replace(/\s*\(\d+D\)/, '') + ' total';
 
       // Header + title
       const titleEl = document.getElementById('campPerfTitle');
