@@ -1,21 +1,19 @@
 /**
- * Flawless Fine Jewelry — Historical Data Backfill
+ * Flawless Fine Jewelry — Historical Data Backfill (v2)
  *
  * Runs INSIDE Google Ads Scripts (one-time or on-demand).
- * Exports campaign stats for a given date range to ads_campaign_stats_history.
+ * Exports ALL campaign stats (including removed campaigns) for a given date range.
+ *
+ * FIXES vs v1:
+ *   - Includes REMOVED campaigns (they had real spend/conversions historically)
+ *   - Includes zero-spend rows (captures view-through conversions)
+ *   - REPLACES table (drop + recreate) to avoid duplicates on re-run
  *
  * HOW TO USE:
- *   1. Paste this script into Google Ads Scripts
- *   2. Set DATE_FROM and DATE_TO below
- *   3. Click Preview first to see row count
- *   4. Then Run — it may take 10-20 minutes for 5 years of data
- *   5. Do NOT set a schedule — this is a one-time run
- *
- * SAFE TO RE-RUN: uses insertId deduplication per date+campaign.
- * If you split into multiple runs (e.g., year by year), use non-overlapping date ranges.
- *
- * After this runs, generate_data.py (GitHub Actions) will automatically
- * include historical data in the next refresh.
+ *   1. Paste this script into Google Ads Scripts (replace old backfill script)
+ *   2. Click Preview first to confirm row count in logs
+ *   3. Then Run — takes 10-20 minutes for 5 years of data
+ *   4. Do NOT set a schedule — one-time only
  */
 
 var CONFIG = {
@@ -23,41 +21,41 @@ var CONFIG = {
   BQ_DATASET: 'attribution_results',
   TABLE:      'ads_campaign_stats_history',
 
-  // ── Set the range you want to backfill ───────────────────────────────────
   DATE_FROM:  '2021-02-17',   // earliest date in your Google Ads account
-  DATE_TO:    '2026-03-30',   // day before current BigQuery data starts (2026-03-31)
-  // ─────────────────────────────────────────────────────────────────────────
+  DATE_TO:    '2026-03-30',   // day before current BigQuery data starts
 
-  BATCH_SIZE: 500             // BigQuery streaming insert batch size
+  BATCH_SIZE: 500
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN
 // ─────────────────────────────────────────────────────────────────────────────
 function main() {
-  Logger.log('=== Flawless Historical Backfill ===');
-  Logger.log('Range: ' + CONFIG.DATE_FROM + ' → ' + CONFIG.DATE_TO);
+  Logger.log('=== Flawless Historical Backfill v2 ===');
+  Logger.log('Range: ' + CONFIG.DATE_FROM + ' -> ' + CONFIG.DATE_TO);
   Logger.log('Target table: ' + CONFIG.TABLE);
+  Logger.log('Note: includes ALL campaigns (enabled, paused, removed)');
 
   var rows = fetchCampaignStats();
   Logger.log('Rows fetched: ' + rows.length);
 
   if (rows.length === 0) {
-    Logger.log('No data found — check your date range and campaign filters.');
+    Logger.log('No data found — check your date range.');
     return;
   }
 
-  ensureTable();
-  insertRows(rows);
+  replaceTable(rows);
 
   Logger.log('=== Done — ' + rows.length + ' rows written to ' + CONFIG.TABLE + ' ===');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FETCH
+// FETCH — NO status filter, NO zero-row filter
 // ─────────────────────────────────────────────────────────────────────────────
 function fetchCampaignStats() {
   var rows = [];
+
+  // No campaign.status filter — includes REMOVED campaigns with historical data
   var query =
     'SELECT segments.date, campaign.name, campaign.status, ' +
     '  metrics.impressions, metrics.clicks, metrics.cost_micros, ' +
@@ -65,24 +63,26 @@ function fetchCampaignStats() {
     '  metrics.all_conversions, metrics.all_conversions_value ' +
     'FROM campaign ' +
     'WHERE segments.date BETWEEN "' + CONFIG.DATE_FROM + '" AND "' + CONFIG.DATE_TO + '" ' +
-    '  AND campaign.status != "REMOVED" ' +
     'ORDER BY segments.date ASC, metrics.cost_micros DESC';
 
-  Logger.log('Running GAQL query...');
+  Logger.log('Running GAQL query (all campaigns including removed)...');
   var iter = AdsApp.search(query);
   var count = 0;
 
   while (iter.hasNext()) {
     var r = iter.next();
     var costMicros = r.metrics.costMicros || 0;
-    // Skip rows with zero spend AND zero conversions (keeps data clean)
-    if (costMicros === 0 && (r.metrics.conversions || 0) === 0 &&
-        (r.metrics.allConversions || 0) === 0) {
+    var conv       = r.metrics.conversions || 0;
+    var allConv    = r.metrics.allConversions || 0;
+    var convVal    = r.metrics.conversionsValue || 0;
+
+    // Only skip truly empty rows (no spend AND no conversions AND no impressions)
+    if (costMicros === 0 && conv === 0 && allConv === 0 &&
+        (r.metrics.impressions || 0) === 0) {
       continue;
     }
 
     rows.push({
-      // insertId ensures BigQuery deduplicates if script is re-run for same range
       insertId: r.segments.date + '_' + slug(r.campaign.name),
       json: {
         date:                  r.segments.date,
@@ -91,9 +91,9 @@ function fetchCampaignStats() {
         impressions:           parseInt(r.metrics.impressions || 0),
         clicks:                parseInt(r.metrics.clicks || 0),
         cost_gbp:              r2(costMicros / 1000000),
-        conversions:           r2(r.metrics.conversions || 0),
-        revenue:               r2(r.metrics.conversionsValue || 0),
-        all_conversions:       r2(r.metrics.allConversions || 0),
+        conversions:           r2(conv),
+        revenue:               r2(convVal),
+        all_conversions:       r2(allConv),
         all_conversions_value: r2(r.metrics.allConversionsValue || 0),
         pulled_at:             new Date().toISOString()
       }
@@ -107,32 +107,35 @@ function fetchCampaignStats() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BIGQUERY — Create table if not exists (APPEND mode, not replace)
+// BIGQUERY — DROP existing table, recreate fresh, insert all rows
 // ─────────────────────────────────────────────────────────────────────────────
-function ensureTable() {
+function replaceTable(rows) {
+  // Drop existing table (ignore error if it doesn't exist)
   try {
-    BigQuery.Tables.get(CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET, CONFIG.TABLE);
-    Logger.log('Table ' + CONFIG.TABLE + ' already exists — will append.');
+    BigQuery.Tables.remove(CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET, CONFIG.TABLE);
+    Logger.log('Dropped existing ' + CONFIG.TABLE + ' table.');
+    Utilities.sleep(2000);
   } catch(e) {
-    Logger.log('Creating table ' + CONFIG.TABLE + '...');
-    BigQuery.Tables.insert(
-      {
-        tableReference: {
-          projectId: CONFIG.BQ_PROJECT,
-          datasetId: CONFIG.BQ_DATASET,
-          tableId:   CONFIG.TABLE
-        },
-        schema: { fields: schema() }
-      },
-      CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET
-    );
-    Utilities.sleep(1000);
-    Logger.log('Table created.');
+    Logger.log('Table did not exist yet — will create fresh.');
   }
-}
 
-function insertRows(rows) {
-  var total = rows.length;
+  // Create fresh table
+  BigQuery.Tables.insert(
+    {
+      tableReference: {
+        projectId: CONFIG.BQ_PROJECT,
+        datasetId: CONFIG.BQ_DATASET,
+        tableId:   CONFIG.TABLE
+      },
+      schema: { fields: schema() }
+    },
+    CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET
+  );
+  Logger.log('Created fresh ' + CONFIG.TABLE + ' table.');
+  Utilities.sleep(2000);
+
+  // Insert in batches
+  var total  = rows.length;
   var errors = 0;
 
   for (var i = 0; i < total; i += CONFIG.BATCH_SIZE) {
@@ -143,15 +146,15 @@ function insertRows(rows) {
     );
     if (resp.insertErrors && resp.insertErrors.length) {
       errors += resp.insertErrors.length;
-      Logger.log('Insert errors in batch ' + (i/CONFIG.BATCH_SIZE+1) + ': ' +
+      Logger.log('Insert error batch ' + Math.ceil(i/CONFIG.BATCH_SIZE+1) + ': ' +
                  JSON.stringify(resp.insertErrors[0]));
     }
     if ((i + CONFIG.BATCH_SIZE) % 5000 === 0) {
-      Logger.log('  Inserted ' + Math.min(i + CONFIG.BATCH_SIZE, total) + '/' + total + ' rows...');
+      Logger.log('  Inserted ' + Math.min(i + CONFIG.BATCH_SIZE, total) + '/' + total + '...');
     }
   }
 
-  Logger.log('Insert complete. Errors: ' + errors);
+  Logger.log('All rows inserted. Errors: ' + errors);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
