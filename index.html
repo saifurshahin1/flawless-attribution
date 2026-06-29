@@ -720,7 +720,7 @@ async function initDashboard() {
 
   async function loadJSON(file) {
     try {
-      const r = await fetch(base + '/' + file + '?t=' + Date.now());
+      const r = await fetch(base + '/' + file + '.json?t=' + Date.now());
       if (!r.ok) return null;
       return r.json();
     } catch(e) { return null; }
