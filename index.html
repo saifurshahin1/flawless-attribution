@@ -726,11 +726,12 @@ async function initDashboard() {
     } catch(e) { return null; }
   }
 
-  const [meta, assistedRaw, timeLagRaw, pathsRaw] = await Promise.all([
+  const [meta, assistedRaw, timeLagRaw, pathsRaw, statsRaw] = await Promise.all([
     loadJSON('meta'),
     loadJSON('assisted_conv'),
     loadJSON('time_lag'),
     loadJSON('conv_paths'),
+    loadJSON('campaign_stats'),
   ]);
 
   // ── Meta / last updated ─────────────────────
@@ -909,6 +910,170 @@ async function initDashboard() {
           <td><b>${r.conversions}</b></td><td>${rev}</td></tr>`;
       }).join('');
     }
+  }
+}
+
+  // ── Campaign Stats — override period switcher with real data ────────────
+  const statsRows = statsRaw && statsRaw.rows && statsRaw.rows.length > 0
+    ? statsRaw.rows : null;
+
+  if (statsRows) {
+    // Build lookup: { campaign: { date: {spend,conv,rev,all_conv} } }
+    const byDate = {};
+    statsRows.forEach(r => {
+      if (!byDate[r.date]) byDate[r.date] = {};
+      byDate[r.date][r.campaign] = r;
+    });
+
+    const dates = Object.keys(byDate).sort();
+    const maxDate = dates[dates.length - 1];
+
+    // Aggregate rows in a date range → per-campaign totals
+    function aggregateRange(fromDate, toDate) {
+      const camps = {};
+      statsRows.forEach(r => {
+        if (r.date < fromDate || r.date > toDate) return;
+        if (!camps[r.campaign]) camps[r.campaign] = {spend:0,conv:0,rev:0,all_conv:0,all_val:0};
+        camps[r.campaign].spend    += r.spend || 0;
+        camps[r.campaign].conv     += r.conversions || 0;
+        camps[r.campaign].rev      += r.revenue || 0;
+        camps[r.campaign].all_conv += r.all_conversions || 0;
+        camps[r.campaign].all_val  += r.all_conv_value || 0;
+      });
+      return camps;
+    }
+
+    function dateNDaysAgo(n) {
+      const d = new Date(maxDate);
+      d.setDate(d.getDate() - n + 1);
+      return d.toISOString().slice(0,10);
+    }
+
+    function fmtGbp(v) { return v > 0 ? '£' + Math.round(v).toLocaleString('en-GB') : '—'; }
+    function fmtRoas(rev, spend) {
+      if (!spend || spend === 0) return '—';
+      const r = rev / spend;
+      return r.toFixed(2) + '×';
+    }
+    function roasColor(roasStr) {
+      if (roasStr === '—') return 'var(--muted)';
+      const n = parseFloat(roasStr);
+      return n < 1 ? '#ef4444' : n < 3 ? 'var(--orange)' : 'var(--green)';
+    }
+
+    // Get role badge for a campaign from assisted data
+    function getCampRole(campName, assistedRows) {
+      if (!assistedRows) return {badge:'bx', label:'—'};
+      const a = assistedRows.find(r => r.campaign === campName);
+      if (!a) return {badge:'bx', label:'—'};
+      const roleMap = {
+        'Pure Introducer': {badge:'bi', label:'Introducer'},
+        'Introducer':      {badge:'bi', label:'Introducer'},
+        'Assist':          {badge:'ba', label:'Assist'},
+        'Closer':          {badge:'bc', label:'Closer'},
+      };
+      // Top closer by revenue gets special label
+      const label = a.last_click_value > 50000 ? '★ Revenue Closer' : (roleMap[a.campaign_role]?.label || a.campaign_role);
+      const badge = a.last_click_value > 50000 ? 'br' : (roleMap[a.campaign_role]?.badge || 'bx');
+      return {badge, label};
+    }
+
+    // Render a period from real BigQuery data
+    function renderRealPeriod(fromDate, toDate, labelStr) {
+      const camps = aggregateRange(fromDate, toDate);
+      const sorted = Object.entries(camps)
+        .map(([name, d]) => ({name, ...d}))
+        .sort((a,b) => b.spend - a.spend)
+        .filter(c => c.spend > 0 || c.conv > 0);
+
+      const totals = sorted.reduce((t,c) => {
+        t.spend += c.spend; t.conv += c.conv; t.rev += c.rev; return t;
+      }, {spend:0, conv:0, rev:0});
+
+      // KPI strip
+      const fmt = (id, val, color) => {
+        const el = document.getElementById(id);
+        if (el) { el.textContent = val; if(color) el.style.color = color; }
+      };
+      const totalRoas = fmtRoas(totals.rev, totals.spend);
+      fmt('k-spend',  fmtGbp(totals.spend));
+      fmt('k-rev',    fmtGbp(totals.rev));
+      fmt('k-roas',   totalRoas, roasColor(totalRoas));
+      fmt('k-conv',   totals.conv.toFixed(0));
+      fmt('pb-spend', fmtGbp(totals.spend));
+      fmt('pb-rev',   fmtGbp(totals.rev));
+      fmt('pb-roas',  totalRoas, roasColor(totalRoas));
+      fmt('pb-conv',  totals.conv.toFixed(0));
+
+      // Header + title
+      const titleEl = document.getElementById('campPerfTitle');
+      if (titleEl) titleEl.textContent = 'Campaign Performance — ' + labelStr;
+
+      // Campaign table
+      const assisted = assistedRaw && assistedRaw.rows ? assistedRaw.rows : [];
+      const tbody = document.getElementById('periodCampaignRows');
+      if (tbody) {
+        tbody.innerHTML = sorted.map(c => {
+          const lcRoas  = fmtRoas(c.rev, c.spend);
+          const mtaRoas = fmtRoas(c.all_val, c.spend);
+          const {badge, label} = getCampRole(c.name, assisted);
+          return `<tr>
+            <td><b>${c.name}</b></td>
+            <td><span class="badge ${badge}">${label}</span></td>
+            <td>${fmtGbp(c.spend)}</td>
+            <td>${c.conv.toFixed(0)}</td>
+            <td>${fmtGbp(c.rev)}</td>
+            <td style="font-weight:700;color:${roasColor(lcRoas)}">${lcRoas}</td>
+            <td style="font-weight:700;color:var(--gold2)">${mtaRoas !== '—' ? mtaRoas : '—'}</td>
+          </tr>`;
+        }).join('');
+      }
+      document.getElementById('customDataPanel').style.display = 'none';
+      document.getElementById('attributionNote').style.display = 'none';
+    }
+
+    // Override the period buttons to use real data
+    const realPeriodEnd = maxDate;
+    window._realRenderPeriod = function(key) {
+      const dayMap = {'28':28,'14':14,'7':7,'365':365};
+      const days = dayMap[key];
+      if (!days) return;
+      const from = dateNDaysAgo(days);
+      const d1 = new Date(from), d2 = new Date(realPeriodEnd);
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const label = `${d1.getDate()} ${months[d1.getMonth()]} – ${d2.getDate()} ${months[d2.getMonth()]} ${d2.getFullYear()} (${days}D)`;
+      document.getElementById('headerPeriodLabel').textContent =
+        `${d1.getDate()} ${months[d1.getMonth()]} – ${d2.getDate()} ${months[d2.getMonth()]} ${d2.getFullYear()}`;
+      renderRealPeriod(from, realPeriodEnd, label);
+    };
+
+    // Patch period buttons
+    ['28','14','7','365'].forEach(k => {
+      const btn = document.getElementById('qb' + k);
+      if (btn) btn.onclick = () => {
+        ['28','14','7','365'].forEach(j => document.getElementById('qb'+j)?.classList.remove('active'));
+        btn.classList.add('active');
+        window._realRenderPeriod(k);
+      };
+    });
+
+    // Patch Go button (custom date range)
+    window.loadCustom = function() {
+      const from = document.getElementById('dateFrom').value;
+      const to   = document.getElementById('dateTo').value;
+      if (!from || !to || from > to) { alert('Please select a valid date range.'); return; }
+      ['28','14','7','365'].forEach(k => document.getElementById('qb'+k)?.classList.remove('active'));
+      const d1 = new Date(from), d2 = new Date(to);
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const days = Math.round((d2-d1)/86400000)+1;
+      const label = `${d1.getDate()} ${months[d1.getMonth()]} ${d1.getFullYear()} – ${d2.getDate()} ${months[d2.getMonth()]} ${d2.getFullYear()} (${days}D)`;
+      document.getElementById('headerPeriodLabel').textContent =
+        `${d1.getDate()} ${months[d1.getMonth()]} – ${d2.getDate()} ${months[d2.getMonth()]} ${d2.getFullYear()}`;
+      renderRealPeriod(from, to, label);
+    };
+
+    // Render default 28D with real data
+    window._realRenderPeriod('28');
   }
 }
 
