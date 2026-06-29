@@ -107,34 +107,53 @@ function fetchCampaignStats() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BIGQUERY — DROP existing table, recreate fresh, insert all rows
+// BIGQUERY — TRUNCATE existing table (or create if new), then insert all rows
+// Using TRUNCATE instead of drop+recreate avoids the "table not found" race
 // ─────────────────────────────────────────────────────────────────────────────
 function replaceTable(rows) {
-  // Drop existing table (ignore error if it doesn't exist)
+  // Check if table exists
+  var tableExists = false;
   try {
-    BigQuery.Tables.remove(CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET, CONFIG.TABLE);
-    Logger.log('Dropped existing ' + CONFIG.TABLE + ' table.');
-    Utilities.sleep(8000); // wait for BQ to propagate the delete
+    BigQuery.Tables.get(CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET, CONFIG.TABLE);
+    tableExists = true;
   } catch(e) {
-    Logger.log('Table did not exist yet — will create fresh.');
+    tableExists = false;
   }
 
-  // Create fresh table
-  BigQuery.Tables.insert(
-    {
-      tableReference: {
-        projectId: CONFIG.BQ_PROJECT,
-        datasetId: CONFIG.BQ_DATASET,
-        tableId:   CONFIG.TABLE
+  if (tableExists) {
+    // TRUNCATE: wipes data but keeps table structure — no timing issues
+    Logger.log('Truncating existing ' + CONFIG.TABLE + ' table...');
+    try {
+      BigQuery.Jobs.query(
+        {
+          query: 'TRUNCATE TABLE `' + CONFIG.BQ_PROJECT + '.' + CONFIG.BQ_DATASET + '.' + CONFIG.TABLE + '`',
+          useLegacySql: false,
+          timeoutMs: 60000
+        },
+        CONFIG.BQ_PROJECT
+      );
+      Logger.log('Table truncated — ready for fresh insert.');
+    } catch(e) {
+      Logger.log('TRUNCATE failed: ' + e + ' — will try to proceed anyway.');
+    }
+    Utilities.sleep(3000);
+  } else {
+    // First run — create the table
+    Logger.log('Creating ' + CONFIG.TABLE + ' table for first time...');
+    BigQuery.Tables.insert(
+      {
+        tableReference: {
+          projectId: CONFIG.BQ_PROJECT,
+          datasetId: CONFIG.BQ_DATASET,
+          tableId:   CONFIG.TABLE
+        },
+        schema: { fields: schema() }
       },
-      schema: { fields: schema() }
-    },
-    CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET
-  );
-  Logger.log('Created fresh ' + CONFIG.TABLE + ' table.');
-  // BigQuery streaming needs ~20s after table creation before accepting inserts
-  Logger.log('Waiting 20s for BigQuery table to be ready...');
-  Utilities.sleep(20000);
+      CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET
+    );
+    Logger.log('Table created. Waiting 25s for BigQuery to be ready...');
+    Utilities.sleep(25000);
+  }
 
   // Insert in batches
   var total  = rows.length;
