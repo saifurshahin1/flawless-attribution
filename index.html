@@ -107,9 +107,9 @@ tr:hover td{background:rgba(255,255,255,.012)}
 .badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10px;font-weight:600}
 .bi{background:rgba(168,85,247,.15);color:#c084fc;border:1px solid rgba(168,85,247,.25)}
 .ba{background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.25)}
-.role-toggle-row{cursor:pointer;border-top:1px solid rgba(255,255,255,0.07)}
-.role-toggle-row td{text-align:center;padding:9px 0;color:var(--muted);font-size:12px;letter-spacing:.4px}
-.role-toggle-row:hover td{color:var(--text);background:rgba(255,255,255,.04)}
+.tbl-more-row{cursor:pointer;border-top:1px solid rgba(255,255,255,.06)}
+.tbl-more-row td{text-align:center;padding:10px;color:var(--muted);font-size:11px;letter-spacing:.5px;transition:color .15s,background .15s}
+.tbl-more-row:hover td{color:var(--text);background:rgba(255,255,255,.03)}
 .bc{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.25)}
 .br{background:rgba(201,168,76,.2);color:#f0d080;border:1px solid rgba(201,168,76,.5)}
 .bx{background:rgba(107,114,128,.12);color:#9ca3af;border:1px solid rgba(107,114,128,.2)}
@@ -538,6 +538,26 @@ Chart.defaults.font.family="'Segoe UI',system-ui,sans-serif";
 Chart.defaults.font.size=11;
 const C={GOLD:'#c9a84c',BLUE:'#3b82f6',PURPLE:'#a855f7',GREEN:'#22c55e',ORANGE:'#f97316',TEAL:'#14b8a6'};
 
+/* ─── UNIVERSAL TABLE COLLAPSE ─── */
+function collapseTable(tbody, limit) {
+  // Remove any existing toggle row first (re-render safe)
+  tbody.querySelectorAll('.tbl-more-row').forEach(r => r.remove());
+  const rows = [...tbody.querySelectorAll('tr')];
+  if (rows.length <= limit) return;
+  const extra = rows.length - limit;
+  const cols = rows[0] ? rows[0].cells.length : 1;
+  rows.slice(limit).forEach(r => { r.style.display = 'none'; });
+  const tr = document.createElement('tr');
+  tr.className = 'tbl-more-row';
+  tr.innerHTML = `<td colspan="${cols}"><span>▼ Show ${extra} more</span></td>`;
+  tr.addEventListener('click', function() {
+    const open = rows[limit].style.display !== 'none';
+    rows.slice(limit).forEach(r => { r.style.display = open ? 'none' : ''; });
+    tr.querySelector('span').textContent = open ? `▼ Show ${extra} more` : `▲ Hide ${extra}`;
+  });
+  tbody.appendChild(tr);
+}
+
 /* ─── ASSIST RATIO CHART ─── */
 const ratios=[
   {c:'Pmax GMB Manchester',r:6.0},
@@ -744,6 +764,7 @@ function renderPeriod(p){
         <td style="font-weight:${aWeight};color:${aColor}">${c.aroas}</td>
       </tr>`;
     }).join('');
+    collapseTable(tbody, 5);
   }
   document.getElementById('attributionNote').style.display=p.headerLabel==='31 May – 27 Jun 2026'?'none':'block';
   document.getElementById('customDataPanel').style.display='none';
@@ -849,31 +870,17 @@ async function initDashboard() {
       if (tb.innerHTML.includes('dynamic rows injected')) roleTbody = tb;
     });
     if (roleTbody) {
-      const ROLE_VISIBLE = 7;
-      const mkRow = (r, hidden) => {
+      roleTbody.innerHTML = sorted.map(r => {
         const highlight = r.campaign_role === 'Closer' && r.last_click_conv > 50 ? ' style="color:var(--gold2)"' : '';
-        return `<tr${hidden ? ' class="role-extra" style="display:none"' : ''}>
+        return `<tr>
           <td><b${highlight}>${r.campaign}</b></td>
           <td>${roleBadge(r)}</td>
           <td>${Math.round(r.last_click_conv)}</td>
           <td><b>${Math.round(r.assists)}</b></td>
           <td style="font-weight:700;color:${ratioColor(r.assist_ratio)}">${ratioStr(r.assist_ratio)}</td>
         </tr>`;
-      };
-      const extraCount = Math.max(0, sorted.length - ROLE_VISIBLE);
-      let html = sorted.map((r, i) => mkRow(r, i >= ROLE_VISIBLE)).join('');
-      if (extraCount > 0) {
-        html += `<tr class="role-toggle-row" onclick="
-          var tbl=this.closest('table');
-          var extras=tbl.querySelectorAll('.role-extra');
-          var open=extras[0]&&extras[0].style.display!=='none';
-          extras.forEach(function(el){el.style.display=open?'none':'';});
-          this.querySelector('.role-toggle-lbl').textContent=open?'▼ Show ${extraCount} more campaigns':'▲ Hide ${extraCount} campaigns';
-        ">
-          <td colspan="5"><span class="role-toggle-lbl">&#9660; Show ${extraCount} more campaigns</span></td>
-        </tr>`;
-      }
-      roleTbody.innerHTML = html;
+      }).join('');
+      collapseTable(roleTbody, 7);
     }
 
     // Update role summary cards
@@ -961,6 +968,7 @@ async function initDashboard() {
           <td${isHighValue?' class="gold"':''}>${rpc}</td>
         </tr>`;
       }).join('');
+      collapseTable(tlTbody, 5);
     }
 
     // Rebuild time lag chart
@@ -1002,6 +1010,7 @@ async function initDashboard() {
         return `<tr><td><div class="pchips">${chips.replace(/<span class="pa">→<\/span>$/, '')}</div></td>
           <td><b>${r.conversions}</b></td><td>${rev}</td></tr>`;
       }).join('');
+      collapseTable(cpTbody, 5);
     }
   }
 
@@ -1121,6 +1130,7 @@ async function initDashboard() {
             <td style="font-weight:700;color:var(--gold2)">${mtaRoas !== '—' ? mtaRoas : '—'}</td>
           </tr>`;
         }).join('');
+        collapseTable(tbody, 5);
       }
       document.getElementById('customDataPanel').style.display = 'none';
       document.getElementById('attributionNote').style.display = 'none';
