@@ -678,7 +678,7 @@ function dpRender(){
   if(fl){
     if(DP.step===1&&DP.start){
       const h=DP.hover&&DP.hover>=DP.start?fmtDS(DP.hover):'?';
-      fl.textContent=fmtDS(DP.start)+' → '+h+' · now click end date';
+      fl.textContent=fmtDS(DP.start)+' → '+h+' · click end date (or same date for single day)';
     } else if(DP.start&&DP.end){
       fl.textContent=fmtDS(DP.start)+' – '+fmtDS(DP.end);
     } else {
