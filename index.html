@@ -508,7 +508,7 @@ tr:hover td{background:rgba(255,255,255,.012)}
         <thead>
           <tr>
             <th>Appointment Type</th>
-            <th class="num">Bookings (90D)</th>
+            <th class="num">Bookings</th>
             <th class="num">Campaigns</th>
             <th class="num">Per Month</th>
             <th class="num">Revenue Value</th>
@@ -648,7 +648,11 @@ function applyDateRange(from,to){
   G.dateFrom=from;G.dateTo=to;
   const fs=fmt8(from),ts=fmt8(to);
   const f=G.stats.filter(r=>r.date>=fs&&r.date<=ts);
-  renderKPIs(f);renderPerformance(f);
+  const fb=G.breakdown.filter(r=>r.date>=fs&&r.date<=ts);
+  const label=fmtDS(from)+' – '+fmtDS(to);
+  document.getElementById('cbBadge').textContent=label;
+  document.getElementById('apptBadge').textContent=label;
+  renderKPIs(f);renderPerformance(f);renderConvBreakdown(fb);renderAppointments(fb);
 }
 
 function dpToggle(){
@@ -963,17 +967,16 @@ function renderPerformance(filtered){
 }
 
 /* ─── SECTION 7: CONVERSION BREAKDOWN ─── */
-function renderConvBreakdown(){
+function renderConvBreakdown(bkData){
+  bkData=bkData||G.breakdown;
   const byAction={};
-  G.breakdown.forEach(r=>{
+  bkData.forEach(r=>{
     const k=r.conversion_action;
     if(!byAction[k])byAction[k]={action:k,category:r.conversion_category||'',conversions:0,conversion_value:0};
     byAction[k].conversions+=r.conversions||0;
     byAction[k].conversion_value+=r.conversion_value||0;
   });
   const rows=Object.values(byAction).sort((a,b)=>b.conversion_value-a.conversion_value||b.conversions-a.conversions);
-  if(G.assisted[0]&&G.assisted[0].date_range)document.getElementById('cbBadge').textContent=G.assisted[0].date_range;
-
   function cbBadge(cat,action){
     const lc=(cat+action).toLowerCase();
     if(lc.includes('appoint'))return'<span class="badge ba">Appointment</span>';
@@ -1016,7 +1019,7 @@ function renderConvBreakdown(){
 
   // Offline by campaign chart
   const offByCamp={};
-  G.breakdown.filter(r=>{const lc=(r.conversion_action||'').toLowerCase();return lc.includes('offline')||lc.includes('invoice');})
+  bkData.filter(r=>{const lc=(r.conversion_action||'').toLowerCase();return lc.includes('offline')||lc.includes('invoice');})
     .forEach(r=>{if(!offByCamp[r.campaign])offByCamp[r.campaign]={campaign:r.campaign,conv:0,val:0};
       offByCamp[r.campaign].conv+=r.conversions||0;offByCamp[r.campaign].val+=r.conversion_value||0;});
   const offRows=Object.values(offByCamp).sort((a,b)=>b.val-a.val).slice(0,10);
@@ -1036,8 +1039,9 @@ function renderConvBreakdown(){
 }
 
 /* ─── SECTION 8: APPOINTMENTS ─── */
-function renderAppointments(){
-  const apptRows=G.breakdown.filter(r=>(r.conversion_action||'').toLowerCase().includes('appoint'));
+function renderAppointments(breakdown){
+  breakdown=breakdown||G.breakdown;
+  const apptRows=breakdown.filter(r=>(r.conversion_action||'').toLowerCase().includes('appoint'));
   const byAction={};
   apptRows.forEach(r=>{
     const k=r.conversion_action;
@@ -1047,7 +1051,6 @@ function renderAppointments(){
     byAction[k].campaigns.add(r.campaign);
   });
   const rows=Object.values(byAction).sort((a,b)=>b.conversions-a.conversions);
-  if(G.assisted[0]&&G.assisted[0].date_range)document.getElementById('apptBadge').textContent=G.assisted[0].date_range;
   const totalAppt=rows.reduce((s,r)=>s+r.conversions,0);
   const totalPurch=G.assisted.reduce((s,r)=>s+(r.last_click_conv||0),0);
   const totalSpend=G.assisted.reduce((s,r)=>s+(r.spend||0),0);
@@ -1096,13 +1099,11 @@ async function initDashboard(){
   try{
     await loadData();
     updateMeta();
-    setPeriod(28);
+    setPeriod(28);       // calls applyDateRange → renderKPIs, renderPerformance, renderConvBreakdown, renderAppointments
     renderRoles();
     renderMTA();
     renderJourney();
     renderPaths();
-    renderConvBreakdown();
-    renderAppointments();
   }catch(e){console.error('Dashboard error:',e);}
 }
 initDashboard();
