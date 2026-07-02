@@ -187,17 +187,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <div class="container">
 
-<!-- ── 4 KEY QUESTIONS ── -->
-<div class="key-q-box">
-  <div class="key-q-title">✦ Direct Answers to 4 Key Questions — Beyond Last-Click Reporting</div>
-  <div class="key-q-grid" id="keyQGrid">
-    <div class="key-q-card" style="background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3)"><div class="key-q-answer">Loading...</div></div>
-    <div class="key-q-card" style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3)"><div class="key-q-answer">Loading...</div></div>
-    <div class="key-q-card" style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3)"><div class="key-q-answer">Loading...</div></div>
-    <div class="key-q-card" style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.5)"><div class="key-q-answer">Loading...</div></div>
-  </div>
-</div>
-
 <!-- ── KPI OVERVIEW ── -->
 <section id="kpis">
   <div class="section-title"><div class="num">★</div>KPI Overview — Attribution Metrics <span class="fixed-badge" style="margin-left:8px">90D Fixed</span></div>
@@ -205,7 +194,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div class="kpi-card kpi-blue"><div class="label">Avg Days to Purchase</div><div class="value dim">—</div><div class="sub">From first ad interaction to conversion</div></div>
     <div class="kpi-card kpi-purple"><div class="label">Avg Ad Interactions</div><div class="value dim">—</div><div class="sub">Touchpoints before purchase</div></div>
     <div class="kpi-card kpi-orange"><div class="label">Same-Day Conversions</div><div class="value dim">—</div><div class="sub">Convert within 24 hours of first click</div></div>
-    <div class="kpi-card kpi-green"><div class="label">Highest True ROAS</div><div class="value dim">—</div><div class="sub">Attribution-adjusted, meaningful spend</div></div>
+    <div class="kpi-card kpi-green"><div class="label">Total Assists (90D)</div><div class="value dim">—</div><div class="sub">Times a campaign assisted before another closed</div></div>
     <div class="kpi-card kpi-gold"><div class="label">Top Campaign LC Revenue</div><div class="value dim">—</div><div class="sub">Last-click, 90D window</div></div>
     <div class="kpi-card"><div class="label">Multi-Touch Conv %</div><div class="value dim">—</div><div class="sub">Required 2+ ad interactions</div></div>
   </div>
@@ -658,10 +647,8 @@ function renderKPIs(){
   const singleTouch=pl.filter(r=>+r.bucket===1).reduce((s,r)=>s+(r.conversions||0),0);
   const multiPct=(plTotal-singleTouch)/plTotal*100;
 
-  // Highest True ROAS among campaigns with spend > £500
-  const meaningful=asst.filter(r=>(r.spend||0)>500&&(r.mta_roas||0)>0);
-  const topRoas=meaningful.length?Math.max(...meaningful.map(r=>+(r.mta_roas||0))):0;
-  const topRoasCamp=meaningful.find(r=>+(r.mta_roas||0)===topRoas);
+  // Total assists across all campaigns
+  const totalAssists=asst.reduce((s,r)=>s+(r.assists||0),0);
 
   // Top campaign by LC revenue
   const topLC=[...asst].sort((a,b)=>(b.last_click_value||0)-(a.last_click_value||0))[0];
@@ -670,7 +657,7 @@ function renderKPIs(){
     <div class="kpi-card kpi-blue"><div class="label">Avg Days to Purchase</div><div class="value">${avgDays.toFixed(1)}</div><div class="sub">From first ad to conversion (90D)</div></div>
     <div class="kpi-card kpi-purple"><div class="label">Avg Ad Interactions</div><div class="value">${avgInt.toFixed(1)}</div><div class="sub">Touchpoints before purchase (90D)</div></div>
     <div class="kpi-card kpi-orange"><div class="label">Same-Day Conversions</div><div class="value">${sameDayPct.toFixed(1)}%</div><div class="sub">Convert within 24 hrs of first click</div></div>
-    <div class="kpi-card kpi-green"><div class="label">Highest True ROAS</div><div class="value">${topRoas>0?topRoas.toFixed(0)+'×':'—'}</div><div class="sub">${topRoasCamp?.campaign?.split(' ')[0]||'—'} (attribution-adjusted)</div></div>
+    <div class="kpi-card kpi-green"><div class="label">Total Assists (90D)</div><div class="value">${fmtN(Math.round(totalAssists))}</div><div class="sub">Times a campaign assisted before another closed</div></div>
     <div class="kpi-card kpi-gold"><div class="label">${topLC?.campaign?.length>18?topLC.campaign.slice(0,16)+'…':topLC?.campaign||'Top Campaign'}</div><div class="value">${topLC?fmtGBP(topLC.last_click_value||0):'—'}</div><div class="sub">${topLC?(topLC.assists||0).toFixed(0)+' additional assists (90D)':'LC revenue top campaign'}</div></div>
     <div class="kpi-card"><div class="label">Multi-Touch Conv</div><div class="value">${multiPct.toFixed(1)}%</div><div class="sub">Required 2+ ad interactions (90D)</div></div>
   `;
@@ -1311,7 +1298,6 @@ async function initDashboard(){
     await loadData();
     updateMeta();
     renderKPIs();
-    renderKeyQuestions();
     renderAttrModels();
     renderRoles();
     renderMTA();
