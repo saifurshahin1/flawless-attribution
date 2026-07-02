@@ -295,7 +295,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <th>Campaign</th><th class="num">Spend</th>
         <th class="num">Last Click Conv</th><th class="num">LC Revenue</th>
         <th class="num">All Conv (Google)</th><th class="num">Assists (90D)</th>
-        <th class="num">True ROAS</th><th>Key Difference</th>
+        <th class="num">True ROAS</th>
       </tr></thead>
       <tbody id="attrTbody"></tbody>
     </table>
@@ -775,12 +775,7 @@ function renderAttrModels(){
   }
 
   function attrRow(r){
-    const lcR=r.lc_roas||0;
     const trueR=r.mta_roas||0;
-    const roasUplift=lcR>0?((trueR/lcR-1)*100):0;
-    const keyDiff=trueR>0&&lcR>0?
-      `MTA +${roasUplift.toFixed(0)}% vs Last Click`:
-      (r.assists||0)>0?`+${(r.assists||0).toFixed(0)} assists only`:'No assist data';
     return`<tr>
       <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.campaign}">${r.campaign}</td>
       <td class="num">${fmtGBP(r.spend||0)}</td>
@@ -789,10 +784,9 @@ function renderAttrModels(){
       <td class="num">${(r.all_conversions||0).toFixed(0)}</td>
       <td class="num">${(r.assists||0).toFixed(0)}</td>
       <td class="num up">${trueR>0?trueR.toFixed(0)+'×':'—'}</td>
-      <td style="font-size:11px;color:var(--gold2)">${keyDiff}</td>
     </tr>`;
   }
-  initPag('attrTbody',rows,attrRow,8);
+  initPag('attrTbody',rows,attrRow,7);
 
   const top8=rows.slice(0,8);
   const lbls=top8.map(r=>r.campaign.length>16?r.campaign.slice(0,14)+'…':r.campaign);
