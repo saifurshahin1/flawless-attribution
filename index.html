@@ -211,7 +211,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <th>Campaign</th><th>Role</th>
         <th class="num">LC Conv</th><th class="num">LC Revenue</th>
         <th class="num">Assists</th><th class="num">Assisted Rev</th>
-        <th class="num">Assist Ratio</th><th>Strategic Meaning</th>
+        <th class="num">Assist Ratio</th>
       </tr></thead>
       <tbody id="rolesTbody"></tbody>
     </table>
@@ -481,22 +481,6 @@ function roleBadge(r){
 }
 
 /* ─── STRATEGIC MEANING ─── */
-function getStrategicMeaning(r){
-  const role=r.campaign_role,ratio=+(r.assist_ratio||0);
-  if(role==='Pure Introducer')return'Brings customers in — never gets the last click';
-  if(role==='Introducer')return'Mostly brings people in ('+ratio.toFixed(1)+'× more assists than closes)';
-  if(role==='Assist'){
-    if(Math.abs(ratio-1)<=0.1)return'Closes and assists in equal measure';
-    if(ratio>0.75)return'More assist than close — works across the journey';
-    return'Mostly closes, some assist activity';
-  }
-  if(role==='Closer'||role==='Revenue Closer'){
-    if((r.last_click_conv||0)>50)return'Main closer — high volume of last-click sales';
-    if(ratio<0.15)return'Closes sales, very little assist activity';
-    return'Mostly closes, occasionally assists';
-  }
-  return'—';
-}
 
 /* ─── PATH TYPE ─── */
 function getPathType(path){
@@ -813,7 +797,6 @@ function renderRoles(){
       <td class="num">${(r.assists||0).toFixed(0)}</td>
       <td class="num">${aRev>100?fmtGBP(aRev):'—'}</td>
       <td class="num">${(r.assist_ratio||0)>0?(r.assist_ratio).toFixed(2):'∞'}</td>
-      <td style="font-size:12px;color:var(--muted);max-width:200px">${getStrategicMeaning(r)}</td>
     </tr>`;
   }
   initPag('rolesTbody',rows,rolesRow,8);
