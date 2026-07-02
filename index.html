@@ -17,8 +17,8 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 
 /* ── HEADER ── */
 .header{background:linear-gradient(135deg,#1a1d27 0%,#0f1117 100%);border-bottom:2px solid var(--gold);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.header-left h1{font-size:20px;font-weight:700;color:var(--gold2);letter-spacing:.5px}
-.header-left p{color:var(--muted);font-size:12px;margin-top:3px}
+.header-left h1{font-size:22px;font-weight:700;color:var(--gold2);letter-spacing:.5px}
+.header-left p{color:var(--muted);font-size:13px;margin-top:4px}
 .header-badge{background:rgba(201,168,76,.15);border:1px solid var(--gold);color:var(--gold2);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
 .qbtn{background:rgba(201,168,76,.07);border:1px solid var(--border);color:var(--muted);padding:5px 13px;border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
 .qbtn:hover{border-color:var(--gold);color:var(--gold2);background:rgba(201,168,76,.13)}
@@ -175,12 +175,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <a href="#exec-insights">Executive Insights</a>
   <a href="#kpis">KPI Overview</a>
   <a href="#roles">1. Campaign Roles</a>
-  <a href="#mta-vs-lc">2. MTA vs Last Click</a>
-  <a href="#journey-behaviour">3. Customer Journey</a>
-  <a href="#paths">4. Conv Paths</a>
-  <a href="#campaign-performance">5. Campaign Performance</a>
-  <a href="#conv-breakdown">6. Conversion Types</a>
-  <a href="#appt-value">7. Appointments</a>
+  <a href="#attr-models">2. Attribution Models</a>
+  <a href="#mta-vs-lc">3. MTA vs Last Click</a>
+  <a href="#journey-behaviour">4. Customer Journey</a>
+  <a href="#paths">5. Conv Paths</a>
+  <a href="#campaign-performance">6. Campaign Performance</a>
+  <a href="#conv-breakdown">7. Conversion Types</a>
+  <a href="#appt-value">8. Appointments</a>
+  <a href="#journey-map">9. Full Journey Map</a>
   <a href="#methodology">Methodology</a>
 </div>
 
@@ -210,17 +212,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- ── KPI OVERVIEW ── -->
 <section id="kpis">
-  <div class="section-title"><div class="num">★</div>KPI Overview — Attribution Metrics <span class="fixed-badge" id="kpiBadge" style="margin-left:8px">28D</span></div>
-  <div class="attr-note">
-    <strong>Two conversion counts explained:</strong> Primary purchase goals (Offline Invoice + Website Purchase) are used for ROAS calculations. The full tracked count includes appointments, WhatsApp, and checkout signals — used in attribution analysis to understand each campaign's funnel role. Both are correct for their purpose.
-  </div>
+  <div class="section-title"><div class="num">★</div>KPI Overview — Attribution Metrics <span class="fixed-badge" style="margin-left:8px">90D Fixed</span></div>
   <div class="kpi-grid" id="kpiRow">
-    <div class="kpi-card"><div class="label">Spend</div><div class="value dim">—</div><div class="sub">Total ad spend</div></div>
-    <div class="kpi-card kpi-gold"><div class="label">Revenue</div><div class="value dim">—</div><div class="sub">Last-click revenue</div></div>
-    <div class="kpi-card kpi-green"><div class="label">LC ROAS</div><div class="value dim">—</div><div class="sub">Revenue ÷ Spend</div></div>
-    <div class="kpi-card"><div class="label">Conversions</div><div class="value dim">—</div><div class="sub">Last-click purchases</div></div>
-    <div class="kpi-card kpi-blue"><div class="label">MTA ROAS <span class="fixed-badge">90D</span></div><div class="value dim">—</div><div class="sub">All-touch attribution</div></div>
-    <div class="kpi-card kpi-purple"><div class="label">Total Assists <span class="fixed-badge">90D</span></div><div class="value dim">—</div><div class="sub">Assisted conversions</div></div>
+    <div class="kpi-card kpi-blue"><div class="label">Avg Days to Purchase</div><div class="value dim">—</div><div class="sub">From first ad interaction to conversion</div></div>
+    <div class="kpi-card kpi-purple"><div class="label">Avg Ad Interactions</div><div class="value dim">—</div><div class="sub">Touchpoints before purchase</div></div>
+    <div class="kpi-card kpi-orange"><div class="label">Same-Day Conversions</div><div class="value dim">—</div><div class="sub">Convert within 24 hours of first click</div></div>
+    <div class="kpi-card kpi-green"><div class="label">Highest True ROAS</div><div class="value dim">—</div><div class="sub">Attribution-adjusted, meaningful spend</div></div>
+    <div class="kpi-card kpi-gold"><div class="label">Top Campaign LC Revenue</div><div class="value dim">—</div><div class="sub">Last-click, 90D window</div></div>
+    <div class="kpi-card"><div class="label">Multi-Touch Conv %</div><div class="value dim">—</div><div class="sub">Required 2+ ad interactions</div></div>
   </div>
 </section>
 
@@ -249,9 +248,41 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div class="insight" id="rolesInsight"></div>
 </section>
 
-<!-- ── SECTION 2: MTA vs LAST CLICK ── -->
+<!-- ── SECTION 2: ATTRIBUTION MODEL COMPARISON ── -->
+<section id="attr-models">
+  <div class="section-title"><div class="num">2</div>Attribution Model Comparison — Last Click vs Assisted Contribution <span class="fixed-badge" id="attrBadge" style="margin-left:auto">90D Fixed</span></div>
+  <div class="bq-line">Business Question</div>
+  <div class="bq-q">How does attribution credit shift when you look beyond Last Click — and which campaigns are systematically undervalued by Google's default reporting?</div>
+  <p class="section-sub"><strong>Last Click Conv</strong> = what Google Ads Campaigns tab shows. <strong>All Conv (Google)</strong> = broader count including all tracked actions (includes appointment + engagement signals). <strong>Assists (90D)</strong> = times this campaign appeared in a path but didn't receive the last click. <strong>True ROAS</strong> = attribution-adjusted ROAS combining LC + assist influence.</p>
+  <div class="table-card">
+    <table>
+      <thead><tr>
+        <th>Campaign</th><th class="num">Spend</th>
+        <th class="num">Last Click Conv</th><th class="num">LC Revenue</th>
+        <th class="num">All Conv (Google)</th><th class="num">Assists (90D)</th>
+        <th class="num">True ROAS</th><th>Key Difference</th>
+      </tr></thead>
+      <tbody id="attrTbody"></tbody>
+    </table>
+  </div>
+  <div class="charts-row">
+    <div class="chart-card">
+      <h3>Last Click Conv vs All Conv vs Assists by Campaign</h3>
+      <div class="chart-sub">How attribution credit expands beyond the standard Google Ads view</div>
+      <div class="chart-wrap" style="height:240px"><canvas id="attrModelsChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>True ROAS vs LC ROAS by Campaign</h3>
+      <div class="chart-sub">Attribution-adjusted ROAS reveals which campaigns are most understated</div>
+      <div class="chart-wrap" style="height:240px"><canvas id="attrRoasChart"></canvas></div>
+    </div>
+  </div>
+  <div class="insight" id="attrInsight"></div>
+</section>
+
+<!-- ── SECTION 3: MTA vs LAST CLICK ── -->
 <section id="mta-vs-lc">
-  <div class="section-title"><div class="num">2</div>Multi-Touch vs Last Click — The Attribution Gap <span class="fixed-badge" id="mtaBadge" style="margin-left:auto">90D Fixed</span></div>
+  <div class="section-title"><div class="num">3</div>Multi-Touch vs Last Click — The Attribution Gap <span class="fixed-badge" id="mtaBadge" style="margin-left:auto">90D Fixed</span></div>
   <div class="bq-line">Business Question</div>
   <div class="bq-q">How much campaign revenue influence is hidden by Last Click attribution — and which campaigns are most understated?</div>
   <p class="section-sub">Attribution-Adjusted ROAS = (Last-Click Revenue + Assisted Revenue) ÷ Ad Spend. The gap between this figure and standard Last Click ROAS is the cost of the attribution blind spot for each campaign.</p>
@@ -302,7 +333,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- ── SECTION 3: CUSTOMER JOURNEY ── -->
 <section id="journey-behaviour">
-  <div class="section-title"><div class="num">3</div>Customer Journey Behaviour <span class="fixed-badge" id="journeyBadge" style="margin-left:auto">90D Fixed</span></div>
+  <div class="section-title"><div class="num">4</div>Customer Journey Behaviour <span class="fixed-badge" id="journeyBadge" style="margin-left:auto">90D Fixed</span></div>
   <div class="bq-line">Business Question</div>
   <div class="bq-q">How long does it take customers to convert after seeing an ad — and how many ad interactions do they need before purchasing?</div>
   <div class="charts-row">
@@ -333,7 +364,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- ── SECTION 4: CONVERSION PATHS ── -->
 <section id="paths">
-  <div class="section-title"><div class="num">4</div>Top Conversion Paths <span class="fixed-badge" id="pathsBadge" style="margin-left:auto">90D Fixed</span></div>
+  <div class="section-title"><div class="num">5</div>Top Conversion Paths <span class="fixed-badge" id="pathsBadge" style="margin-left:auto">90D Fixed</span></div>
   <div class="bq-line">Business Question</div>
   <div class="bq-q">Which sequences of campaigns drive the most conversions — and what do the most common customer journeys look like?</div>
   <div class="charts-row" style="grid-template-columns:3fr 2fr">
@@ -356,7 +387,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- ── SECTION 5: CAMPAIGN PERFORMANCE ── -->
 <section id="campaign-performance">
-  <div class="section-title"><div class="num">5</div>Campaign Performance <span class="fixed-badge" id="perfBadge" style="margin-left:auto">28D</span></div>
+  <div class="section-title"><div class="num">6</div>Campaign Performance <span class="fixed-badge" id="perfBadge" style="margin-left:auto">28D</span></div>
   <div class="bq-line">Business Question</div>
   <div class="bq-q">How is each campaign performing on spend, conversions, revenue, and ROAS — and how does attribution-adjusted ROAS compare to standard reporting?</div>
   <div class="table-card">
@@ -374,7 +405,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- ── SECTION 6: CONVERSION TYPE BREAKDOWN ── -->
 <section id="conv-breakdown">
-  <div class="section-title"><div class="num">6</div>Conversion Type Breakdown — What Each Campaign Converts <span class="fixed-badge" id="cbBadge" style="margin-left:auto">28D</span></div>
+  <div class="section-title"><div class="num">7</div>Conversion Type Breakdown — What Each Campaign Converts <span class="fixed-badge" id="cbBadge" style="margin-left:auto">28D</span></div>
   <div class="bq-line">Business Question</div>
   <div class="bq-q">Which conversion types does each campaign drive — and why do campaigns reporting £0 revenue still represent real business value?</div>
   <p class="section-sub">Conversions categorised into 3 tiers: <strong>Tier 1</strong> = Direct Revenue (Offline Invoice + Website Purchase). <strong>Tier 2</strong> = Appointment Pipeline (Appointments + Contact Form) — assigned £0 in Google Ads but feeds Offline Invoice revenue. <strong>Tier 3</strong> = Engagement Signals (WhatsApp + Checkout) — early-funnel intent indicators.</p>
@@ -406,7 +437,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- ── SECTION 7: APPOINTMENTS ── -->
 <section id="appt-value">
-  <div class="section-title"><div class="num">7</div>Appointment Pipeline <span class="fixed-badge" id="apptBadge" style="margin-left:auto">28D</span></div>
+  <div class="section-title"><div class="num">8</div>Appointment Pipeline <span class="fixed-badge" id="apptBadge" style="margin-left:auto">28D</span></div>
   <div class="bq-line">Business Question</div>
   <div class="bq-q">Which campaigns are driving the most appointment bookings — and what is the cost per booking for each appointment type?</div>
   <div class="charts-row">
@@ -426,6 +457,20 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="chart-wrap" style="height:300px"><canvas id="apptFunnelChart"></canvas></div>
     </div>
   </div>
+</section>
+
+<!-- ── SECTION 9: FULL JOURNEY MAP ── -->
+<section id="journey-map">
+  <div class="section-title"><div class="num">9</div>Full Journey Map — Total Campaign Touchpoints (Last-Click + Assists) <span class="fixed-badge" id="jmBadge" style="margin-left:auto">90D Fixed</span></div>
+  <div class="bq-line">Business Question</div>
+  <div class="bq-q">What is each campaign's total footprint across all conversion paths — and does path presence correlate with spend share?</div>
+  <p class="section-sub">Total appearances across all conversion paths, regardless of position (first, middle, or last click). Calculated as: <strong>Last Click Conversions + Assists</strong>. A campaign's path footprint relative to its spend share indicates its efficiency as a touchpoint — independent of whether it receives last-click credit.</p>
+  <div class="chart-full">
+    <h3>Total Campaign Touches (Last-Click + Assists Combined)</h3>
+    <div class="chart-sub">How many times each campaign appeared in any position of a conversion path (90D)</div>
+    <div class="chart-wrap" style="height:320px"><canvas id="journeyMapChart"></canvas></div>
+  </div>
+  <div class="insight" id="journeyMapInsight"></div>
 </section>
 
 <!-- ── METHODOLOGY ── -->
@@ -603,29 +648,48 @@ function applyDateRange(from,to){
   const fs=fmt8(from),ts=fmt8(to);
   const f=G.stats.filter(r=>r.date>=fs&&r.date<=ts);
   const fb=G.breakdown.filter(r=>r.date>=fs&&r.date<=ts);
-  renderKPIs(f);
   renderPerformance(f);
   renderConvBreakdown(fb);
   renderAppointments(fb);
 }
 
 /* ─── KPI SECTION ─── */
-function renderKPIs(rows){
-  const spend=rows.reduce((s,r)=>s+(r.spend||0),0);
-  const rev=rows.reduce((s,r)=>s+(r.revenue||0),0);
-  const conv=rows.reduce((s,r)=>s+(r.conversions||0),0);
-  const lcRoas=spend>0?rev/spend:0;
-  let sp90=0,mr90=0;
-  G.assisted.forEach(r=>{sp90+=r.spend||0;mr90+=(r.spend||0)*(r.mta_roas||0);});
-  const mtaRoas=sp90>0?mr90/sp90:0;
-  const assists=G.assisted.reduce((s,r)=>s+(r.assists||0),0);
+function renderKPIs(){
+  const tl=G.timeLag,pl=G.pathLen,asst=G.assisted;
+
+  // Avg Days to Purchase — weighted average from time_lag buckets
+  const tlTotal=tl.reduce((s,r)=>s+(r.conversions||0),0)||1;
+  const wDays=tl.reduce((s,r)=>s+(r.conversions||0)*(+r.bucket>=12?14:+r.bucket),0);
+  const avgDays=wDays/tlTotal;
+
+  // Same-Day Conversions — bucket=0 means <1 day
+  const sameDay=tl.filter(r=>+r.bucket===0).reduce((s,r)=>s+(r.conversions||0),0);
+  const sameDayPct=sameDay/tlTotal*100;
+
+  // Avg Ad Interactions — weighted average from path_length buckets
+  const plTotal=pl.reduce((s,r)=>s+(r.conversions||0),0)||1;
+  const wInt=pl.reduce((s,r)=>s+(r.conversions||0)*(+r.bucket>=12?13:+r.bucket),0);
+  const avgInt=wInt/plTotal;
+
+  // Multi-Touch % — bucket=1 is single-touch, rest are multi
+  const singleTouch=pl.filter(r=>+r.bucket===1).reduce((s,r)=>s+(r.conversions||0),0);
+  const multiPct=(plTotal-singleTouch)/plTotal*100;
+
+  // Highest True ROAS among campaigns with spend > £500
+  const meaningful=asst.filter(r=>(r.spend||0)>500&&(r.mta_roas||0)>0);
+  const topRoas=meaningful.length?Math.max(...meaningful.map(r=>+(r.mta_roas||0))):0;
+  const topRoasCamp=meaningful.find(r=>+(r.mta_roas||0)===topRoas);
+
+  // Top campaign by LC revenue
+  const topLC=[...asst].sort((a,b)=>(b.last_click_value||0)-(a.last_click_value||0))[0];
+
   document.getElementById('kpiRow').innerHTML=`
-    <div class="kpi-card"><div class="label">Ad Spend</div><div class="value">${fmtGBP(spend)}</div><div class="sub">Total spend in period</div></div>
-    <div class="kpi-card kpi-gold"><div class="label">Revenue</div><div class="value">${fmtGBP(rev)}</div><div class="sub">Last-click revenue</div></div>
-    <div class="kpi-card kpi-green"><div class="label">LC ROAS</div><div class="value ${lcRoas>=4?'up':lcRoas>=2?'':'down'}">${lcRoas.toFixed(2)}×</div><div class="sub">Revenue ÷ Ad Spend</div></div>
-    <div class="kpi-card"><div class="label">Conversions</div><div class="value">${conv.toFixed(0)}</div><div class="sub">Last-click purchases</div></div>
-    <div class="kpi-card kpi-blue"><div class="label">MTA ROAS <span class="fixed-badge">90D</span></div><div class="value">${mtaRoas.toFixed(2)}×</div><div class="sub">All-touch attribution</div></div>
-    <div class="kpi-card kpi-purple"><div class="label">Total Assists <span class="fixed-badge">90D</span></div><div class="value">${fmtN(Math.round(assists))}</div><div class="sub">Assisted conversions</div></div>
+    <div class="kpi-card kpi-blue"><div class="label">Avg Days to Purchase</div><div class="value">${avgDays.toFixed(1)}</div><div class="sub">From first ad to conversion (90D)</div></div>
+    <div class="kpi-card kpi-purple"><div class="label">Avg Ad Interactions</div><div class="value">${avgInt.toFixed(1)}</div><div class="sub">Touchpoints before purchase (90D)</div></div>
+    <div class="kpi-card kpi-orange"><div class="label">Same-Day Conversions</div><div class="value">${sameDayPct.toFixed(1)}%</div><div class="sub">Convert within 24 hrs of first click</div></div>
+    <div class="kpi-card kpi-green"><div class="label">Highest True ROAS</div><div class="value">${topRoas>0?topRoas.toFixed(0)+'×':'—'}</div><div class="sub">${topRoasCamp?.campaign?.split(' ')[0]||'—'} (attribution-adjusted)</div></div>
+    <div class="kpi-card kpi-gold"><div class="label">${topLC?.campaign?.length>18?topLC.campaign.slice(0,16)+'…':topLC?.campaign||'Top Campaign'}</div><div class="value">${topLC?fmtGBP(topLC.last_click_value||0):'—'}</div><div class="sub">${topLC?(topLC.assists||0).toFixed(0)+' additional assists (90D)':'LC revenue top campaign'}</div></div>
+    <div class="kpi-card"><div class="label">Multi-Touch Conv</div><div class="value">${multiPct.toFixed(1)}%</div><div class="sub">Required 2+ ad interactions (90D)</div></div>
   `;
 }
 
@@ -710,6 +774,77 @@ function renderKeyQuestions(){
       <div class="key-q-sub">${q4?fmtGBP(q4.spend||0)+' spend drives '+fmtGBP((q4.mta_roas||0)*(q4.spend||0))+' total influence. Direct '+fmtGBP(q4.last_click_value||0)+' + Assisted '+fmtGBP(Math.max(0,(q4.mta_roas||0)*(q4.spend||0)-(q4.last_click_value||0)))+'.':'—'}</div>
     </div>
   `;
+}
+
+/* ─── SECTION 2: ATTRIBUTION MODELS ─── */
+function renderAttrModels(){
+  const rows=[...G.assisted]
+    .filter(r=>(r.spend||0)>50)
+    .sort((a,b)=>(b.last_click_value||0)-(a.last_click_value||0));
+  const dr=rows[0]?.date_range||'90D Fixed';
+  const badge=document.getElementById('attrBadge');if(badge)badge.textContent=dr;
+
+  function attrRow(r){
+    const lcR=r.lc_roas||0;
+    const trueR=r.mta_roas||0;
+    const roasUplift=lcR>0?((trueR/lcR-1)*100):0;
+    const keyDiff=trueR>0&&lcR>0?
+      `MTA +${roasUplift.toFixed(0)}% vs Last Click`:
+      (r.assists||0)>0?`+${(r.assists||0).toFixed(0)} assists only`:'No assist data';
+    return`<tr>
+      <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.campaign}">${r.campaign}</td>
+      <td class="num">${fmtGBP(r.spend||0)}</td>
+      <td class="num">${(r.last_click_conv||0).toFixed(0)}</td>
+      <td class="num">${fmtGBP(r.last_click_value||0)}</td>
+      <td class="num">${(r.all_conversions||0).toFixed(0)}</td>
+      <td class="num">${(r.assists||0).toFixed(0)}</td>
+      <td class="num up">${trueR>0?trueR.toFixed(0)+'×':'—'}</td>
+      <td style="font-size:11px;color:var(--gold2)">${keyDiff}</td>
+    </tr>`;
+  }
+  initPag('attrTbody',rows,attrRow,8);
+
+  const top8=rows.slice(0,8);
+  const lbls=top8.map(r=>r.campaign.length>16?r.campaign.slice(0,14)+'…':r.campaign);
+
+  destroyChart('attrModelsChart');
+  G.charts['attrModelsChart']=new Chart(document.getElementById('attrModelsChart').getContext('2d'),{
+    type:'bar',
+    data:{labels:lbls,datasets:[
+      {label:'Last Click Conv',data:top8.map(r=>+(r.last_click_conv||0).toFixed(1)),backgroundColor:'rgba(59,130,246,.75)',borderRadius:3},
+      {label:'All Conv (Google)',data:top8.map(r=>+(r.all_conversions||0).toFixed(1)),backgroundColor:'rgba(34,197,94,.5)',borderRadius:3},
+      {label:'Assists',data:top8.map(r=>+(r.assists||0).toFixed(1)),backgroundColor:'rgba(168,85,247,.55)',borderRadius:3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#e8eaf0',font:{size:10},boxWidth:10}}},
+      scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}}},
+               y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}}}}
+    }
+  });
+
+  destroyChart('attrRoasChart');
+  G.charts['attrRoasChart']=new Chart(document.getElementById('attrRoasChart').getContext('2d'),{
+    type:'bar',
+    data:{labels:lbls,datasets:[
+      {label:'LC ROAS',data:top8.map(r=>+(r.lc_roas||0).toFixed(2)),backgroundColor:'rgba(59,130,246,.65)',borderRadius:3},
+      {label:'True ROAS',data:top8.map(r=>+(r.mta_roas||0).toFixed(2)),backgroundColor:'rgba(201,168,76,.75)',borderRadius:3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#e8eaf0',font:{size:10},boxWidth:10}}},
+      scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}}},
+               y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9},callback:v=>v+'×'}}}
+    }
+  });
+
+  const topGap=rows.filter(r=>(r.lc_roas||0)>0&&(r.mta_roas||0)>0).sort((a,b)=>(b.mta_roas-b.lc_roas)-(a.mta_roas-a.lc_roas))[0];
+  const ins=document.getElementById('attrInsight');
+  if(ins&&topGap){
+    ins.innerHTML=`
+      <div class="insight-row"><span class="insight-label">Finding:</span> ${topGap.campaign} shows the largest attribution gap — Last Click ROAS ${(topGap.lc_roas||0).toFixed(1)}× vs True ROAS ${(topGap.mta_roas||0).toFixed(0)}×. It assisted ${(topGap.assists||0).toFixed(0)} conversions that closed through other campaigns, none of which appear in its standard Google Ads report.</div>
+      <div class="insight-row insight-muted"><span class="insight-label" style="color:var(--text)">Why it matters:</span> Google's Last Click model assigns 100% of conversion credit to the final touchpoint. Campaigns that introduce or assist — but rarely close — appear to underperform even when they are driving the majority of the funnel activity.</div>
+      <div class="insight-row insight-muted"><span class="insight-label" style="color:var(--text)">Business implication:</span> Budget decisions based solely on Last Click conversions will systematically underfund introducing and assisting campaigns, progressively starving the funnel from the top down. Attribution-adjusted ROAS is the correct signal for these campaigns.</div>
+    `;
+  }else if(ins){ins.style.display='none';}
 }
 
 /* ─── SECTION 1: CAMPAIGN ROLES ─── */
@@ -1120,17 +1255,83 @@ function renderAppointments(breakdown){
   });
 }
 
+/* ─── SECTION 9: FULL JOURNEY MAP ─── */
+function renderJourneyMap(){
+  // Total footprint = last_click_conv + assists (from 90D assisted_conv data)
+  const rows=[...G.assisted]
+    .filter(r=>(r.last_click_conv||0)+(r.assists||0)>0)
+    .map(r=>({
+      campaign:r.campaign,
+      role:r.campaign_role||'',
+      lc:+(r.last_click_conv||0).toFixed(1),
+      assists:+(r.assists||0).toFixed(1),
+      total:+(r.last_click_conv||0)+(r.assists||0),
+      spend:r.spend||0
+    }))
+    .sort((a,b)=>b.total-a.total);
+
+  const dr=G.assisted[0]?.date_range||'90D Fixed';
+  const jmB=document.getElementById('jmBadge');if(jmB)jmB.textContent=dr;
+
+  const totalTouches=rows.reduce((s,r)=>s+r.total,0)||1;
+  const top=rows.slice(0,14);
+
+  destroyChart('journeyMapChart');
+  const roleColor=role=>
+    role==='Pure Introducer'?'rgba(232,121,249,.8)':
+    role==='Introducer'?'rgba(168,85,247,.75)':
+    role==='Assist'?'rgba(59,130,246,.75)':'rgba(34,197,94,.75)';
+
+  G.charts['journeyMapChart']=new Chart(document.getElementById('journeyMapChart').getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:top.map(r=>r.campaign.length>24?r.campaign.slice(0,22)+'…':r.campaign),
+      datasets:[
+        {label:'Last-Click Conv',data:top.map(r=>r.lc),backgroundColor:'rgba(34,197,94,.75)',borderRadius:2},
+        {label:'Assisted Conv',data:top.map(r=>r.assists),backgroundColor:'rgba(168,85,247,.55)',borderRadius:2}
+      ]
+    },
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#e8eaf0',font:{size:10},boxWidth:10}},
+               tooltip:{callbacks:{label:ctx=>{
+                 const r=top[ctx.dataIndex];
+                 const pct=(r.total/totalTouches*100).toFixed(1);
+                 return`${ctx.dataset.label}: ${ctx.raw} — total ${r.total.toFixed(0)} (${pct}% of all touches)`;
+               }}}},
+      scales:{
+        x:{stacked:true,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}}},
+        y:{stacked:true,grid:{display:false},ticks:{color:'#e8eaf0',font:{size:9}}}
+      }
+    }
+  });
+
+  const top1=rows[0],top3T=rows.slice(0,3).reduce((s,r)=>s+r.total,0);
+  const top3Pct=(top3T/totalTouches*100).toFixed(0);
+  const top3Names=rows.slice(0,3).map(r=>r.campaign).join(', ');
+  const ins=document.getElementById('journeyMapInsight');
+  if(ins&&top1){
+    ins.innerHTML=`
+      <div class="insight-row"><span class="insight-label">Finding:</span> ${top1.campaign} accounts for ${top1.total.toFixed(0)} of ${totalTouches.toFixed(0)} total path appearances (${(top1.total/totalTouches*100).toFixed(1)}%) on ${fmtGBP(top1.spend)} spend. The top 3 campaigns (${top3Names}) account for ${top3Pct}% of all path appearances.</div>
+      <div class="insight-row insight-muted"><span class="insight-label" style="color:var(--text)">Why it matters:</span> Path presence relative to spend share reveals efficiency that ROAS cannot measure. A campaign generating 2× its proportionate share of path appearances is working harder than its budget alone suggests — and is likely doing more of the real audience work.</div>
+      <div class="insight-row insight-muted"><span class="insight-label" style="color:var(--text)">Business implication:</span> The funnel operates as a closed system. Top-funnel campaigns' path footprint requires a continuously refreshed audience from higher-up campaigns. Reducing that budget reduces this campaign's available audience — and its conversion volume — within a measurable 2–4 week lag.</div>
+    `;
+  }
+}
+
 /* ─── INIT ─── */
 async function initDashboard(){
   try{
     await loadData();
     updateMeta();
+    renderKPIs();
     renderExecInsights();
     renderKeyQuestions();
+    renderAttrModels();
     renderRoles();
     renderMTA();
     renderJourney();
     renderPaths();
+    renderJourneyMap();
     setPeriod(28);
   }catch(e){console.error('Dashboard error:',e);}
 }
