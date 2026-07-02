@@ -387,7 +387,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- ── SECTION 6: CONVERSION TYPE BREAKDOWN ── -->
 <section id="conv-breakdown">
-  <div class="section-title"><div class="num">7</div>Conversion Type Breakdown — What Each Campaign Converts <span class="fixed-badge" style="margin-left:auto">90D Fixed</span></div>
+  <div class="section-title"><div class="num">7</div>Conversion Type Breakdown — What Each Campaign Converts <span class="fixed-badge" id="convBadge" style="margin-left:auto">Last 28 days</span></div>
   <div class="bq-line">Business Question</div>
   <div class="bq-q">Which conversion types does each campaign drive — and why do campaigns reporting £0 revenue still represent real business value?</div>
   <p class="section-sub">Conversions categorised into 3 tiers: <strong>Tier 1</strong> = Direct Revenue (Offline Invoice + Website Purchase). <strong>Tier 2</strong> = Appointment Pipeline (Appointments + Contact Form) — assigned £0 in Google Ads but feeds Offline Invoice revenue. <strong>Tier 3</strong> = Engagement Signals (WhatsApp + Checkout) — early-funnel intent indicators.</p>
@@ -418,7 +418,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- ── SECTION 7: APPOINTMENTS ── -->
 <section id="appt-value">
-  <div class="section-title"><div class="num">8</div>Appointment Pipeline <span class="fixed-badge" id="apptBadge" style="margin-left:auto">90D Fixed</span></div>
+  <div class="section-title"><div class="num">8</div>Appointment Pipeline <span class="fixed-badge" id="apptBadge" style="margin-left:auto">Last 28 days</span></div>
   <div class="bq-line">Business Question</div>
   <div class="bq-q">Which campaigns are driving the most appointment bookings — and what is the cost per booking for each appointment type?</div>
   <div class="charts-row">
@@ -641,12 +641,22 @@ function dpHoverDay(y,m,d){
   if(DP.step===1&&DP.start){DP.hover=new Date(y,m,d);dpRender();}
 }
 function dpCommit(){
-  // Apply the selected range and close
   const label=fmtDS(DP.start)+' – '+fmtDS(DP.end);
   document.getElementById('dpTriggerLabel').textContent=label;
   G.dateFrom=DP.start;G.dateTo=DP.end;
-  ['kpiBadge','apptBadge'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=label;});
+  // Update date-responsive section badges
+  ['convBadge','apptBadge'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=label;});
   dpClose();
+  // Re-render sections that have daily data and respond to date filter
+  if(G.breakdown.length) applyDateRange(DP.start,DP.end);
+}
+
+function applyDateRange(from,to){
+  const fs=fmt8(from);
+  const ts=fmt8(to);
+  const filtered=G.breakdown.filter(r=>r.date>=fs&&r.date<=ts);
+  renderConvBreakdown(filtered);
+  renderAppointments(filtered);
 }
 function dpRender(){
   const rm=(DP.viewMonth+1)%12,ry=DP.viewMonth===11?DP.viewYear+1:DP.viewYear;
@@ -711,7 +721,9 @@ function setPeriod(days){
   const label=fmtDS(start)+' – '+fmtDS(end);
   document.getElementById('dpTriggerLabel').textContent=label;
   G.dateFrom=start;G.dateTo=end;
-  ['kpiBadge','apptBadge'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=label;});
+  ['convBadge','apptBadge'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=label;});
+  // Apply date filter to conv_breakdown sections on initial load
+  if(G.breakdown.length) applyDateRange(start,end);
 }
 
 /* ─── KPI SECTION ─── */
@@ -1194,8 +1206,8 @@ function renderConvBreakdown(bkData){
 }
 
 /* ─── SECTION 8: APPOINTMENTS ─── */
-function renderAppointments(){
-  const breakdown=G.breakdown;
+function renderAppointments(bkData){
+  const breakdown=bkData||G.breakdown;
   const amap={};G.assisted.forEach(r=>{amap[r.campaign]=r;});
   const apptRows=breakdown.filter(r=>{
     const lc=(r.conversion_action||'').toLowerCase();
@@ -1257,9 +1269,7 @@ async function initDashboard(){
     renderRoles();
     renderJourney();
     renderPaths();
-    renderConvBreakdown();
-    renderAppointments();
-    setPeriod(28);
+    setPeriod(28); // setPeriod calls applyDateRange which renders Sections 7 & 8
   }catch(e){console.error('Dashboard error:',e);}
 }
 initDashboard();
