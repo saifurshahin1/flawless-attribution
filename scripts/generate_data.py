@@ -346,6 +346,7 @@ def gen_conv_breakdown():
 
     sql = f"""
     SELECT
+        CAST(date AS STRING) AS date,
         campaign,
         conversion_action,
         {'conversion_category,' if 'conversion_category' in c else "'' AS conversion_category,"}
@@ -353,9 +354,9 @@ def gen_conv_breakdown():
         SUM({val_col})   AS conversion_value
     FROM `{PROJECT}.{DATASET}.{table}`
     WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
-    GROUP BY campaign, conversion_action {',' if 'conversion_category' in c else ''}
+    GROUP BY date, campaign, conversion_action {',' if 'conversion_category' in c else ''}
              {'conversion_category' if 'conversion_category' in c else ''}
-    ORDER BY conversion_value DESC, conversions DESC
+    ORDER BY date DESC, conversion_value DESC, conversions DESC
     """
     rows = q(sql)
     for r in rows:
