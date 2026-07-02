@@ -149,6 +149,33 @@ tr:hover td{background:rgba(255,255,255,.012)}
 .mb14{margin-bottom:14px}.mb16{margin-bottom:16px}
 .anote{background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.15);border-radius:8px;padding:9px 14px;font-size:11px;color:var(--muted);margin-bottom:14px}
 
+/* ── GUIDE DRAWER ── */
+.guide-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;opacity:0;pointer-events:none;transition:opacity .25s}
+.guide-overlay.open{opacity:1;pointer-events:all}
+.guide-drawer{position:fixed;top:0;right:-480px;width:460px;max-width:95vw;height:100vh;overflow-y:auto;background:#13162a;border-left:1px solid var(--border);z-index:901;transition:right .28s cubic-bezier(.4,0,.2,1);padding:0 0 40px}
+.guide-drawer.open{right:0}
+.guide-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;background:#13162a;z-index:1}
+.guide-hdr h2{font-size:1rem;color:var(--gold);margin:0;font-weight:600}
+.guide-close{background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;line-height:1;padding:2px 6px;border-radius:4px}
+.guide-close:hover{color:var(--text);background:rgba(255,255,255,.06)}
+.guide-body{padding:20px 24px}
+.guide-sec{margin-bottom:28px;border-bottom:1px solid rgba(255,255,255,.04);padding-bottom:28px}
+.guide-sec:last-child{border-bottom:none;margin-bottom:0}
+.guide-sec-title{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.guide-num{width:24px;height:24px;border-radius:50%;background:var(--gold);color:#0b0d14;font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.guide-sec-title h3{font-size:0.9rem;color:var(--text);margin:0;font-weight:600}
+.guide-tag{font-size:0.68rem;padding:2px 7px;border-radius:10px;margin-left:auto;flex-shrink:0}
+.guide-tag.dynamic{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.25)}
+.guide-tag.fixed{background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.25)}
+.guide-what{font-size:0.82rem;color:var(--muted);line-height:1.65;margin-bottom:8px}
+.guide-action{font-size:0.82rem;color:#e2e4ef;line-height:1.65;background:rgba(59,130,246,.06);border-left:2px solid rgba(59,130,246,.4);padding:8px 12px;border-radius:0 6px 6px 0}
+.guide-why{font-size:0.78rem;color:var(--muted);background:rgba(201,168,76,.05);border-left:2px solid rgba(201,168,76,.3);padding:7px 12px;border-radius:0 6px 6px 0;margin-top:8px;line-height:1.6}
+.guide-faq{background:rgba(255,255,255,.03);border-radius:8px;padding:16px 18px;margin-top:4px}
+.guide-faq h4{font-size:0.82rem;color:var(--gold);margin:0 0 14px;font-weight:600;letter-spacing:.03em}
+.guide-q{font-size:0.8rem;color:var(--text);margin-bottom:4px;font-weight:500}
+.guide-a{font-size:0.78rem;color:var(--muted);line-height:1.6;margin-bottom:14px}
+.guide-a:last-child{margin-bottom:0}
+
 /* ── FOOTER ── */
 .footer{text-align:center;color:var(--muted);font-size:11px;padding:14px 28px;border-top:1px solid var(--border);margin-top:8px}
 .footer a{color:var(--muted);text-decoration:none}
@@ -185,6 +212,8 @@ tr:hover td{background:rgba(255,255,255,.012)}
     <button class="qbtn active" id="qb28"  onclick="setPeriod(28)">28D</button>
     <button class="qbtn"        id="qb90"  onclick="setPeriod(90)">90D</button>
     <button class="qbtn"        id="qb365" onclick="setPeriod(365)">1Y</button>
+    <span style="color:var(--border)">|</span>
+    <button class="qbtn" onclick="guideToggle()" style="background:rgba(201,168,76,.15);color:var(--gold);border:1px solid rgba(201,168,76,.3);padding:4px 10px;border-radius:4px;font-size:0.78rem;cursor:pointer">? Guide</button>
     <span style="color:var(--border)">|</span>
     <div class="dp-wrap" id="dpWrap">
       <button class="dp-btn" id="dpBtn" onclick="dpToggle()">
@@ -528,6 +557,114 @@ tr:hover td{background:rgba(255,255,255,.012)}
 </section>
 
 </main>
+
+<!-- ── GUIDE DRAWER ── -->
+<div class="guide-overlay" id="guideOverlay" onclick="guideClose()"></div>
+<div class="guide-drawer" id="guideDrawer">
+  <div class="guide-hdr">
+    <h2>📋 Dashboard Guide</h2>
+    <button class="guide-close" onclick="guideClose()">✕</button>
+  </div>
+  <div class="guide-body">
+
+    <div class="guide-sec">
+      <div class="guide-sec-title">
+        <div class="guide-num">1</div>
+        <h3>KPI Overview</h3>
+        <span class="guide-tag dynamic">Updates with date</span>
+      </div>
+      <p class="guide-what">Your headline numbers for the period you've selected — total ad spend, revenue Google Ads reports (last-click), and the ROAS that shows up in your Google Ads dashboard.</p>
+      <div class="guide-action">💡 Use this to answer: "How much did we spend and what did Google Ads report back?" The MTA ROAS and Total Assists cards (fixed 90D) show the fuller picture beyond what Google Ads shows you by default.</div>
+    </div>
+
+    <div class="guide-sec">
+      <div class="guide-sec-title">
+        <div class="guide-num">2</div>
+        <h3>Campaign Role Intelligence</h3>
+        <span class="guide-tag fixed">90D Fixed</span>
+      </div>
+      <p class="guide-what">Every campaign plays a role — some introduce new customers at the top of the funnel, some assist in the middle, and some close the sale. Google Ads last-click attribution only credits the campaign that got the final click — so "Introducer" campaigns always look underperfoming in standard reports even though they're doing the heavy lifting upstream.</p>
+      <div class="guide-action">💡 Use this to decide what NOT to cut. If a campaign has high assists and a "Pure Introducer" badge, switching it off will likely cause your closing campaigns to also drop — because there's nothing feeding the funnel anymore.</div>
+      <div class="guide-why">⏱ Why 90D fixed: Google Ads provides assist and attribution data as a rolling 90-day summary only. There's no API to pull assist ratios for a custom 7-day or 28-day window.</div>
+    </div>
+
+    <div class="guide-sec">
+      <div class="guide-sec-title">
+        <div class="guide-num">3</div>
+        <h3>MTA vs Last-Click</h3>
+        <span class="guide-tag fixed">90D Fixed</span>
+      </div>
+      <p class="guide-what">Last-click attribution gives 100% of the credit to whichever campaign the customer clicked last before buying. Multi-touch attribution (MTA) splits credit across every campaign that touched the customer along the way. The "True Revenue" column shows what each campaign actually influenced — not just what it closed.</p>
+      <div class="guide-action">💡 Use this to see where Google Ads is understating value. A campaign showing £0 in revenue (because it never gets the last click) might actually be influencing £50K+ in sales.</div>
+      <div class="guide-why">⏱ Why 90D fixed: Same as section 2 — MTA data comes from the same attribution report and is only available as a 90-day rolling window from the API.</div>
+    </div>
+
+    <div class="guide-sec">
+      <div class="guide-sec-title">
+        <div class="guide-num">4</div>
+        <h3>Customer Journey Behaviour</h3>
+        <span class="guide-tag fixed">90D Fixed</span>
+      </div>
+      <p class="guide-what">Two things: how many days pass between a customer's first ad click and their purchase, and how many ad interactions they have before they buy. Jewellery is a high-consideration purchase — many customers research for weeks before committing.</p>
+      <div class="guide-action">💡 Use this to set your retargeting window. If 30% of customers convert after day 7, your retargeting window should be at least 30 days — not the default 7 days that most accounts use. The "Buyer Profile" column gives you a plain-language description of each group.</div>
+      <div class="guide-why">⏱ Why 90D fixed: Google Ads Time Lag and Path Length reports are published by Google as 90-day aggregates. You can't pull a "7-day time lag" report from the API — it doesn't exist.</div>
+    </div>
+
+    <div class="guide-sec">
+      <div class="guide-sec-title">
+        <div class="guide-num">5</div>
+        <h3>Top Conversion Paths</h3>
+        <span class="guide-tag fixed">90D Fixed</span>
+      </div>
+      <p class="guide-what">The actual sequences of campaigns customers clicked through before buying. "Retargeting → Purchase" means they clicked a retargeting ad and bought on the same session. "Shopping → Retargeting → Shopping → Purchase" means they found you through Shopping, came back via retargeting, and eventually bought through Shopping again.</p>
+      <div class="guide-action">💡 Use this to understand the real customer journey — not the one Google assumes. If most revenue comes from paths that include Retargeting at some point, that campaign is critical even if it looks weak in standard reports.</div>
+      <div class="guide-why">⏱ Why 90D fixed: Google Ads Conversion Path reports are 90-day aggregates only.</div>
+    </div>
+
+    <div class="guide-sec">
+      <div class="guide-sec-title">
+        <div class="guide-num">6</div>
+        <h3>Campaign Performance</h3>
+        <span class="guide-tag dynamic">Updates with date</span>
+      </div>
+      <p class="guide-what">Standard performance breakdown per campaign for your selected date range — spend, conversions, revenue, and ROAS. The "Attr-Adj ROAS" column pulls in the MTA ROAS from the 90D attribution window for context.</p>
+      <div class="guide-action">💡 Use this for your regular performance check. Compare LC ROAS vs Attr-Adj ROAS — if a campaign's adjusted ROAS is significantly higher than its LC ROAS, it's being undervalued by standard reporting.</div>
+    </div>
+
+    <div class="guide-sec">
+      <div class="guide-sec-title">
+        <div class="guide-num">7</div>
+        <h3>Conversion Breakdown</h3>
+        <span class="guide-tag dynamic">Updates with date</span>
+      </div>
+      <p class="guide-what">Every conversion action firing in your Google Ads account for the selected period — purchases, offline invoices, appointments, micro-conversions (checkout starts, time-on-site), and engagement signals. Grouped by type with revenue where applicable.</p>
+      <div class="guide-action">💡 Use this to audit your conversion tracking. "Micro" conversions (like "Time Spent 5 Min on Website") have huge volume but no revenue — they're engagement signals, not actual sales. The ones that matter are Purchase, Offline Invoice, and Appointments.</div>
+    </div>
+
+    <div class="guide-sec">
+      <div class="guide-sec-title">
+        <div class="guide-num">8</div>
+        <h3>Appointment Pipeline</h3>
+        <span class="guide-tag dynamic">Updates with date</span>
+      </div>
+      <p class="guide-what">Appointment bookings broken down by type (London In-Store, Manchester In-Store, Virtual, Ring Builder etc.) for the selected period. Shows booking volume, how many campaigns drove each type, monthly run-rate, ad spend, and cost per booking.</p>
+      <div class="guide-action">💡 Use this to understand your offline funnel. A £124 cost-per-booking for an in-store appointment that converts to a £4,000+ sale is excellent ROI — but this never shows up in standard Google Ads reports because appointment conversions are set to £0 value.</div>
+    </div>
+
+    <div class="guide-faq">
+      <h4>COMMON QUESTIONS</h4>
+      <p class="guide-q">Why does MTA ROAS look so high?</p>
+      <p class="guide-a">It includes the value of all conversion actions — including micro-conversions like "Begin Checkout" which may have a monetary value assigned in Google Ads settings. The LC ROAS (which only counts purchase revenue) is the more conservative and comparable number.</p>
+      <p class="guide-q">What's the difference between "Assists" and "Conversions"?</p>
+      <p class="guide-a">A conversion = a campaign got the last click before purchase. An assist = a campaign appeared somewhere in the customer's journey but wasn't the final click. Campaigns with many assists are often the ones doing brand awareness and consideration work upstream.</p>
+      <p class="guide-q">Why do some sections not change when I switch from 7D to 90D?</p>
+      <p class="guide-a">Sections 2, 3, 4, and 5 use attribution data that Google only provides as a 90-day rolling summary — there's no API to pull assist ratios or time-lag data for shorter windows. Sections 1, 6, 7, and 8 use daily campaign data so they filter to whatever period you select.</p>
+      <p class="guide-q">How often does this data update?</p>
+      <p class="guide-a">Every 30 minutes automatically. The "Last updated" timestamp at the bottom of the page shows the exact time of the last refresh. The Google Ads daily script also runs at 2:00 AM UK time to pull the previous day's full attribution data.</p>
+    </div>
+
+  </div>
+</div>
 
 <footer class="footer">
   Last updated: <span id="footerUpdated">—</span>
@@ -1092,6 +1229,18 @@ function renderAppointments(breakdown){
       scales:{x:{grid:{display:false},ticks:{color:'#e2e4ef',font:{size:10}}},
               y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#636880',font:{size:10}}}}}
   });
+}
+
+/* ─── GUIDE DRAWER ─── */
+function guideToggle(){
+  const d=document.getElementById('guideDrawer'),o=document.getElementById('guideOverlay');
+  const isOpen=d.classList.contains('open');
+  if(isOpen){d.classList.remove('open');o.classList.remove('open');}
+  else{d.classList.add('open');o.classList.add('open');}
+}
+function guideClose(){
+  document.getElementById('guideDrawer').classList.remove('open');
+  document.getElementById('guideOverlay').classList.remove('open');
 }
 
 /* ─── INIT ─── */
