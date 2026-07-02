@@ -362,7 +362,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- ── SECTION 6: CONVERSION TYPE BREAKDOWN ── -->
 <section id="conv-breakdown">
-  <div class="section-title"><div class="num">7</div>Conversion Type Breakdown — What Each Campaign Converts <span class="fixed-badge" id="cbBadge" style="margin-left:auto">28D</span></div>
+  <div class="section-title"><div class="num">7</div>Conversion Type Breakdown — What Each Campaign Converts <span class="fixed-badge" style="margin-left:auto">90D Fixed</span></div>
   <div class="bq-line">Business Question</div>
   <div class="bq-q">Which conversion types does each campaign drive — and why do campaigns reporting £0 revenue still represent real business value?</div>
   <p class="section-sub">Conversions categorised into 3 tiers: <strong>Tier 1</strong> = Direct Revenue (Offline Invoice + Website Purchase). <strong>Tier 2</strong> = Appointment Pipeline (Appointments + Contact Form) — assigned £0 in Google Ads but feeds Offline Invoice revenue. <strong>Tier 3</strong> = Engagement Signals (WhatsApp + Checkout) — early-funnel intent indicators.</p>
@@ -461,7 +461,7 @@ var G={meta:{},stats:[],assisted:[],timeLag:[],pathLen:[],paths:[],breakdown:[],
 
 /* ─── HELPERS ─── */
 function addDays(d,n){var r=new Date(d);r.setDate(r.getDate()+n);return r;}
-function fmt8(d){return d.toISOString().slice(0,10).replace(/-/g,'');}
+function fmt8(d){return d.toISOString().slice(0,10);}
 function fmtDS(d){return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});}
 function parseDate(s){if(!s)return new Date();var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
 function fmtGBP(v){
@@ -581,7 +581,7 @@ function setPeriod(days){
   document.getElementById('dateFrom').value=start.toISOString().slice(0,10);
   document.getElementById('dateTo').value=end.toISOString().slice(0,10);
   const label=fmtDS(start)+' – '+fmtDS(end);
-  ['kpiBadge','cbBadge','apptBadge'].forEach(id=>{
+  ['kpiBadge','apptBadge'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.textContent=label;
   });
   G.dateFrom=start;G.dateTo=end;
@@ -593,17 +593,13 @@ function applyCustomDate(){
   const to=parseDate(document.getElementById('dateTo').value);
   if(!from||!to||from>to)return;
   const label=fmtDS(from)+' – '+fmtDS(to);
-  ['kpiBadge','cbBadge','apptBadge'].forEach(id=>{
+  ['kpiBadge','apptBadge'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.textContent=label;
   });
   G.dateFrom=from;G.dateTo=to;
   applyDateRange(from,to);
 }
-function applyDateRange(from,to){
-  const fs=fmt8(from),ts=fmt8(to);
-  const fb=G.breakdown.filter(r=>r.date>=fs&&r.date<=ts);
-  renderConvBreakdown(fb);
-}
+function applyDateRange(from,to){}
 
 /* ─── KPI SECTION ─── */
 function renderKPIs(){
@@ -1263,6 +1259,7 @@ async function initDashboard(){
     renderMTA();
     renderJourney();
     renderPaths();
+    renderConvBreakdown();
     renderAppointments();
     renderJourneyMap();
     setPeriod(28);
