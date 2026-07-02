@@ -620,32 +620,32 @@ tr:hover td{background:rgba(255,255,255,.012)}
 
     <!-- START HERE -->
     <div class="guide-start">
-      <h4>▶ Start here — how to use this dashboard</h4>
+      <h4>How to use this dashboard</h4>
       <ul class="guide-flow">
         <li>
-          <div class="flow-label">Weekly check</div>
-          <div>Set to 7D or 28D. Look at ① KPIs and ⑥ Campaign Performance. That's your spend vs return for the week.</div>
+          <div class="flow-label">Quick weekly check</div>
+          <div>Pick 7D or 28D at the top. Look at section ① for your spend and return, then ⑥ for how each campaign is performing.</div>
         </li>
         <li>
           <div class="flow-label">Monthly review</div>
-          <div>Set to 28D. Go through all 8 sections top to bottom. Pay particular attention to ② roles and ③ MTA before making any budget decisions.</div>
+          <div>Go through all 8 sections top to bottom on 28D. Don't skip ② and ③ — those two sections tell you which campaigns are actually worth keeping.</div>
         </li>
         <li>
           <div class="flow-label">Before cutting a campaign</div>
-          <div>Always check ② and ③ first. A campaign with £0 last-click revenue might be driving 8,000+ assists. Cutting it quietly tanks your closers.</div>
+          <div>Check ② first. A campaign showing £0 revenue in Google Ads might be driving hundreds of assists. Cut it and your other campaigns drop too.</div>
         </li>
         <li>
-          <div class="flow-label">Offline &amp; appointments</div>
-          <div>Check ⑧ with 28D or 90D. London In-Store bookings don't show revenue in Google Ads — they show £0. The real value is in the appointments themselves.</div>
+          <div class="flow-label">Appointment value</div>
+          <div>Go to ⑧ to see your booking numbers. Google Ads shows these as £0 — this section shows the real picture.</div>
         </li>
       </ul>
-      <div style="margin-top:12px">
-        <div style="font-size:0.76rem;color:var(--gold);font-weight:600;margin-bottom:6px">Which date range to pick?</div>
+      <div style="margin-top:14px">
+        <div style="font-size:0.74rem;color:var(--gold);font-weight:600;margin-bottom:6px">Which date range?</div>
         <div class="guide-period">
-          <div class="gp"><span class="gp-btn">7D</span><span class="gp-txt">Did a recent change work? Quick sanity check after editing bids or pausing something.</span></div>
-          <div class="gp"><span class="gp-btn">28D</span><span class="gp-txt">Best for regular reviews. Enough data to be meaningful, recent enough to be relevant.</span></div>
-          <div class="gp"><span class="gp-btn">90D</span><span class="gp-txt">Matches the attribution window. Use when comparing to the role/MTA sections below.</span></div>
-          <div class="gp"><span class="gp-btn">1Y</span><span class="gp-txt">Seasonal patterns. Are you spending more in December? Is ROAS dropping in summer?</span></div>
+          <div class="gp"><span class="gp-btn">7D</span><span class="gp-txt">Did something change recently? Use this to check quickly.</span></div>
+          <div class="gp"><span class="gp-btn">28D</span><span class="gp-txt">Best for regular reviews. Enough data to be meaningful.</span></div>
+          <div class="gp"><span class="gp-btn">90D</span><span class="gp-txt">Use this when looking at sections 2, 3, 4, and 5 — they're all 90-day data.</span></div>
+          <div class="gp"><span class="gp-btn">1Y</span><span class="gp-txt">Seasonal trends. Is spend up in December? Is summer slower?</span></div>
         </div>
       </div>
     </div>
@@ -657,8 +657,8 @@ tr:hover td{background:rgba(255,255,255,.012)}
         <h3>KPI Overview</h3>
         <span class="guide-tag dynamic">Updates with date</span>
       </div>
-      <p class="guide-what">Your headline numbers for whatever date range you've selected. Ad Spend and LC Revenue are what you'd see in a standard Google Ads report. MTA ROAS and Total Assists (both fixed to 90D) show what's actually happening across the full funnel — not just the last click.</p>
-      <div class="guide-action">💡 The number to care about day-to-day is LC ROAS — that's the real purchase ROAS. MTA ROAS is higher but inflated by a "Begin Checkout" conversion action that has a monetary value assigned in your account settings. More on that in the FAQ below.</div>
+      <p class="guide-what">Your top-line numbers for the selected period — spend, revenue, and return on spend. The MTA ROAS and Total Assists cards are fixed to 90 days regardless of what date you pick.</p>
+      <div class="guide-action">The day-to-day number to watch is Last-Click ROAS. The MTA ROAS looks higher — but that's because one of your conversion actions ("Begin Checkout From Ads") has a value assigned to it in Google Ads that inflates the figure. More detail on this in the FAQ below.</div>
     </div>
 
     <!-- SECTION 2 -->
@@ -668,15 +668,15 @@ tr:hover td{background:rgba(255,255,255,.012)}
         <h3>Campaign Role Intelligence</h3>
         <span class="guide-tag fixed">90D Fixed</span>
       </div>
-      <p class="guide-what">Google Ads last-click attribution gives 100% of the credit to whichever campaign got the final click before purchase. That makes Introducer campaigns look useless — they show almost no conversions even though they're the ones getting customers into your funnel in the first place. This section fixes that by showing what each campaign actually does.</p>
+      <p class="guide-what">Google Ads only gives credit to the campaign that gets the last click before a sale. That makes some of your most important campaigns look like they're doing nothing. This section shows what each campaign is actually doing.</p>
       <div class="role-legend">
-        <div class="rl-item"><span class="badge bi">Pure Introducer</span> Never gets the last click. Brings people in at the top of the funnel and hands them off. Essential — without it, closers have no one to close.</div>
-        <div class="rl-item"><span class="badge ba">Introducer</span> Mostly brings people in but occasionally closes. High assist ratio means it's working upstream more than downstream.</div>
-        <div class="rl-item"><span class="badge br">Assist</span> Works both ways — sometimes closes, often helps. Think of it as mid-funnel. Neither pure top-of-funnel nor pure closer.</div>
-        <div class="rl-item"><span class="badge bc">Closer</span> Gets the last click most of the time. This is what Google Ads reports celebrate. But it only works because Introducers sent the customer there first.</div>
+        <div class="rl-item"><span class="badge bi">Pure Introducer</span> Brings customers in but never gets the last click. Without this, the campaigns that do close have no one to close.</div>
+        <div class="rl-item"><span class="badge ba">Introducer</span> Mostly brings people in, occasionally closes. Works mainly at the start of the customer journey.</div>
+        <div class="rl-item"><span class="badge br">Assist</span> Sits in the middle — sometimes closes, often supports. Not top or bottom of funnel, just useful throughout.</div>
+        <div class="rl-item"><span class="badge bc">Closer</span> Gets the last click and the credit. These look great in Google Ads — but they depend on Introducer campaigns to bring customers in.</div>
       </div>
-      <div class="guide-action" style="margin-top:10px">💡 Before cutting any campaign, look at its role. Cutting a Pure Introducer to "save budget" will quietly starve your Closers of new traffic within 2–4 weeks.</div>
-      <div class="guide-why">⏱ Why 90D fixed: Google Ads only publishes assist and attribution data as a rolling 90-day summary. There's no way to pull assist ratios for a 7-day or 28-day window — the API doesn't offer it.</div>
+      <div class="guide-action" style="margin-top:10px">Don't cut a campaign based on revenue alone. Look at its assists. A campaign with low revenue but thousands of assists is feeding your closers — remove it and watch the closers drop.</div>
+      <div class="guide-why">This section stays at 90 days because Google only releases this data as a 90-day window. There's no shorter version available.</div>
     </div>
 
     <!-- SECTION 3 -->
@@ -686,9 +686,9 @@ tr:hover td{background:rgba(255,255,255,.012)}
         <h3>MTA vs Last-Click</h3>
         <span class="guide-tag fixed">90D Fixed</span>
       </div>
-      <p class="guide-what">Last-click says: "The campaign that got the final click gets all the revenue." MTA says: "Every campaign that touched the customer along the way gets a share." The True Revenue column shows how much each campaign actually influenced — not just what it officially closed. The gap between LC Revenue and True Revenue is the value that's hidden from your standard Google Ads reports.</p>
-      <div class="guide-action">💡 Look for campaigns where True Revenue is significantly higher than LC Revenue. That's where Google Ads is systematically undervaluing your spend. Sales-Performance Max is a classic example — it shows moderate last-click numbers but likely influences far more revenue across the journey.</div>
-      <div class="guide-why">⏱ Why 90D fixed: Same source data as section 2. Google only gives us this as a 90-day rolling window.</div>
+      <p class="guide-what">Google Ads gives all revenue credit to whichever campaign got the last click. This section splits that credit across every campaign that played a role in the sale. The True Revenue column is what each campaign actually influenced — not just what it officially closed.</p>
+      <div class="guide-action">Look for campaigns where True Revenue is much higher than Last-Click Revenue. That gap is how much Google Ads is undervaluing that campaign. It's the number to use when making budget decisions.</div>
+      <div class="guide-why">90-day fixed — same data source as section 2.</div>
     </div>
 
     <!-- SECTION 4 -->
@@ -698,9 +698,9 @@ tr:hover td{background:rgba(255,255,255,.012)}
         <h3>Customer Journey Behaviour</h3>
         <span class="guide-tag fixed">90D Fixed</span>
       </div>
-      <p class="guide-what">Two questions answered here: how long does it take for someone to go from first ad click to purchase, and how many ad touchpoints do they need along the way? For jewellery — especially engagement rings, bespoke pieces, and in-store appointments — these numbers tend to be longer and higher than most industries.</p>
-      <div class="guide-action">💡 Look at how many customers convert on the same day vs how many take a week or longer. If a significant share takes more than 7 days, your retargeting window should match that — most accounts leave it at the default 7 days and miss those customers entirely. The Buyer Profile column puts each group into plain language.</div>
-      <div class="guide-why">⏱ Why 90D fixed: Google only makes this data available as a 90-day summary. There is no shorter window option — it's a Google limitation, not a dashboard one.</div>
+      <p class="guide-what">How long customers take from their first ad click to purchase, and how many ads they see before they buy. Jewellery customers typically take longer than most — some research for weeks before committing.</p>
+      <div class="guide-action">If a chunk of your customers take more than 7 days to buy, your retargeting window needs to cover that. Most accounts are set to 7 days by default — those customers get dropped before they convert.</div>
+      <div class="guide-why">90-day fixed — Google doesn't offer this data for shorter windows.</div>
     </div>
 
     <!-- SECTION 5 -->
@@ -710,9 +710,9 @@ tr:hover td{background:rgba(255,255,255,.012)}
         <h3>Top Conversion Paths</h3>
         <span class="guide-tag fixed">90D Fixed</span>
       </div>
-      <p class="guide-what">The actual click sequences customers followed before buying. Not what Google Ads assumes — what actually happened. A path like "Retargeting → Retargeting → Retargeting" means someone was retargeted three times before purchasing. A path like "Shopping → Retargeting → Shopping" means Shopping introduced them, Retargeting kept them warm, and Shopping closed the sale.</p>
-      <div class="guide-action">💡 If Retargeting appears in a large share of the top revenue paths, it's doing more work than its last-click numbers suggest. That's the case you'd make before any budget cut conversation.</div>
-      <div class="guide-why">⏱ Why 90D fixed: Google Ads Conversion Path reports are 90-day aggregates only.</div>
+      <p class="guide-what">The actual sequence of campaigns customers clicked through before buying. "Shopping → Retargeting → Shopping" means they found you through Shopping, came back via a retargeting ad, then bought through Shopping again.</p>
+      <div class="guide-action">If Retargeting shows up in most of the high-revenue paths, that campaign is doing more than its own numbers show. That's useful to know before any conversation about cutting spend.</div>
+      <div class="guide-why">90-day fixed — Google only provides path data at this window.</div>
     </div>
 
     <!-- SECTION 6 -->
@@ -722,8 +722,8 @@ tr:hover td{background:rgba(255,255,255,.012)}
         <h3>Campaign Performance</h3>
         <span class="guide-tag dynamic">Updates with date</span>
       </div>
-      <p class="guide-what">Your standard per-campaign breakdown for the selected period — spend, conversions, revenue, and ROAS. The last column (Attr-Adj ROAS) shows each campaign's attribution-adjusted return — meaning what it earns when all touchpoints are counted, not just the last click. You can compare the two in the same row.</p>
-      <div class="guide-action">💡 When last-click ROAS is low but attribution-adjusted ROAS is high, the campaign is doing more work than Google Ads is crediting it for. When both are low, that's a genuine performance problem worth looking into.</div>
+      <p class="guide-what">Standard performance numbers per campaign for your selected period. The last column shows each campaign's attribution-adjusted return — what it earns when all touchpoints are counted, not just the last click — so you can compare both figures side by side.</p>
+      <div class="guide-action">When the last-click return looks low but the attribution-adjusted return is strong, the campaign is contributing more than it's getting credit for. When both are low, that's worth investigating.</div>
     </div>
 
     <!-- SECTION 7 -->
@@ -733,8 +733,8 @@ tr:hover td{background:rgba(255,255,255,.012)}
         <h3>Conversion Breakdown</h3>
         <span class="guide-tag dynamic">Updates with date</span>
       </div>
-      <p class="guide-what">Every conversion action that fired in your account during the selected period — purchases, offline invoices, appointment bookings, and micro-signals like "Begin Checkout" and "Time Spent on Website." The category badges tell you what type each one is so you're not comparing a real purchase to an engagement signal.</p>
-      <div class="guide-action">💡 Focus on Purchase, Offline, and Appointment rows for actual business value. The "Other" category (Time Spent 5 Min, Call Clicks etc.) has high volume but represents intent signals, not sales. Don't confuse conversion count with revenue.</div>
+      <p class="guide-what">Every type of conversion firing in your account for the selected period — purchases, offline invoices, appointment bookings, and smaller signals like checkout starts and time spent on site.</p>
+      <div class="guide-action">The ones that matter for revenue are Purchase, Offline Invoice, and Appointment. The high-volume rows like "Time Spent 5 Min" or "Call Click" are engagement signals — don't count them as sales.</div>
     </div>
 
     <!-- SECTION 8 -->
@@ -744,28 +744,28 @@ tr:hover td{background:rgba(255,255,255,.012)}
         <h3>Appointment Pipeline</h3>
         <span class="guide-tag dynamic">Updates with date</span>
       </div>
-      <p class="guide-what">Appointment bookings broken down by type — London In-Store, Manchester In-Store, London Virtual, Ring Builder In-Store, Ring Builder Virtual — for the selected period. Shows bookings, campaigns involved, monthly run-rate, and cost per booking. These conversions are set to £0 value in Google Ads, so they never show up in standard revenue reports.</p>
-      <div class="guide-action">💡 In-store appointments almost always convert to high-value sales — but Google Ads records them as £0 because no online purchase happens at that moment. This section shows you the real volume and cost of those bookings, so the return on that ad spend is no longer invisible.</div>
+      <p class="guide-what">Appointment bookings by type for the selected period — In-Store, Virtual, Ring Builder. Shows volume, monthly rate, and cost per booking. Google Ads marks all of these as £0 because there's no online purchase, so they never appear in your standard revenue reports.</p>
+      <div class="guide-action">The cost per booking is the number to focus on. An in-store appointment that costs £X to generate and converts to a high-value sale in person is very good ROI — it just doesn't show up anywhere in Google Ads.</div>
     </div>
 
     <!-- FAQ -->
     <div class="guide-faq">
       <h4>COMMON QUESTIONS</h4>
 
-      <p class="guide-q">The MTA ROAS number looks very high — is that right?</p>
-      <p class="guide-a">Not exactly. Your account has a conversion action called "Begin Checkout From Ads" which has a monetary value assigned to it in Google Ads settings. Because the MTA ROAS figure includes all conversion values — not just actual purchases — that checkout action inflates the number significantly. The figure to trust for real return on spend is the Last-Click ROAS shown in sections 1 and 6. That one is based on purchase revenue only.</p>
+      <p class="guide-q">The MTA ROAS looks very high — should I trust it?</p>
+      <p class="guide-a">Not as a direct comparison to your last-click ROAS. One of your conversion actions ("Begin Checkout From Ads") has a monetary value attached to it in Google Ads settings, which inflates the MTA figure. Use the Last-Click ROAS in sections 1 and 6 for day-to-day decisions.</p>
 
-      <p class="guide-q">What's the difference between a Conversion and an Assist?</p>
-      <p class="guide-a">A conversion = a campaign was the last one clicked before the purchase. It gets 100% of the credit in Google Ads. An assist = a campaign appeared somewhere earlier in the customer's journey but wasn't the final click. Google Ads gives assists zero credit by default — which is exactly the problem this dashboard is built to fix.</p>
+      <p class="guide-q">What's the difference between a conversion and an assist?</p>
+      <p class="guide-a">A conversion means that campaign was the last ad clicked before a purchase — Google gives it 100% of the credit. An assist means the campaign appeared earlier in the customer's journey but didn't get the final click. Google gives assists no credit at all. That's the gap this dashboard fills.</p>
 
-      <p class="guide-q">Why don't sections 2, 3, 4, and 5 change when I switch date ranges?</p>
-      <p class="guide-a">Those four sections use attribution data that Google only provides as a 90-day summary. There is no way to get a 7-day or 28-day version of that data — Google simply doesn't make it available for shorter windows. Sections 1, 6, 7, and 8 use daily campaign data, so those ones do update when you change the date range.</p>
+      <p class="guide-q">Why don't sections 2, 3, 4, and 5 update when I change the date?</p>
+      <p class="guide-a">Google only releases that attribution data as a fixed 90-day summary. There's no shorter version — it's a Google limitation. Sections 1, 6, 7, and 8 use daily data so they do update with your date selection.</p>
 
-      <p class="guide-q">How fresh is this data?</p>
-      <p class="guide-a">The data refreshes automatically every 30 minutes. The "Last updated" timestamp at the bottom of the page shows exactly when it last pulled from Google Ads. You don't need to do anything — it stays current on its own.</p>
+      <p class="guide-q">How up to date is the data?</p>
+      <p class="guide-a">It refreshes every 30 minutes automatically. Check the "Last updated" time at the bottom of the page — you don't need to do anything to keep it current.</p>
 
-      <p class="guide-q">Why do some campaigns show £0 revenue?</p>
-      <p class="guide-a">Because they never got the last click before a purchase — Google Ads didn't credit them with any revenue. That doesn't mean they're not working. Check the Assists column in section 2 and the True Revenue column in section 3. A campaign with £0 last-click revenue and 8,000+ assists is one of your most valuable assets.</p>
+      <p class="guide-q">Some campaigns show £0 revenue — does that mean they're not working?</p>
+      <p class="guide-a">Not necessarily. It means they never got the last click before a purchase, so Google didn't credit them. Check the Assists column in section 2 and the True Revenue column in section 3 — a campaign with £0 last-click revenue can still be one of your best performers.</p>
     </div>
 
   </div>
