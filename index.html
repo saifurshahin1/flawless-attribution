@@ -234,7 +234,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <a href="#paths">5. Conv Paths</a>
   <a href="#conv-breakdown">7. Conversion Types</a>
   <a href="#appt-value">8. Appointments</a>
-  <a href="#journey-map">9. Full Journey Map</a>
+
   <a href="#methodology">Methodology</a>
 </div>
 </div><!-- /sticky-top -->
@@ -470,18 +470,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </section>
 
-<!-- ── SECTION 9: FULL JOURNEY MAP ── -->
-<section id="journey-map">
-  <div class="section-title"><div class="num">9</div>Full Journey Map — Total Campaign Touchpoints (Last-Click + Assists) <span class="fixed-badge" id="jmBadge" style="margin-left:auto">90D Fixed</span></div>
-  <div class="bq-line">Business Question</div>
-  <div class="bq-q">What is each campaign's total footprint across all conversion paths — and does path presence correlate with spend share?</div>
-  <p class="section-sub">Total appearances across all conversion paths, regardless of position (first, middle, or last click). Calculated as: <strong>Last Click Conversions + Assists</strong>. A campaign's path footprint relative to its spend share indicates its efficiency as a touchpoint — independent of whether it receives last-click credit.</p>
-  <div class="chart-full">
-    <h3>Total Campaign Touches (Last-Click + Assists Combined)</h3>
-    <div class="chart-sub">How many times each campaign appeared in any position of a conversion path (90D)</div>
-    <div class="chart-wrap" style="height:320px"><canvas id="journeyMapChart"></canvas></div>
-  </div>
-</section>
 
 <!-- ── METHODOLOGY ── -->
 <section id="methodology">
@@ -1341,68 +1329,6 @@ function renderAppointments(){
   });
 }
 
-/* ─── SECTION 9: FULL JOURNEY MAP ─── */
-function renderJourneyMap(){
-  // Total footprint = last_click_conv + assists (from 90D assisted_conv data)
-  const rows=[...G.assisted]
-    .filter(r=>(r.last_click_conv||0)+(r.assists||0)>0)
-    .map(r=>({
-      campaign:r.campaign,
-      role:r.campaign_role||'',
-      lc:+(r.last_click_conv||0).toFixed(1),
-      assists:+(r.assists||0).toFixed(1),
-      total:+(r.last_click_conv||0)+(r.assists||0),
-      spend:r.spend||0
-    }))
-    .sort((a,b)=>b.total-a.total);
-
-  const dr=G.assisted[0]?.date_range||'90D Fixed';
-  const jmB=document.getElementById('jmBadge');if(jmB)jmB.textContent=dr;
-
-  const totalTouches=rows.reduce((s,r)=>s+r.total,0)||1;
-  const top=rows.slice(0,14);
-
-  destroyChart('journeyMapChart');
-  const roleColor=role=>
-    role==='Pure Introducer'?'rgba(232,121,249,.8)':
-    role==='Introducer'?'rgba(168,85,247,.75)':
-    role==='Assist'?'rgba(59,130,246,.75)':'rgba(34,197,94,.75)';
-
-  G.charts['journeyMapChart']=new Chart(document.getElementById('journeyMapChart').getContext('2d'),{
-    type:'bar',
-    data:{
-      labels:top.map(r=>r.campaign.length>24?r.campaign.slice(0,22)+'…':r.campaign),
-      datasets:[
-        {label:'Last-Click Conv',data:top.map(r=>r.lc),backgroundColor:'rgba(34,197,94,.75)',borderRadius:2},
-        {label:'Assisted Conv',data:top.map(r=>r.assists),backgroundColor:'rgba(168,85,247,.55)',borderRadius:2}
-      ]
-    },
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:true,labels:{color:'#e8eaf0',font:{size:10},boxWidth:10}},
-               tooltip:{callbacks:{label:ctx=>{
-                 const r=top[ctx.dataIndex];
-                 const pct=(r.total/totalTouches*100).toFixed(1);
-                 return`${ctx.dataset.label}: ${ctx.raw} — total ${r.total.toFixed(0)} (${pct}% of all touches)`;
-               }}}},
-      scales:{
-        x:{stacked:true,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}}},
-        y:{stacked:true,grid:{display:false},ticks:{color:'#e8eaf0',font:{size:9}}}
-      }
-    }
-  });
-
-  const top1=rows[0],top3T=rows.slice(0,3).reduce((s,r)=>s+r.total,0);
-  const top3Pct=(top3T/totalTouches*100).toFixed(0);
-  const top3Names=rows.slice(0,3).map(r=>r.campaign).join(', ');
-  const ins=document.getElementById('journeyMapInsight');
-  if(ins&&top1){
-    ins.innerHTML=`
-      <div class="insight-row"><span class="insight-label">Finding:</span> ${top1.campaign} accounts for ${top1.total.toFixed(0)} of ${totalTouches.toFixed(0)} total path appearances (${(top1.total/totalTouches*100).toFixed(1)}%) on ${fmtGBP(top1.spend)} spend. The top 3 campaigns (${top3Names}) account for ${top3Pct}% of all path appearances.</div>
-      <div class="insight-row insight-muted"><span class="insight-label" style="color:var(--text)">Why it matters:</span> Path presence relative to spend share reveals efficiency that ROAS cannot measure. A campaign generating 2× its proportionate share of path appearances is working harder than its budget alone suggests — and is likely doing more of the real audience work.</div>
-      <div class="insight-row insight-muted"><span class="insight-label" style="color:var(--text)">Business implication:</span> The funnel operates as a closed system. Top-funnel campaigns' path footprint requires a continuously refreshed audience from higher-up campaigns. Reducing that budget reduces this campaign's available audience — and its conversion volume — within a measurable 2–4 week lag.</div>
-    `;
-  }
-}
 
 /* ─── INIT ─── */
 async function initDashboard(){
@@ -1417,7 +1343,6 @@ async function initDashboard(){
     renderPaths();
     renderConvBreakdown();
     renderAppointments();
-    renderJourneyMap();
     setPeriod(28);
   }catch(e){console.error('Dashboard error:',e);}
 }
