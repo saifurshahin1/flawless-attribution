@@ -178,7 +178,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <a href="#mta-vs-lc">3. MTA vs Last Click</a>
   <a href="#journey-behaviour">4. Customer Journey</a>
   <a href="#paths">5. Conv Paths</a>
-  <a href="#campaign-performance">6. Campaign Performance</a>
   <a href="#conv-breakdown">7. Conversion Types</a>
   <a href="#appt-value">8. Appointments</a>
   <a href="#journey-map">9. Full Journey Map</a>
@@ -360,23 +359,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </section>
 
-<!-- ── SECTION 5: CAMPAIGN PERFORMANCE ── -->
-<section id="campaign-performance">
-  <div class="section-title"><div class="num">6</div>Campaign Performance <span class="fixed-badge" id="perfBadge" style="margin-left:auto">28D</span></div>
-  <div class="bq-line">Business Question</div>
-  <div class="bq-q">How is each campaign performing on spend, conversions, revenue, and ROAS — and how does attribution-adjusted ROAS compare to standard reporting?</div>
-  <div class="table-card">
-    <table>
-      <thead><tr>
-        <th>Campaign</th><th class="num">Spend</th>
-        <th class="num">Conversions</th><th class="num">LC Revenue</th>
-        <th class="num">LC ROAS</th><th class="num">MTA ROAS <span class="fixed-badge">90D</span></th>
-        <th>Role</th>
-      </tr></thead>
-      <tbody id="perfTbody"></tbody>
-    </table>
-  </div>
-</section>
 
 <!-- ── SECTION 6: CONVERSION TYPE BREAKDOWN ── -->
 <section id="conv-breakdown">
@@ -599,7 +581,7 @@ function setPeriod(days){
   document.getElementById('dateFrom').value=start.toISOString().slice(0,10);
   document.getElementById('dateTo').value=end.toISOString().slice(0,10);
   const label=fmtDS(start)+' – '+fmtDS(end);
-  ['kpiBadge','perfBadge','cbBadge','apptBadge'].forEach(id=>{
+  ['kpiBadge','cbBadge','apptBadge'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.textContent=label;
   });
   G.dateFrom=start;G.dateTo=end;
@@ -611,7 +593,7 @@ function applyCustomDate(){
   const to=parseDate(document.getElementById('dateTo').value);
   if(!from||!to||from>to)return;
   const label=fmtDS(from)+' – '+fmtDS(to);
-  ['kpiBadge','perfBadge','cbBadge','apptBadge'].forEach(id=>{
+  ['kpiBadge','cbBadge','apptBadge'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.textContent=label;
   });
   G.dateFrom=from;G.dateTo=to;
@@ -619,9 +601,7 @@ function applyCustomDate(){
 }
 function applyDateRange(from,to){
   const fs=fmt8(from),ts=fmt8(to);
-  const f=G.stats.filter(r=>r.date>=fs&&r.date<=ts);
   const fb=G.breakdown.filter(r=>r.date>=fs&&r.date<=ts);
-  renderPerformance(f);
   renderConvBreakdown(fb);
 }
 
@@ -1006,33 +986,6 @@ function renderPaths(){
   });
 }
 
-/* ─── SECTION 5: CAMPAIGN PERFORMANCE ─── */
-function renderPerformance(rows){
-  const byCamp={};
-  rows.forEach(r=>{
-    if(!byCamp[r.campaign])byCamp[r.campaign]={campaign:r.campaign,spend:0,conversions:0,revenue:0};
-    byCamp[r.campaign].spend+=r.spend||0;
-    byCamp[r.campaign].conversions+=r.conversions||0;
-    byCamp[r.campaign].revenue+=r.revenue||0;
-  });
-  const campRows=Object.values(byCamp).sort((a,b)=>b.revenue-a.revenue);
-  const amap={};G.assisted.forEach(r=>{amap[r.campaign]=r;});
-  function perfRow(r){
-    const a=amap[r.campaign]||{};
-    const lcR=r.spend>0?r.revenue/r.spend:0;
-    const mtaR=a.mta_roas||0;
-    return`<tr>
-      <td style="font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.campaign}">${r.campaign}</td>
-      <td class="num">${fmtGBP(r.spend)}</td>
-      <td class="num">${r.conversions.toFixed(0)}</td>
-      <td class="num">${fmtGBP(r.revenue)}</td>
-      <td class="num ${lcR>=4?'up':lcR>=2?'':'down'}">${lcR.toFixed(2)}×</td>
-      <td class="num ${mtaR>=4?'up':mtaR>0&&mtaR<2?'down':''}">${mtaR>0?mtaR.toFixed(2)+'×':'—'}</td>
-      <td>${a.campaign_role?roleBadge(a.campaign_role):'<span class="badge badge-x">—</span>'}</td>
-    </tr>`;
-  }
-  initPag('perfTbody',campRows,perfRow,7);
-}
 
 /* ─── SECTION 6: CONVERSION TYPE BREAKDOWN ─── */
 function renderConvBreakdown(bkData){
