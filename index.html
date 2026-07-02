@@ -220,7 +220,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div class="chart-full">
     <h3>Assist Ratio by Campaign</h3>
     <div class="chart-sub">Assists per last-click conversion. Higher = more top-of-funnel impact. Purple = Introducer, Blue = Assist, Green = Closer.</div>
-    <div class="chart-wrap" style="height:220px"><canvas id="assistRatioChart"></canvas></div>
+    <div class="chart-wrap" style="height:260px"><canvas id="assistRatioChart"></canvas></div>
   </div>
 </section>
 
@@ -847,21 +847,28 @@ function renderRoles(){
   G.charts['assistRatioChart']=new Chart(document.getElementById('assistRatioChart').getContext('2d'),{
     type:'bar',
     data:{
-      labels:top.map(r=>r.campaign.length>22?r.campaign.slice(0,20)+'…':r.campaign),
+      labels:top.map(r=>r.campaign.length>24?r.campaign.slice(0,22)+'…':r.campaign),
       datasets:[{
         data:top.map(r=>+(r.assist_ratio||0).toFixed(2)),
         backgroundColor:top.map(r=>
           r.campaign_role==='Pure Introducer'?'rgba(232,121,249,.8)':
           r.campaign_role==='Introducer'?'rgba(168,85,247,.7)':
           r.campaign_role==='Assist'?'rgba(59,130,246,.7)':'rgba(34,197,94,.7)'),
-        borderRadius:4
+        borderRadius:4,
+        barThickness:18
       }]
     },
-    options:{responsive:true,maintainAspectRatio:false,
+    options:{
+      indexAxis:'y',
+      responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>'Assist Ratio: '+v.raw+'×'}}},
       scales:{
-        x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:10}}},
-        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:10}}}
+        x:{
+          grid:{color:'rgba(255,255,255,.04)'},
+          ticks:{color:'#8b90a8',font:{size:10}},
+          title:{display:true,text:'Assists per Last-Click Conversion',color:'#8b90a8',font:{size:10}}
+        },
+        y:{grid:{display:false},ticks:{color:'#c8cad4',font:{size:11}}}
       }
     }
   });
