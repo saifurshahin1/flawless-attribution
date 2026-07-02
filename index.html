@@ -284,6 +284,26 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div class="bq-line">Business Question</div>
   <div class="bq-q">How does attribution credit shift when you look beyond Last Click — and which campaigns are systematically undervalued by Google's default reporting?</div>
   <p class="section-sub"><strong>Last Click Conv</strong> = what Google Ads Campaigns tab shows. <strong>All Conv (Google)</strong> = broader count including all tracked actions (includes appointment + engagement signals). <strong>Assists (90D)</strong> = times this campaign appeared in a path but didn't receive the last click. <strong>True ROAS</strong> = attribution-adjusted ROAS combining LC + assist influence.</p>
+
+  <div class="mta-callout" style="margin-bottom:20px">
+    <div class="mta-side" style="background:rgba(59,130,246,.06)">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:10px">Standard Last-Click View</div>
+      <div style="font-size:38px;font-weight:900;color:var(--blue);margin-bottom:4px" id="mtaLcRoas">—</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px" id="mtaTopCamp">Top Campaign ROAS</div>
+      <div style="font-size:12px;color:var(--muted)">What Google Ads reports show by default</div>
+    </div>
+    <div class="mta-divider">
+      <div style="font-size:26px;font-weight:900;color:var(--gold2)">→</div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);text-align:center;line-height:1.6">Multi-Touch<br>Attribution<br>Reveals</div>
+    </div>
+    <div class="mta-side" style="background:rgba(201,168,76,.06)">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gold2);margin-bottom:10px">Attribution-Adjusted View</div>
+      <div style="font-size:38px;font-weight:900;color:var(--gold2);margin-bottom:4px" id="mtaTrueRoas">—</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px" id="mtaTopCamp2">Top Campaign True ROAS</div>
+      <div style="font-size:12px;color:var(--muted)" id="mtaAssistedNote">Including assisted revenue influence</div>
+    </div>
+  </div>
+
   <div class="table-card">
     <table>
       <thead><tr>
@@ -309,56 +329,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </section>
 
-<!-- ── SECTION 3: MTA vs LAST CLICK ── -->
-<section id="mta-vs-lc">
-  <div class="section-title"><div class="num">3</div>Multi-Touch vs Last Click — The Attribution Gap <span class="fixed-badge" id="mtaBadge" style="margin-left:auto">90D Fixed</span></div>
-  <div class="bq-line">Business Question</div>
-  <div class="bq-q">How much campaign revenue influence is hidden by Last Click attribution — and which campaigns are most understated?</div>
-  <p class="section-sub">Attribution-Adjusted ROAS = (Last-Click Revenue + Assisted Revenue) ÷ Ad Spend. The gap between this figure and standard Last Click ROAS is the cost of the attribution blind spot for each campaign.</p>
-
-  <div class="mta-callout">
-    <div class="mta-side" style="background:rgba(59,130,246,.06)">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:10px">Standard Last-Click View</div>
-      <div style="font-size:38px;font-weight:900;color:var(--blue);margin-bottom:4px" id="mtaLcRoas">—</div>
-      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px" id="mtaTopCamp">Top Campaign ROAS</div>
-      <div style="font-size:12px;color:var(--muted)">What Google Ads reports show by default</div>
-    </div>
-    <div class="mta-divider">
-      <div style="font-size:26px;font-weight:900;color:var(--gold2)">→</div>
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);text-align:center;line-height:1.6">Multi-Touch<br>Attribution<br>Reveals</div>
-    </div>
-    <div class="mta-side" style="background:rgba(201,168,76,.06)">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gold2);margin-bottom:10px">Attribution-Adjusted View</div>
-      <div style="font-size:38px;font-weight:900;color:var(--gold2);margin-bottom:4px" id="mtaTrueRoas">—</div>
-      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px" id="mtaTopCamp2">Top Campaign True ROAS</div>
-      <div style="font-size:12px;color:var(--muted)" id="mtaAssistedNote">Including assisted revenue influence</div>
-    </div>
-  </div>
-
-  <div class="table-card">
-    <table>
-      <thead><tr>
-        <th>Campaign</th><th class="num">Ad Spend</th>
-        <th class="num">LC Revenue</th><th class="num">LC ROAS</th>
-        <th class="num">Assisted Rev</th><th class="num">True ROAS</th>
-        <th class="num">Uplift</th><th>Role</th>
-      </tr></thead>
-      <tbody id="mtaTbody"></tbody>
-    </table>
-  </div>
-  <div class="charts-row">
-    <div class="chart-card">
-      <h3>LC Revenue vs Assisted Revenue by Campaign</h3>
-      <div class="chart-sub">Green = additional revenue revealed by attribution analysis</div>
-      <div class="chart-wrap" style="height:240px"><canvas id="mtaChart"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h3>Attribution-Adjusted ROAS vs Last-Click ROAS</h3>
-      <div class="chart-sub">Campaigns where the gap is largest are most understated by standard reporting</div>
-      <div class="chart-wrap" style="height:240px"><canvas id="roasGapChart"></canvas></div>
-    </div>
-  </div>
-</section>
 
 <!-- ── SECTION 3: CUSTOMER JOURNEY ── -->
 <section id="journey-behaviour">
@@ -875,6 +845,20 @@ function renderAttrModels(){
   const dr=rows[0]?.date_range||'90D Fixed';
   const badge=document.getElementById('attrBadge');if(badge)badge.textContent=dr;
 
+  // Callout box: top campaign LC ROAS vs True ROAS
+  const top=rows[0];
+  if(top){
+    const lcR=top.spend>0?top.last_click_value/top.spend:0;
+    const trueR=top.mta_roas||0;
+    const aRev=Math.max(0,trueR*top.spend-top.last_click_value);
+    const setTxt=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+    setTxt('mtaLcRoas',lcR.toFixed(1)+'×');
+    setTxt('mtaTopCamp',top.campaign+' Last-Click ROAS');
+    setTxt('mtaTrueRoas',trueR.toFixed(0)+'×');
+    setTxt('mtaTopCamp2',top.campaign+' True ROAS');
+    setTxt('mtaAssistedNote','Including '+fmtGBP(aRev)+' in assisted revenue influence');
+  }
+
   function attrRow(r){
     const lcR=r.lc_roas||0;
     const trueR=r.mta_roas||0;
@@ -1005,73 +989,6 @@ function renderRoles(){
   }else if(ins){ins.style.display='none';}
 }
 
-/* ─── SECTION 2: MTA vs LAST CLICK ─── */
-function renderMTA(){
-  const rows=[...G.assisted].filter(r=>(r.spend||0)>0).sort((a,b)=>(b.last_click_value||0)-(a.last_click_value||0));
-  const dr=rows[0]?.date_range||'90D Fixed';
-  const badge=document.getElementById('mtaBadge');if(badge)badge.textContent=dr;
-
-  const top=rows[0];
-  if(top){
-    const lcR=(top.spend>0)?top.last_click_value/top.spend:0;
-    const trueR=top.mta_roas||0;
-    const aRev=Math.max(0,trueR*top.spend-top.last_click_value);
-    const setTxt=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
-    setTxt('mtaLcRoas',lcR.toFixed(1)+'×');
-    setTxt('mtaTopCamp',top.campaign+' Last-Click ROAS');
-    setTxt('mtaTrueRoas',trueR.toFixed(0)+'×');
-    setTxt('mtaTopCamp2',top.campaign+' True ROAS');
-    setTxt('mtaAssistedNote','Including '+fmtGBP(aRev)+' in assisted revenue influence');
-  }
-
-  function mtaRow(r){
-    const trueRev=(r.mta_roas||0)*(r.spend||0);
-    const aRev=Math.max(0,trueRev-(r.last_click_value||0));
-    const lcR=(r.spend>0)?r.last_click_value/r.spend:0;
-    const trueR=r.mta_roas||0;
-    const uplift=lcR>0?((trueR/lcR-1)*100):0;
-    return`<tr>
-      <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.campaign}">${r.campaign}</td>
-      <td class="num">${fmtGBP(r.spend||0)}</td>
-      <td class="num">${fmtGBP(r.last_click_value||0)}</td>
-      <td class="num ${lcR>=4?'up':lcR>=2?'':'down'}">${lcR.toFixed(2)}×</td>
-      <td class="num">${aRev>10?fmtGBP(aRev):'—'}</td>
-      <td class="num up">${trueR>0?trueR.toFixed(2)+'×':'—'}</td>
-      <td class="num ${uplift>0?'up':''}">${trueR>0&&uplift>0?'+'+uplift.toFixed(0)+'%':'—'}</td>
-      <td>${roleBadge(r.campaign_role)}</td>
-    </tr>`;
-  }
-  initPag('mtaTbody',rows,mtaRow,8);
-
-  const top8=rows.slice(0,8);
-  const labels=top8.map(r=>r.campaign.length>16?r.campaign.slice(0,14)+'…':r.campaign);
-  destroyChart('mtaChart');
-  G.charts['mtaChart']=new Chart(document.getElementById('mtaChart').getContext('2d'),{
-    type:'bar',
-    data:{labels,datasets:[
-      {label:'LC Revenue',data:top8.map(r=>r.last_click_value||0),backgroundColor:'rgba(59,130,246,.7)',borderRadius:3},
-      {label:'Assisted Revenue',data:top8.map(r=>Math.max(0,(r.mta_roas||0)*(r.spend||0)-(r.last_click_value||0))),backgroundColor:'rgba(34,197,94,.5)',borderRadius:3}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:true,labels:{color:'#e8eaf0',font:{size:10},boxWidth:10}}},
-      scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}}},
-               y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9},callback:v=>'£'+(v>=1000?(v/1000).toFixed(0)+'K':v)}}}
-    }
-  });
-  destroyChart('roasGapChart');
-  G.charts['roasGapChart']=new Chart(document.getElementById('roasGapChart').getContext('2d'),{
-    type:'bar',
-    data:{labels,datasets:[
-      {label:'LC ROAS',data:top8.map(r=>r.spend>0?+(r.last_click_value/r.spend).toFixed(2):0),backgroundColor:'rgba(59,130,246,.6)',borderRadius:3},
-      {label:'MTA ROAS',data:top8.map(r=>+(r.mta_roas||0).toFixed(2)),backgroundColor:'rgba(201,168,76,.7)',borderRadius:3}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:true,labels:{color:'#e8eaf0',font:{size:10},boxWidth:10}}},
-      scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}}},
-               y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9},callback:v=>v+'×'}}}
-    }
-  });
-}
 
 /* ─── SECTION 3: CUSTOMER JOURNEY ─── */
 function renderJourney(){
@@ -1338,7 +1255,6 @@ async function initDashboard(){
     renderKPIs();
     renderAttrModels();
     renderRoles();
-    renderMTA();
     renderJourney();
     renderPaths();
     renderConvBreakdown();
