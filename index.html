@@ -357,19 +357,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div class="bq-line">Business Question</div>
   <div class="bq-q">Which conversion types does each campaign drive — and why do campaigns reporting £0 revenue still represent real business value?</div>
   <p class="section-sub">Conversions categorised into 3 tiers: <strong>Tier 1</strong> = Direct Revenue (Offline Invoice + Website Purchase). <strong>Tier 2</strong> = Appointment Pipeline (Appointments + Contact Form) — assigned £0 in Google Ads but feeds Offline Invoice revenue. <strong>Tier 3</strong> = Engagement Signals (WhatsApp + Checkout) — early-funnel intent indicators.</p>
-  <div id="tierCards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px"></div>
-  <div class="charts-row" style="grid-template-columns:3fr 2fr">
-    <div class="chart-card">
-      <h3>Revenue (Tier 1) vs Appointments (Tier 2) vs Engagement (Tier 3)</h3>
-      <div class="chart-sub">Stacked by campaign — shows full funnel contribution</div>
-      <div class="chart-wrap" style="height:260px"><canvas id="tierStackChart"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h3>Offline Invoice Breakdown — Who Drives High-Value Sales?</h3>
-      <div class="chart-sub" id="offlineSub">Most strategic conversion type</div>
-      <div class="chart-wrap" style="height:260px"><canvas id="offlineInvoiceChart"></canvas></div>
-    </div>
-  </div>
   <div class="table-card">
     <table>
       <thead><tr>
@@ -967,68 +954,6 @@ function renderConvBreakdown(bkData){
     Object.values(b.t2).reduce((s,v)=>s+v,0)-Object.values(a.t2).reduce((s,v)=>s+v,0));
 
   const rColors={Closer:'var(--green)',Assist:'var(--blue)',Introducer:'var(--purple)','Pure Introducer':'#e879f9','Revenue Closer':'var(--gold2)'};
-
-  // Tier 1 revenue cards
-  const t1Camps=campRows.filter(c=>c.t1Rev>0).slice(0,4);
-  document.getElementById('tierCards').innerHTML=t1Camps.map(c=>{
-    const col=rColors[c.role]||'var(--gold2)';
-    const convStr=Object.entries(c.t1).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${v.toFixed(0)}× ${k}`).join(' + ')||'—';
-    return`<div class="kpi-card" style="border-left:3px solid ${col}">
-      <div class="label">${c.campaign} — Tier 1</div>
-      <div class="value" style="color:${col};font-size:22px">${fmtGBP(c.t1Rev)}</div>
-      <div class="sub">${convStr}</div>
-    </div>`;
-  }).join('');
-
-  // Stacked bar chart (conversion COUNTS)
-  const top6=campRows.slice(0,6);
-  const cLabels=top6.map(c=>{
-    let n=c.campaign.replace('Sales-Performance Max-12th May 2023','Sales-PMax')
-                    .replace('-12th May 2023','').replace(' - Manual CPC','')
-                    .replace('Hatton Garden Mobile','Hatton Gdn Mobile');
-    return n.length>20?n.slice(0,18)+'…':n;
-  });
-  destroyChart('tierStackChart');
-  G.charts['tierStackChart']=new Chart(document.getElementById('tierStackChart').getContext('2d'),{
-    type:'bar',
-    data:{labels:cLabels,datasets:[
-      {label:'Tier 1: Revenue',data:top6.map(c=>+Object.values(c.t1).reduce((s,v)=>s+v,0).toFixed(1)),backgroundColor:'rgba(34,197,94,.8)',borderRadius:2},
-      {label:'Tier 2: Pipeline',data:top6.map(c=>+Object.values(c.t2).reduce((s,v)=>s+v,0).toFixed(1)),backgroundColor:'rgba(59,130,246,.7)',borderRadius:2},
-      {label:'Tier 3: Engagement',data:top6.map(c=>+Object.entries(c.t3).filter(([k])=>!k.includes('Time')&&!k.includes('YouTube')).reduce((s,[,v])=>s+v,0).toFixed(1)),backgroundColor:'rgba(168,85,247,.5)',borderRadius:2}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:true,labels:{color:'#e8eaf0',font:{size:10},boxWidth:10}}},
-      scales:{x:{stacked:true,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}}},
-               y:{stacked:true,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}}}}
-    }
-  });
-
-  // Offline invoice doughnut
-  const offByCamp={};
-  bkData.filter(r=>{const lc=(r.conversion_action||'').toLowerCase();return lc.includes('offline')||lc.includes('invoice');})
-    .forEach(r=>{
-      if(!offByCamp[r.campaign])offByCamp[r.campaign]={campaign:r.campaign,conv:0,val:0};
-      offByCamp[r.campaign].conv+=r.conversions||0;
-      offByCamp[r.campaign].val+=r.conversion_value||0;
-    });
-  const offRows=Object.values(offByCamp).sort((a,b)=>b.val-a.val).slice(0,6);
-  const tOffV=offRows.reduce((s,r)=>s+r.val,0);
-  const tOffC=offRows.reduce((s,r)=>s+r.conv,0);
-  const avgOff=tOffC>0?tOffV/tOffC:0;
-  const offSubEl=document.getElementById('offlineSub');
-  if(offSubEl)offSubEl.textContent=tOffC>0?`Avg ${fmtGBP(Math.round(avgOff))}/sale (${fmtGBP(Math.round(tOffV))} ÷ ${Math.round(tOffC)} invoices) — most strategic conversion type`:'Offline invoice data loading...';
-  const dCol=['rgba(34,197,94,.85)','rgba(59,130,246,.85)','rgba(201,168,76,.85)','rgba(168,85,247,.7)','rgba(249,115,22,.7)','rgba(99,104,128,.6)'];
-  destroyChart('offlineInvoiceChart');
-  G.charts['offlineInvoiceChart']=new Chart(document.getElementById('offlineInvoiceChart').getContext('2d'),{
-    type:'doughnut',
-    data:{
-      labels:offRows.map(r=>`${r.campaign.slice(0,18)} (${fmtGBP(Math.round(r.val))})`),
-      datasets:[{data:offRows.map(r=>r.val),backgroundColor:dCol,borderWidth:1,borderColor:'#1a1d27'}]
-    },
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom',labels:{color:'#e8eaf0',font:{size:9},padding:8}}}
-    }
-  });
 
   // Campaign tier table
   const tbody=document.getElementById('cbTbody');
