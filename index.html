@@ -169,7 +169,7 @@ tr:hover td{background:rgba(255,255,255,.012)}
 .guide-hdr h2{font-size:1rem;color:var(--gold);margin:0;font-weight:600}
 .guide-close{background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;line-height:1;padding:2px 6px;border-radius:4px}
 .guide-close:hover{color:var(--text);background:rgba(255,255,255,.06)}
-.guide-body{padding:20px 24px}
+.guide-body{padding:20px 24px;overflow-x:hidden;word-break:break-word}
 .guide-sec{margin-bottom:28px;border-bottom:1px solid rgba(255,255,255,.04);padding-bottom:28px}
 .guide-sec:last-child{border-bottom:none;margin-bottom:0}
 .guide-sec-title{display:flex;align-items:center;gap:10px;margin-bottom:10px}
@@ -214,7 +214,32 @@ tr:hover td{background:rgba(255,255,255,.012)}
   .wrap{padding:16px}
   .nav-links{display:none}
 }
-@media(max-width:600px){.kpi-row{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .nav-bar{padding:0 10px;gap:4px}
+  .nav-brand{font-size:10px}
+  .nav-right{gap:3px}
+  .qbtn{padding:3px 7px;font-size:10px}
+  .dp-btn{font-size:10px;padding:3px 7px}
+}
+
+/* ── GUIDE RESPONSIVE ── */
+.guide-drawer{overflow-x:hidden}
+.guide-body{overflow-x:hidden;word-break:break-word;overflow-wrap:anywhere}
+.guide-what,.guide-action,.guide-why,.guide-a{word-break:break-word;overflow-wrap:anywhere}
+.guide-sec-title h3{min-width:0}
+@media(max-width:520px){
+  .guide-drawer{width:100vw;max-width:100vw}
+  .guide-hdr{padding:14px 16px}
+  .guide-hdr h2{font-size:0.9rem}
+  .guide-body{padding:14px 16px}
+  .guide-start{padding:12px}
+  .guide-period{grid-template-columns:1fr}
+  .guide-sec{margin-bottom:18px;padding-bottom:18px}
+  .guide-faq{padding:12px 14px}
+  .guide-sec-title{flex-wrap:wrap;gap:6px}
+  .guide-tag{margin-left:0}
+}
 </style>
 </head>
 <body>
