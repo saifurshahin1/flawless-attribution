@@ -104,10 +104,10 @@ function exportConvBreakdown(dates) {
   var iter = AdsApp.search(
     'SELECT segments.date, campaign.name, ' +
     '  segments.conversion_action_name, segments.conversion_action_category, ' +
-    '  metrics.conversions, metrics.conversions_value ' +
+    '  metrics.all_conversions, metrics.all_conversions_value ' +
     'FROM campaign ' +
     'WHERE segments.date BETWEEN "' + dates.start + '" AND "' + dates.end + '" ' +
-    '  AND metrics.conversions > 0'
+    '  AND metrics.all_conversions > 0'
   );
   while (iter.hasNext()) {
     var r  = iter.next();
@@ -119,8 +119,8 @@ function exportConvBreakdown(dates) {
         campaign:            r.campaign.name,
         conversion_action:   ca,
         conversion_category: r.segments.conversionActionCategory || '',
-        conversions:         r2(r.metrics.conversions || 0),
-        conversion_value:    r2(r.metrics.conversionsValue || 0),
+        conversions:         r2(r.metrics.allConversions || 0),
+        conversion_value:    r2(r.metrics.allConversionsValue || 0),
         pulled_at:           new Date().toISOString()
       }
     });
