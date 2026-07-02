@@ -454,11 +454,12 @@ tr:hover td{background:rgba(255,255,255,.012)}
       <table>
         <thead>
           <tr>
-            <th>#</th>
             <th>Conversion Path</th>
-            <th class="num">Conversions</th>
-            <th class="num">Revenue (£)</th>
             <th>Path Type</th>
+            <th>Conversion Action</th>
+            <th class="num">Conversions</th>
+            <th class="num">% of Total</th>
+            <th class="num">Revenue (£)</th>
           </tr>
         </thead>
         <tbody id="pathsTbody"></tbody>
@@ -1179,13 +1180,15 @@ function renderConvBreakdown(bkData){
     return'<span class="badge bx">Other</span>';
   }
   const totalConv=rows.reduce((s,r)=>s+r.conversions,0);
+  const totalRev=rows.reduce((s,r)=>s+r.conversion_value,0);
   const tbody=document.getElementById('cbTbody');
   tbody.innerHTML=rows.map(r=>`<tr>
     <td style="font-size:0.85rem">${r.action}</td>
     <td>${cbBadge(r.category,r.action)}</td>
     <td class="num">${r.conversions.toFixed(1)}</td>
-    <td class="num dim">${totalConv>0?(r.conversions/totalConv*100).toFixed(1)+'%':'—'}</td>
     <td class="num">${r.conversion_value>0?fmtGBP(r.conversion_value):'—'}</td>
+    <td class="num dim">${totalConv>0?(r.conversions/totalConv*100).toFixed(1)+'%':'—'}</td>
+    <td class="num dim">${totalRev>0&&r.conversion_value>0?(r.conversion_value/totalRev*100).toFixed(1)+'%':'—'}</td>
   </tr>`).join('');
   collapseTable(tbody,8);
 
