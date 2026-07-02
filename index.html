@@ -75,20 +75,7 @@ section{margin-bottom:36px}
 .bq-q{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:14px;padding-left:10px;border-left:2px solid rgba(201,168,76,.4);line-height:1.5}
 .section-sub{color:var(--muted);font-size:12px;margin-bottom:14px;line-height:1.6}
 
-/* ── EXEC INSIGHTS ── */
-.exec-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px}
-.exec-card{border-radius:10px;padding:16px 18px}
-.exec-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.exec-body{font-size:13px;color:var(--text);line-height:1.6}
 
-/* ── 4 KEY QUESTIONS ── */
-.key-q-box{background:rgba(201,168,76,.07);border:1.5px solid rgba(201,168,76,.4);border-radius:12px;padding:20px 24px;margin-bottom:28px}
-.key-q-title{font-size:13px;font-weight:700;color:var(--gold2);margin-bottom:14px;letter-spacing:.3px}
-.key-q-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.key-q-card{border-radius:8px;padding:14px}
-.key-q-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.key-q-answer{font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px}
-.key-q-sub{font-size:11px;color:var(--muted);line-height:1.5}
 
 /* ── KPI CARDS ── */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
@@ -169,7 +156,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 /* ── RESPONSIVE ── */
 @media(max-width:1000px){
-  .charts-row,.exec-grid,.bta-grid,.mta-callout{grid-template-columns:1fr}
+  .charts-row,.bta-grid,.mta-callout{grid-template-columns:1fr}
   .key-q-grid{grid-template-columns:1fr 1fr}
   .container{padding:16px}
   .header{flex-direction:column;align-items:flex-start}
@@ -764,88 +751,6 @@ function renderKPIs(){
   `;
 }
 
-/* ─── EXECUTIVE INSIGHTS ─── */
-function renderExecInsights(){
-  const asst=G.assisted,tl=G.timeLag,pl=G.pathLen;
-
-  const totalPL=pl.reduce((s,r)=>s+(r.conversions||0),0)||1;
-  const single=pl.filter(r=>+r.bucket===1).reduce((s,r)=>s+(r.conversions||0),0);
-  const multiPct=((totalPL-single)/totalPL*100);
-  const singlePct=(single/totalPL*100);
-
-  const totalLC=asst.reduce((s,r)=>s+(r.last_click_value||0),0);
-  const totalMTA=asst.reduce((s,r)=>s+(r.mta_roas||0)*(r.spend||0),0);
-  const sorted=[...asst].sort((a,b)=>((b.mta_roas||0)*(b.spend||0))-((a.mta_roas||0)*(a.spend||0)));
-  const topCamp=sorted[0];
-  const topAssist=topCamp?Math.max(0,(topCamp.mta_roas||0)*(topCamp.spend||0)-(topCamp.last_click_value||0)):0;
-  const mtaMult=totalLC>0?totalMTA/totalLC:0;
-
-  const totalTL=tl.reduce((s,r)=>s+(r.conversions||0),0)||1;
-  const fastConv=tl.filter(r=>+r.bucket===0).reduce((s,r)=>s+(r.conversions||0),0);
-  const fastRev=tl.filter(r=>+r.bucket===0).reduce((s,r)=>s+(r.conversion_value||0),0);
-  const slowConv=tl.filter(r=>+r.bucket>=12).reduce((s,r)=>s+(r.conversions||0),0);
-  const slowRev=tl.filter(r=>+r.bucket>=12).reduce((s,r)=>s+(r.conversion_value||0),0);
-  const totalTLRev=tl.reduce((s,r)=>s+(r.conversion_value||0),0)||1;
-  const fastRevPct=(fastRev/totalTLRev*100);
-  const slowRevPct=(slowRev/totalTLRev*100);
-
-  const top3Rev=sorted.slice(0,3).reduce((s,r)=>s+(r.mta_roas||0)*(r.spend||0),0);
-  const top3Pct=totalMTA>0?(top3Rev/totalMTA*100):0;
-  const top3Names=sorted.slice(0,3).map(r=>r.campaign).join(', ');
-
-  document.getElementById('execGrid').innerHTML=`
-    <div class="exec-card" style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.25)">
-      <div class="exec-label" style="color:#60a5fa">Single-Touch Dominates Volume; Multi-Touch Drives Value</div>
-      <div class="exec-body">${singlePct.toFixed(1)}% of conversions are single-touch — Last Click captures these accurately. The remaining ${multiPct.toFixed(1)}% involve 2+ campaigns. Customers who interact with multiple ads generate revenue at a significantly higher per-conversion rate than single-touch buyers.</div>
-    </div>
-    <div class="exec-card" style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.25)">
-      <div class="exec-label" style="color:#f87171">Last Click Understates Account Revenue by ${mtaMult>0?mtaMult.toFixed(1)+'×':'—'}</div>
-      <div class="exec-body">Last Click reports total revenue at <strong style="color:#f87171">${fmtGBP(totalLC)}</strong>. Attribution analysis identifies <strong style="color:#f87171">${fmtGBP(totalMTA)} in total campaign influence</strong> — a ${fmtGBP(totalMTA-totalLC)} gap. ${topCamp?.campaign||'Top campaign'} alone accounts for ${fmtGBP(topAssist)} in assisted revenue that does not appear in any standard Google Ads report.</div>
-    </div>
-    <div class="exec-card" style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.25)">
-      <div class="exec-label" style="color:#4ade80">Fast Buyers Are the Majority; High-Value Buyers Take Longer</div>
-      <div class="exec-body">${(fastConv/totalTL*100).toFixed(1)}% of customers convert within 24 hours, generating ${fmtGBP(fastRev)} (${fastRevPct.toFixed(1)}% of revenue). Customers who take 12+ days represent ${(slowConv/totalTL*100).toFixed(1)}% of conversions but <strong style="color:var(--green)">${slowRevPct.toFixed(1)}% of revenue</strong>. Your retargeting window length directly determines whether this segment is captured.</div>
-    </div>
-    <div class="exec-card" style="background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.25)">
-      <div class="exec-label" style="color:#c084fc">Revenue Concentrated Across a Three-Campaign Funnel</div>
-      <div class="exec-body">${top3Pct.toFixed(0)}% of attributed revenue traces to three campaigns: ${top3Names}. The funnel is sequential. <strong style="color:var(--purple)">Disrupting any tier reduces the others' effectiveness</strong> — with a measurable 2–4 week lag before impact appears in reported conversions.</div>
-    </div>
-  `;
-}
-
-/* ─── 4 KEY QUESTIONS ─── */
-function renderKeyQuestions(){
-  const asst=G.assisted;
-  if(!asst.length)return;
-  const byRole=r=>r.campaign_role;
-  const intros=[...asst].filter(r=>byRole(r)==='Introducer'||byRole(r)==='Pure Introducer').sort((a,b)=>(b.assist_ratio||0)-(a.assist_ratio||0));
-  const assists=[...asst].filter(r=>byRole(r)==='Assist').sort((a,b)=>Math.abs((a.assist_ratio||0)-1)-Math.abs((b.assist_ratio||0)-1));
-  const closers=[...asst].filter(r=>byRole(r)==='Closer'||byRole(r)==='Revenue Closer').sort((a,b)=>(b.last_click_value||0)-(a.last_click_value||0));
-  const topMTA=[...asst].sort((a,b)=>(b.mta_roas||0)-(a.mta_roas||0));
-  const q1=intros[0];const q2=assists[0];const q3=closers[0]||topMTA[0];const q4=topMTA[0];
-  document.getElementById('keyQGrid').innerHTML=`
-    <div class="key-q-card" style="background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3)">
-      <div class="key-q-label" style="color:#c084fc">Which campaign acquires new customers?</div>
-      <div class="key-q-answer">${q1?.campaign||'—'}</div>
-      <div class="key-q-sub">${q1?(q1.assists||0).toFixed(0)+' assists vs '+(q1.last_click_conv||0).toFixed(0)+' closes — '+(q1.campaign_role||'Introducer')+' role. Introduces '+(q1.assist_ratio||0).toFixed(2)+'× new customers per close.':'No Introducer campaign found in current data.'}</div>
-    </div>
-    <div class="key-q-card" style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3)">
-      <div class="key-q-label" style="color:#60a5fa">Which campaign assists conversions?</div>
-      <div class="key-q-answer">${q2?.campaign||'—'}</div>
-      <div class="key-q-sub">${q2?(q2.last_click_conv||0).toFixed(0)+' closes + '+(q2.assists||0).toFixed(0)+' assists — balanced mid-funnel. Controls the middle step of the customer journey.':'No Assist campaign found in current data.'}</div>
-    </div>
-    <div class="key-q-card" style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3)">
-      <div class="key-q-label" style="color:#4ade80">Which campaign closes deals?</div>
-      <div class="key-q-answer">${q3?.campaign||'—'}</div>
-      <div class="key-q-sub">${q3?(q3.last_click_conv||0).toFixed(0)+' primary conversions, '+fmtGBP(q3.last_click_value||0)+' direct revenue.':'No Closer campaign found.'}</div>
-    </div>
-    <div class="key-q-card" style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.5)">
-      <div class="key-q-label" style="color:var(--gold2)">Is ${q4?.campaign||'top campaign'} spend justified?</div>
-      <div class="key-q-answer" style="color:var(--gold2)">Yes — ${(q4?.mta_roas||0).toFixed(0)}× ROAS</div>
-      <div class="key-q-sub">${q4?fmtGBP(q4.spend||0)+' spend drives '+fmtGBP((q4.mta_roas||0)*(q4.spend||0))+' total influence. Direct '+fmtGBP(q4.last_click_value||0)+' + Assisted '+fmtGBP(Math.max(0,(q4.mta_roas||0)*(q4.spend||0)-(q4.last_click_value||0)))+'.':'—'}</div>
-    </div>
-  `;
-}
 
 /* ─── SECTION 2: ATTRIBUTION MODELS ─── */
 function renderAttrModels(){
