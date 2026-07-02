@@ -249,7 +249,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div class="kpi-card kpi-purple"><div class="label">Avg Ad Interactions</div><div class="value dim">—</div><div class="sub">Touchpoints before purchase</div></div>
     <div class="kpi-card kpi-orange"><div class="label">Same-Day Conversions</div><div class="value dim">—</div><div class="sub">Convert within 24 hours of first click</div></div>
     <div class="kpi-card kpi-green"><div class="label">Total Assists (90D)</div><div class="value dim">—</div><div class="sub">Times a campaign assisted before another closed</div></div>
-    <div class="kpi-card kpi-gold"><div class="label">Top Campaign LC Revenue</div><div class="value dim">—</div><div class="sub">Last-click, 90D window</div></div>
+    <div class="kpi-card kpi-gold"><div class="label">Attribution Gap</div><div class="value dim">—</div><div class="sub">Revenue hidden by Last Click (90D)</div></div>
     <div class="kpi-card"><div class="label">Multi-Touch Conv %</div><div class="value dim">—</div><div class="sub">Required 2+ ad interactions</div></div>
   </div>
 </section>
@@ -781,15 +781,17 @@ function renderKPIs(){
   // Total assists across all campaigns
   const totalAssists=asst.reduce((s,r)=>s+(r.assists||0),0);
 
-  // Top campaign by LC revenue
-  const topLC=[...asst].sort((a,b)=>(b.last_click_value||0)-(a.last_click_value||0))[0];
+  // Attribution gap = total MTA revenue − total LC revenue
+  const totalLC=asst.reduce((s,r)=>s+(r.last_click_value||0),0);
+  const totalMTA=asst.reduce((s,r)=>s+(r.mta_roas||0)*(r.spend||0),0);
+  const attrGap=Math.max(0,totalMTA-totalLC);
 
   document.getElementById('kpiRow').innerHTML=`
     <div class="kpi-card kpi-blue"><div class="label">Avg Days to Purchase</div><div class="value">${avgDays.toFixed(1)}</div><div class="sub">From first ad to conversion (90D)</div></div>
     <div class="kpi-card kpi-purple"><div class="label">Avg Ad Interactions</div><div class="value">${avgInt.toFixed(1)}</div><div class="sub">Touchpoints before purchase (90D)</div></div>
     <div class="kpi-card kpi-orange"><div class="label">Same-Day Conversions</div><div class="value">${sameDayPct.toFixed(1)}%</div><div class="sub">Convert within 24 hrs of first click</div></div>
     <div class="kpi-card kpi-green"><div class="label">Total Assists (90D)</div><div class="value">${fmtN(Math.round(totalAssists))}</div><div class="sub">Times a campaign assisted before another closed</div></div>
-    <div class="kpi-card kpi-gold"><div class="label">${topLC?.campaign?.length>18?topLC.campaign.slice(0,16)+'…':topLC?.campaign||'Top Campaign'}</div><div class="value">${topLC?fmtGBP(topLC.last_click_value||0):'—'}</div><div class="sub">${topLC?(topLC.assists||0).toFixed(0)+' additional assists (90D)':'LC revenue top campaign'}</div></div>
+    <div class="kpi-card kpi-gold"><div class="label">Attribution Gap</div><div class="value">${attrGap>0?fmtGBP(attrGap):'—'}</div><div class="sub">Revenue hidden by Last Click (90D)</div></div>
     <div class="kpi-card"><div class="label">Multi-Touch Conv</div><div class="value">${multiPct.toFixed(1)}%</div><div class="sub">Required 2+ ad interactions (90D)</div></div>
   `;
 }
