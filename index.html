@@ -364,7 +364,7 @@ tr:hover td{background:rgba(255,255,255,.012)}
             <th class="num">Assists</th>
             <th class="num">Assisted Rev</th>
             <th class="num">Assist Ratio</th>
-            <th>Strategic Meaning</th>
+            <th>What it does</th>
           </tr>
         </thead>
         <tbody id="rolesTbody"></tbody>
@@ -372,7 +372,7 @@ tr:hover td{background:rgba(255,255,255,.012)}
     </div>
     <div class="cbox">
       <h3>Assist Ratio by Campaign</h3>
-      <p class="csub">Higher ratio = more assist activity relative to direct closing</p>
+      <p class="csub">Higher = more assists, lower = mostly closes</p>
       <div class="ch"><canvas id="assistRatioChart" height="320"></canvas></div>
     </div>
   </div>
@@ -404,7 +404,7 @@ tr:hover td{background:rgba(255,255,255,.012)}
     </div>
     <div class="cbox">
       <h3>Revenue Attribution Comparison</h3>
-      <p class="csub">Last-click vs MTA-adjusted revenue per campaign</p>
+      <p class="csub">What Google Ads credits vs what each campaign actually influenced</p>
       <div class="ch"><canvas id="retargetingChart" height="320"></canvas></div>
     </div>
   </div>
@@ -832,31 +832,31 @@ function pagGo(id,dir){PAG[id].page+=dir;drawPage(id);}
 
 function getStrategicMeaning(r){
   const role=r.campaign_role,ratio=+(r.assist_ratio||0);
-  if(role==='Pure Introducer')return'Pure introducer — never closes alone';
-  if(role==='Introducer')return'Introduces '+ratio.toFixed(1)+'× more customers than it closes';
+  if(role==='Pure Introducer')return'Brings customers in — never gets the last click';
+  if(role==='Introducer')return'Mostly brings people in ('+ratio.toFixed(1)+'× more assists than closes)';
   if(role==='Assist'){
-    if(Math.abs(ratio-1)<=0.1)return'Perfectly balanced — equal closer and assist role';
-    if(ratio>0.75)return'Balanced mid-funnel — closes and assists equally';
-    return'Primarily closes with some assist activity';
+    if(Math.abs(ratio-1)<=0.1)return'Closes and assists in equal measure';
+    if(ratio>0.75)return'More assist than close — works across the journey';
+    return'Mostly closes, some assist activity';
   }
   if(role==='Closer'){
-    if((r.last_click_conv||0)>50)return'Top closer — closes and assists heavily';
-    if(ratio<0.15)return'Pure closer — minimal assist activity';
-    return'Primarily closes; some assist activity';
+    if((r.last_click_conv||0)>50)return'Main closer — high volume of last-click sales';
+    if(ratio<0.15)return'Closes sales, very little assist activity';
+    return'Mostly closes, occasionally assists';
   }
   return'—';
 }
 
 function getBuyerProfile(b){
   b=+b;
-  if(b===0)return'Impulse / same-day buyers';
-  if(b===1)return'Considered (next-day)';
-  if(b<=3)return'Short consideration (2–3 days)';
-  if(b<=7)return'Standard consideration (4–7 days)';
-  if(b<=14)return'Careful evaluators (1–2 weeks)';
-  if(b<=30)return'High-value decision makers (2–4 weeks)';
-  if(b<=60)return'Bespoke / engagement ring shoppers';
-  return'Custom commission clients (60+ days)';
+  if(b===0)return'Bought on the same day';
+  if(b===1)return'Came back next day';
+  if(b<=3)return'Took 2–3 days';
+  if(b<=7)return'Took up to a week';
+  if(b<=14)return'Took 1–2 weeks';
+  if(b<=30)return'Took 2–4 weeks';
+  if(b<=60)return'Took 1–2 months';
+  return'Took over 2 months';
 }
 
 function getPathType(path){
