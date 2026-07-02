@@ -686,8 +686,9 @@ function dpRender(){
     fl.textContent=fmtDS(DP.start)+' – '+fmtDS(DP.end);
     ab.disabled=false;ab.style.opacity='1';
   } else if(DP.start){
-    fl.textContent=fmtDS(DP.start)+' – select end date';
-    ab.disabled=true;ab.style.opacity='.5';
+    const hoverEnd=DP.hover&&DP.hover>=DP.start?DP.hover:null;
+    fl.textContent=fmtDS(DP.start)+' – '+(hoverEnd?fmtDS(hoverEnd):'click to set end date');
+    ab.disabled=false;ab.style.opacity='1';
   } else {
     fl.textContent='Select start date';
     ab.disabled=true;ab.style.opacity='.5';
@@ -731,7 +732,8 @@ function dpRenderMonth(idx,year,month){
   el.innerHTML=h;
 }
 function dpApply(){
-  if(!DP.start||!DP.end)return;
+  if(!DP.start)return;
+  if(!DP.end)DP.end=DP.hover&&DP.hover>=DP.start?DP.hover:new Date(DP.start);
   const label=fmtDS(DP.start)+' – '+fmtDS(DP.end);
   document.getElementById('dpTriggerLabel').textContent=label;
   G.dateFrom=DP.start;G.dateTo=DP.end;
