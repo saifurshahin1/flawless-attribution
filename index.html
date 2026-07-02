@@ -7,795 +7,507 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{
-  --bg:#0b0d14;--card:#13161f;--card2:#1a1d2a;--border:#1f2235;
-  --gold:#c9a84c;--gold2:#f0d080;--text:#e2e4ef;--muted:#636880;
-  --green:#22c55e;--blue:#3b82f6;--purple:#a855f7;--orange:#f97316;
-  --teal:#14b8a6;--amber:#f59e0b;--red:#ef4444;
+  --bg:#0f1117;--card:#1a1d27;--card2:#20243a;--border:#2a2e42;
+  --gold:#c9a84c;--gold2:#f0d080;--text:#e8eaf0;--muted:#8b90a8;
+  --green:#22c55e;--blue:#3b82f6;--purple:#a855f7;
+  --orange:#f97316;--red:#ef4444;--teal:#14b8a6;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;scroll-behavior:smooth}
 
-/* ── NAV BAR ── */
-.nav-bar{position:sticky;top:0;z-index:200;background:#0d0f19;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:48px;gap:20px}
-.nav-brand{font-size:12px;font-weight:700;color:var(--gold2);white-space:nowrap;letter-spacing:.3px}
-.nav-links{display:flex;align-items:center;gap:2px;flex:1;justify-content:center}
-.nav-link{color:var(--muted);font-size:11px;font-weight:500;text-decoration:none;padding:5px 10px;border-radius:5px;transition:color .15s,background .15s;white-space:nowrap}
-.nav-link:hover{color:var(--text);background:rgba(255,255,255,.05)}
-.nav-right{display:flex;align-items:center;gap:6px}
-.qbtn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:4px 11px;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;transition:all .15s}
-.qbtn:hover,.qbtn.active{border-color:var(--gold);color:var(--gold2);background:rgba(201,168,76,.08)}
+/* ── HEADER ── */
+.header{background:linear-gradient(135deg,#1a1d27 0%,#0f1117 100%);border-bottom:2px solid var(--gold);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.header-left h1{font-size:20px;font-weight:700;color:var(--gold2);letter-spacing:.5px}
+.header-left p{color:var(--muted);font-size:12px;margin-top:3px}
+.header-badge{background:rgba(201,168,76,.15);border:1px solid var(--gold);color:var(--gold2);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.qbtn{background:rgba(201,168,76,.07);border:1px solid var(--border);color:var(--muted);padding:5px 13px;border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.qbtn:hover{border-color:var(--gold);color:var(--gold2);background:rgba(201,168,76,.13)}
+.qbtn.active{background:rgba(201,168,76,.2);border-color:var(--gold);color:var(--gold2)}
+.date-inp{background:var(--card);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:8px;font-size:11px;cursor:pointer;outline:none;transition:border-color .2s}
+.date-inp:focus{border-color:var(--gold)}
+.date-inp::-webkit-calendar-picker-indicator{filter:invert(.5) sepia(1) saturate(2) hue-rotate(10deg);cursor:pointer}
+.go-btn{background:var(--gold);color:#000;border:none;padding:5px 14px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;transition:background .2s;white-space:nowrap}
+.go-btn:hover{background:var(--gold2)}
 
-/* ── DATE PICKER ── */
-.dp-wrap{position:relative;display:inline-block}
-.dp-btn{background:#0e1026;border:1px solid var(--border);color:var(--text);padding:4px 11px;border-radius:5px;cursor:pointer;font-size:12px;white-space:nowrap;display:flex;align-items:center;gap:6px;line-height:22px}
-.dp-btn:hover{border-color:var(--blue)}
-.dp-panel{position:absolute;top:calc(100% + 6px);right:0;background:#12152e;border:1px solid #2a2e50;border-radius:8px;display:flex;box-shadow:0 8px 40px rgba(0,0,0,.65);z-index:500;min-width:660px}
-.dp-presets{width:188px;padding:6px 0;border-right:1px solid #2a2e50;flex-shrink:0}
-.dp-preset{padding:6px 16px;cursor:pointer;font-size:12px;color:var(--text);line-height:1.4}
-.dp-preset:hover{background:rgba(255,255,255,.05)}
-.dp-preset.dp-active{color:var(--blue);background:rgba(59,130,246,.12)}
-.dp-days-row{padding:5px 16px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;margin-top:4px}
-.dp-days-inp{width:42px;background:#1a1d35;border:1px solid var(--border);color:var(--text);border-radius:3px;padding:2px 4px;font-size:11px;text-align:center}
-.dp-cal-section{flex:1;padding:14px 16px}
-.dp-date-inputs{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #2a2e50}
-.dp-date-box{border:1px solid var(--border);border-radius:4px;padding:5px 10px;min-width:120px;cursor:default}
-.dp-date-box.dp-box-active{border-color:var(--blue)}
-.dp-date-lbl{font-size:9px;color:var(--muted);margin-bottom:1px;text-transform:uppercase;letter-spacing:.04em}
-.dp-date-val{font-size:12px;color:var(--text);font-weight:500}
-.dp-date-sep{color:var(--muted);font-size:13px}
-.dp-cals{display:flex;gap:20px}
-.dp-cal{flex:1}
-.dp-cal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.dp-month-lbl{font-size:12px;font-weight:600;color:var(--text)}
-.dp-nav{background:none;border:none;color:var(--text);cursor:pointer;font-size:16px;padding:2px 7px;line-height:1;border-radius:3px}
-.dp-nav:hover{background:rgba(255,255,255,.1)}
-.dp-nav-ph{width:26px;display:inline-block}
-.dp-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
-.dp-dow{text-align:center;font-size:10px;color:var(--muted);padding:2px 0;margin-bottom:2px}
-.dp-day{text-align:center;padding:5px 2px;font-size:11px;cursor:pointer;color:var(--text);border-radius:0;user-select:none}
-.dp-day:hover{background:rgba(255,255,255,.12);border-radius:3px}
-.dp-in-range{background:rgba(59,130,246,.18)}
-.dp-in-range:hover{background:rgba(59,130,246,.3)}
-.dp-sel{background:var(--blue)!important;color:#fff!important;font-weight:700}
-.dp-start-sel{border-radius:50% 0 0 50%}
-.dp-end-sel{border-radius:0 50% 50% 0}
-.dp-single-sel{border-radius:50%}
-.dp-today-dot{position:relative}
-.dp-today-dot::after{content:'';position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:3px;height:3px;border-radius:50%;background:var(--blue)}
-.dp-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid #2a2e50}
-.dp-cancel-btn{background:none;border:1px solid var(--border);color:var(--text);padding:5px 16px;border-radius:4px;cursor:pointer;font-size:12px}
-.dp-cancel-btn:hover{border-color:var(--text)}
-.dp-apply-btn{background:var(--blue);border:none;color:#fff;padding:5px 18px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:700}
-.dp-apply-btn:hover{background:#2563eb}
+/* ── NAV ── */
+.nav{display:flex;gap:6px;padding:12px 32px;background:#13161f;border-bottom:1px solid var(--border);flex-wrap:wrap;position:sticky;top:0;z-index:200}
+.nav a{color:var(--muted);text-decoration:none;padding:5px 13px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid transparent;transition:all .2s;white-space:nowrap}
+.nav a:hover{color:var(--text);border-color:var(--border);background:var(--card)}
 
-/* ── PAGE HEADER ── */
-.page-hdr{background:#0f1119;border-bottom:1px solid var(--border);padding:22px 28px 18px}
-.page-hdr-inner{max-width:1380px;margin:0 auto;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
-.ph-eyebrow{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
-.ph-title{font-size:21px;font-weight:800;color:var(--text);letter-spacing:-.2px;margin-bottom:4px}
-.ph-meta{font-size:11px;color:var(--muted)}
-.ph-meta span{color:var(--text)}
-.refresh-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:1px 7px;font-size:10px;cursor:pointer;line-height:16px;margin-left:6px}
-.refresh-btn:hover{border-color:var(--text);color:var(--text)}
+/* ── CONTAINER ── */
+.container{max-width:1400px;margin:0 auto;padding:24px 32px}
+section{margin-bottom:36px}
 
-/* ── LAYOUT ── */
-.wrap{max-width:1380px;margin:0 auto;padding:32px 28px}
-.section-block{margin-bottom:52px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.grid2>*,.grid3>*{min-width:0}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+/* ── SECTION HEADERS ── */
+.section-title{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:700;color:var(--gold2);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.section-title .num{background:var(--gold);color:#000;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.fixed-badge{background:rgba(99,104,128,.2);border:1px solid var(--border);color:var(--muted);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;white-space:nowrap}
+.bq-line{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.bq-q{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:14px;padding-left:10px;border-left:2px solid rgba(201,168,76,.4);line-height:1.5}
+.section-sub{color:var(--muted);font-size:12px;margin-bottom:14px;line-height:1.6}
 
-/* ── SECTION HEADER ── */
-.sec-hdr{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.sec-num{width:30px;height:30px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#000;flex-shrink:0}
-.sec-hdr h2{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.1px}
-.sec-divider{flex:1;height:1px;background:var(--border)}
-.sec-label-plain{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;margin-top:20px}
+/* ── EXEC INSIGHTS ── */
+.exec-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px}
+.exec-card{border-radius:10px;padding:16px 18px}
+.exec-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.exec-body{font-size:13px;color:var(--text);line-height:1.6}
 
-/* ── KPI STRIP ── */
-.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
-.kpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px}
-.kpi-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
-.kpi-val{font-size:26px;font-weight:800;line-height:1}
-.kpi-sub{font-size:11px;color:var(--muted);margin-top:5px}
+/* ── 4 KEY QUESTIONS ── */
+.key-q-box{background:rgba(201,168,76,.07);border:1.5px solid rgba(201,168,76,.4);border-radius:12px;padding:20px 24px;margin-bottom:28px}
+.key-q-title{font-size:13px;font-weight:700;color:var(--gold2);margin-bottom:14px;letter-spacing:.3px}
+.key-q-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.key-q-card{border-radius:8px;padding:14px}
+.key-q-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.key-q-answer{font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px}
+.key-q-sub{font-size:11px;color:var(--muted);line-height:1.5}
 
-/* ── TABLE ── */
-.tbl-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow-x:auto;overflow-y:hidden}
-table{width:100%;border-collapse:collapse;min-width:600px}
+/* ── KPI CARDS ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
+.kpi-card .label{color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.kpi-card .value{font-size:26px;font-weight:800;margin:6px 0 2px}
+.kpi-card .sub{color:var(--muted);font-size:11px}
+.kpi-gold .value{color:var(--gold2)} .kpi-green .value{color:var(--green)}
+.kpi-blue .value{color:var(--blue)} .kpi-purple .value{color:var(--purple)}
+.kpi-orange .value{color:var(--orange)} .kpi-red .value{color:var(--red)}
+
+/* ── CHARTS ── */
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px}
+.chart-card h3{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px}
+.chart-sub{color:var(--muted);font-size:11px;margin-bottom:16px}
+.chart-wrap{position:relative}
+.chart-full{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px}
+.chart-full h3{font-size:13px;font-weight:600;margin-bottom:4px}
+
+/* ── TABLES ── */
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow-x:auto;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;min-width:540px}
 thead tr{background:var(--card2)}
-th{padding:9px 12px;text-align:left;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)}
-td{padding:9px 12px;font-size:12px;border-bottom:1px solid rgba(31,34,53,.6)}
+th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+td{padding:10px 14px;font-size:13px;border-bottom:1px solid rgba(42,46,66,.5);vertical-align:top}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(255,255,255,.012)}
-.tbl-more-row{cursor:pointer;border-top:1px solid rgba(255,255,255,.06)}
-.tbl-more-row td{text-align:center;padding:10px;color:var(--muted);font-size:11px;letter-spacing:.5px;transition:color .15s,background .15s}
-.tbl-more-row:hover td{color:var(--text);background:rgba(255,255,255,.03)}
+tr:hover td{background:rgba(255,255,255,.02)}
 .num{text-align:right}
+.up{color:var(--green)} .down{color:var(--red)} .dim{color:var(--muted)}
+
+/* ── BADGES ── */
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+.badge-introducer{background:rgba(168,85,247,.2);color:#c084fc;border:1px solid rgba(168,85,247,.3)}
+.badge-assist{background:rgba(59,130,246,.2);color:#60a5fa;border:1px solid rgba(59,130,246,.3)}
+.badge-closer{background:rgba(34,197,94,.2);color:#4ade80;border:1px solid rgba(34,197,94,.3)}
+.badge-pure{background:rgba(168,85,247,.35);color:#e879f9;border:1px solid rgba(168,85,247,.5)}
+.badge-rev{background:rgba(201,168,76,.25);color:#f0d080;border:1px solid rgba(201,168,76,.6);font-size:10px}
+.badge-x{background:rgba(107,114,128,.2);color:#9ca3af;border:1px solid rgba(107,114,128,.3)}
+.badge-multi{background:rgba(201,168,76,.15);color:var(--gold2);border:1px solid rgba(201,168,76,.3)}
+.badge-branded{background:rgba(249,115,22,.2);color:#fb923c;border:1px solid rgba(249,115,22,.3)}
+
+/* ── INSIGHT BOXES ── */
+.insight{background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.25);border-radius:8px;padding:14px 18px;margin-top:14px}
+.insight-row{margin-bottom:8px;font-size:13px;line-height:1.6}
+.insight-row:last-child{margin-bottom:0}
+.insight-label{font-weight:700;color:var(--gold2)}
+.insight-muted{color:var(--muted)}
+
+/* ── BUSINESS TAKEAWAY ── */
+.bta-box{background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.25);border-radius:10px;padding:16px 20px;margin-top:14px}
+.bta-header{font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.bta-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.bta-title{font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px}
+.bta-body{font-size:12px;color:var(--muted);line-height:1.6}
+
+/* ── MTA CALLOUT ── */
+.mta-callout{display:grid;grid-template-columns:1fr auto 1fr;border:2px solid rgba(201,168,76,.35);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.mta-side{padding:24px 28px;text-align:center}
+.mta-divider{display:flex;align-items:center;justify-content:center;flex-direction:column;background:rgba(201,168,76,.1);padding:20px 18px;gap:6px}
+
+/* ── ATTR NOTE ── */
+.attr-note{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted);margin-bottom:16px}
+.attr-note strong{color:var(--blue)}
 
 /* ── PAGINATION ── */
 .pag-row>td{padding:0!important;border-bottom:none!important}
 .pag-ctrl{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--card2);border-top:1px solid var(--border)}
 .pag-lbl{font-size:11px;color:var(--muted)}
-.pag-sel{background:#0e1026;border:1px solid var(--border);color:var(--text);border-radius:3px;padding:3px 6px;font-size:11px;cursor:pointer;outline:none}
-.pag-sel:hover{border-color:var(--blue)}
+.pag-sel{background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:3px;padding:3px 6px;font-size:11px;cursor:pointer;outline:none}
 .pag-range{font-size:11px;color:var(--text);margin-left:auto}
 .pag-btn{background:none;border:1px solid var(--border);color:var(--muted);width:26px;height:26px;border-radius:3px;cursor:pointer;font-size:14px;line-height:1;padding:0;transition:all .15s}
 .pag-btn:hover:not([disabled]){border-color:var(--blue);color:var(--blue)}
 .pag-btn[disabled]{opacity:.3;cursor:not-allowed}
 
-/* ── BADGES ── */
-.badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10px;font-weight:600}
-.bi{background:rgba(168,85,247,.15);color:#c084fc;border:1px solid rgba(168,85,247,.25)}
-.ba{background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.25)}
-.bc{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.25)}
-.br{background:rgba(201,168,76,.2);color:#f0d080;border:1px solid rgba(201,168,76,.5)}
-.bx{background:rgba(107,114,128,.12);color:#9ca3af;border:1px solid rgba(107,114,128,.2)}
-
-/* ── PATH TYPE BADGES ── */
-.pt-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:.3px;text-transform:uppercase}
-.pt-direct{background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
-.pt-multi{background:rgba(59,130,246,.1);color:#93c5fd;border:1px solid rgba(59,130,246,.2)}
-.pt-brand{background:rgba(201,168,76,.12);color:#f0d080;border:1px solid rgba(201,168,76,.25)}
-
-/* ── FIXED BADGE ── */
-.fixed-badge{font-size:9px;font-weight:500;background:rgba(99,104,128,.12);color:var(--muted);border:1px solid rgba(99,104,128,.2);border-radius:3px;padding:1px 7px;letter-spacing:.3px;white-space:nowrap;vertical-align:middle}
-
-/* ── STRATEGIC MEANING / BUYER PROFILE ── */
-.strat-mean{font-size:10px;color:var(--muted);font-style:italic;margin-top:2px;line-height:1.35}
-.buyer-prof{font-size:10px;color:var(--muted);font-style:italic;line-height:1.35}
-
-/* ── CHART BOX ── */
-.cbox{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
-.cbox h3{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px}
-.cbox .csub{font-size:11px;color:var(--muted);margin-bottom:14px}
-.ch{position:relative}
-
-/* ── TIER ROWS (conv breakdown) ── */
-.tier-rev td:first-child{border-left:3px solid var(--green)}
-.tier-appt td:first-child{border-left:3px solid var(--blue)}
-.tier-eng td:first-child{border-left:3px solid var(--muted)}
-
-/* ── UTILS ── */
-.gold{color:var(--gold2);font-weight:700}
-.up{color:var(--green)}.down{color:var(--red)}.dim{color:var(--muted)}
-.mb14{margin-bottom:14px}.mb16{margin-bottom:16px}
-.anote{background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.15);border-radius:8px;padding:9px 14px;font-size:11px;color:var(--muted);margin-bottom:14px}
-
-/* ── GUIDE DRAWER ── */
-.guide-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;opacity:0;pointer-events:none;transition:opacity .25s}
-.guide-overlay.open{opacity:1;pointer-events:all}
-.guide-drawer{position:fixed;top:0;right:-480px;width:460px;max-width:95vw;height:100vh;overflow-y:auto;background:#13162a;border-left:1px solid var(--border);z-index:901;transition:right .28s cubic-bezier(.4,0,.2,1);padding:0 0 40px}
-.guide-drawer.open{right:0}
-.guide-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;background:#13162a;z-index:1}
-.guide-hdr h2{font-size:1rem;color:var(--gold);margin:0;font-weight:600}
-.guide-close{background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;line-height:1;padding:2px 6px;border-radius:4px}
-.guide-close:hover{color:var(--text);background:rgba(255,255,255,.06)}
-.guide-body{padding:20px 24px;overflow-x:hidden;word-break:break-word}
-.guide-sec{margin-bottom:28px;border-bottom:1px solid rgba(255,255,255,.04);padding-bottom:28px}
-.guide-sec:last-child{border-bottom:none;margin-bottom:0}
-.guide-sec-title{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.guide-num{width:24px;height:24px;border-radius:50%;background:var(--gold);color:#0b0d14;font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.guide-sec-title h3{font-size:0.9rem;color:var(--text);margin:0;font-weight:600}
-.guide-tag{font-size:0.68rem;padding:2px 7px;border-radius:10px;margin-left:auto;flex-shrink:0}
-.guide-tag.dynamic{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.25)}
-.guide-tag.fixed{background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.25)}
-.guide-what{font-size:0.82rem;color:var(--muted);line-height:1.65;margin-bottom:8px}
-.guide-action{font-size:0.82rem;color:#e2e4ef;line-height:1.65;background:rgba(59,130,246,.06);border-left:2px solid rgba(59,130,246,.4);padding:8px 12px;border-radius:0 6px 6px 0}
-.guide-why{font-size:0.78rem;color:var(--muted);background:rgba(201,168,76,.05);border-left:2px solid rgba(201,168,76,.3);padding:7px 12px;border-radius:0 6px 6px 0;margin-top:8px;line-height:1.6}
-.guide-faq{background:rgba(255,255,255,.03);border-radius:8px;padding:16px 18px;margin-top:4px}
-.guide-faq h4{font-size:0.82rem;color:var(--gold);margin:0 0 14px;font-weight:600;letter-spacing:.03em}
-.guide-q{font-size:0.8rem;color:var(--text);margin-bottom:4px;font-weight:500}
-.guide-a{font-size:0.78rem;color:var(--muted);line-height:1.6;margin-bottom:14px}
-.guide-a:last-child{margin-bottom:0}
-.guide-start{background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:14px 16px;margin-bottom:24px}
-.guide-start h4{font-size:0.82rem;color:var(--gold);margin:0 0 10px;font-weight:600}
-.guide-flow{list-style:none;margin:0;padding:0}
-.guide-flow li{font-size:0.79rem;color:#c9cfe0;line-height:1.6;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
-.guide-flow li:last-child{border-bottom:none}
-.guide-flow .flow-label{display:block;color:var(--gold);font-weight:700;font-size:0.72rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
-.guide-period{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
-.gp{background:rgba(255,255,255,.04);border-radius:6px;padding:8px 10px}
-.gp-btn{font-size:0.72rem;font-weight:700;color:var(--gold);display:block;margin-bottom:3px}
-.gp-txt{font-size:0.74rem;color:var(--muted);line-height:1.45}
-.role-legend{display:flex;flex-direction:column;gap:6px;margin-top:10px}
-.rl-item{display:flex;align-items:flex-start;gap:8px;font-size:0.78rem;color:var(--muted);line-height:1.5}
-.rl-item .badge{flex-shrink:0;margin-top:1px}
-.guide-warn{background:rgba(239,68,68,.06);border-left:2px solid rgba(239,68,68,.4);padding:8px 12px;border-radius:0 6px 6px 0;font-size:0.78rem;color:#fca5a5;line-height:1.6;margin-top:8px}
-
 /* ── FOOTER ── */
-.footer{text-align:center;color:var(--muted);font-size:11px;padding:14px 28px;border-top:1px solid var(--border);margin-top:8px}
-.footer a{color:var(--muted);text-decoration:none}
-.footer a:hover{color:var(--text)}
+.footer{text-align:center;color:var(--muted);font-size:11px;padding:24px;border-top:1px solid var(--border);margin-top:16px}
 
 /* ── RESPONSIVE ── */
-@media(max-width:1200px){.kpi-row{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:960px){
-  .kpi-row{grid-template-columns:repeat(2,1fr)}
-  .grid2,.grid3{grid-template-columns:1fr}
-  .wrap{padding:16px}
-  .nav-links{display:none}
+@media(max-width:1000px){
+  .charts-row,.exec-grid,.bta-grid,.mta-callout{grid-template-columns:1fr}
+  .key-q-grid{grid-template-columns:1fr 1fr}
+  .container{padding:16px}
+  .header{flex-direction:column;align-items:flex-start}
 }
-@media(max-width:600px){
-  .kpi-row{grid-template-columns:1fr 1fr}
-  .nav-bar{padding:0 10px;gap:4px}
-  .nav-brand{font-size:10px}
-  .nav-right{gap:3px}
-  .qbtn{padding:3px 7px;font-size:10px}
-  .dp-btn{font-size:10px;padding:3px 7px}
-}
-
-/* ── GUIDE RESPONSIVE ── */
-.guide-drawer{overflow-x:hidden}
-.guide-body{overflow-x:hidden;word-break:break-word;overflow-wrap:anywhere}
-.guide-what,.guide-action,.guide-why,.guide-a{word-break:break-word;overflow-wrap:anywhere}
-.guide-sec-title h3{min-width:0}
-@media(max-width:520px){
-  .guide-drawer{width:100vw;max-width:100vw}
-  .guide-hdr{padding:14px 16px}
-  .guide-hdr h2{font-size:0.9rem}
-  .guide-body{padding:14px 16px}
-  .guide-start{padding:12px}
-  .guide-period{grid-template-columns:1fr}
-  .guide-sec{margin-bottom:18px;padding-bottom:18px}
-  .guide-faq{padding:12px 14px}
-  .guide-sec-title{flex-wrap:wrap;gap:6px}
-  .guide-tag{margin-left:0}
-}
+@media(max-width:600px){.key-q-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<!-- ── NAV BAR ── -->
-<nav class="nav-bar">
-  <div class="nav-brand">Flawless Fine Jewelry</div>
-  <div class="nav-links">
-    <a href="#kpis"                  class="nav-link">① KPI Overview</a>
-    <a href="#roles"                 class="nav-link">② Campaign Role</a>
-    <a href="#mta-vs-lc"            class="nav-link">③ MTA vs LC</a>
-    <a href="#journey-behaviour"    class="nav-link">④ Customer Journey</a>
-    <a href="#paths"                class="nav-link">⑤ Conv Paths</a>
-    <a href="#campaign-performance" class="nav-link">⑥ Performance</a>
-    <a href="#conv-breakdown"       class="nav-link">⑦ Conv Breakdown</a>
-    <a href="#appt-value"           class="nav-link">⑧ Appointments</a>
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <h1>Flawless Fine Jewelry — Attribution Dashboard</h1>
+    <p id="headerMeta">Google Ads Attribution Analysis · Live data updated every 30 min</p>
   </div>
-  <div class="nav-right">
-    <button class="qbtn"        id="qb7"   onclick="setPeriod(7)">7D</button>
-    <button class="qbtn active" id="qb28"  onclick="setPeriod(28)">28D</button>
-    <button class="qbtn"        id="qb90"  onclick="setPeriod(90)">90D</button>
-    <button class="qbtn"        id="qb365" onclick="setPeriod(365)">1Y</button>
-    <span style="color:var(--border)">|</span>
-    <button class="qbtn" onclick="guideToggle()" style="background:rgba(201,168,76,.15);color:var(--gold);border:1px solid rgba(201,168,76,.3);padding:4px 10px;border-radius:4px;font-size:0.78rem;cursor:pointer">? Guide</button>
-    <span style="color:var(--border)">|</span>
-    <div class="dp-wrap" id="dpWrap">
-      <button class="dp-btn" id="dpBtn" onclick="dpToggle()">
-        <span id="dpBtnLabel">Loading…</span> ▾
-      </button>
-      <div class="dp-panel" id="dpPanel" style="display:none">
-        <div class="dp-presets">
-          <div class="dp-preset" id="dpp-last7"     onclick="dpPreset('last7')">Last 7 days</div>
-          <div class="dp-preset" id="dpp-last14"    onclick="dpPreset('last14')">Last 14 days</div>
-          <div class="dp-preset" id="dpp-last28"    onclick="dpPreset('last28')">Last 28 days</div>
-          <div class="dp-preset" id="dpp-thismonth" onclick="dpPreset('thismonth')">This month</div>
-          <div class="dp-preset" id="dpp-lastmonth" onclick="dpPreset('lastmonth')">Last month</div>
-          <div class="dp-preset" id="dpp-last90"    onclick="dpPreset('last90')">Last 90 days</div>
-          <div class="dp-preset" id="dpp-last365"   onclick="dpPreset('last365')">Last 12 months</div>
-          <div class="dp-preset" id="dpp-alltime"   onclick="dpPreset('alltime')">All time</div>
-          <div class="dp-days-row">
-            <input type="number" id="dpN" value="28" min="1" max="730" class="dp-days-inp" oninput="dpDays()">
-            days up to yesterday
-          </div>
-        </div>
-        <div class="dp-cal-section">
-          <div class="dp-date-inputs">
-            <div class="dp-date-box dp-box-active" id="dpBox1">
-              <div class="dp-date-lbl">Start date</div>
-              <div class="dp-date-val" id="dpS">—</div>
-            </div>
-            <div class="dp-date-sep">—</div>
-            <div class="dp-date-box" id="dpBox2">
-              <div class="dp-date-lbl">End date</div>
-              <div class="dp-date-val" id="dpE">—</div>
-            </div>
-          </div>
-          <div class="dp-cals" id="dpCals"></div>
-          <div class="dp-actions">
-            <button class="dp-cancel-btn" onclick="dpCancel()">Cancel</button>
-            <button class="dp-apply-btn"  onclick="dpApply()">Apply</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <button class="refresh-btn" onclick="location.reload()" title="Refresh data">↻</button>
+  <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+    <button class="qbtn active" id="qb28" onclick="setPeriod(28)">28 Days</button>
+    <button class="qbtn" id="qb14" onclick="setPeriod(14)">14 Days</button>
+    <button class="qbtn" id="qb7" onclick="setPeriod(7)">7 Days</button>
+    <button class="qbtn" id="qb365" onclick="setPeriod(365)">1 Year</button>
+    <span style="color:var(--border);font-size:16px">|</span>
+    <input type="date" id="dateFrom" class="date-inp">
+    <span style="color:var(--muted);font-size:11px">→</span>
+    <input type="date" id="dateTo" class="date-inp">
+    <button class="go-btn" onclick="applyCustomDate()">Go →</button>
+    <div class="header-badge">Google Ads Only</div>
   </div>
-</nav>
+</div>
 
-<!-- ── PAGE HEADER ── -->
-<header class="page-hdr">
-  <div class="page-hdr-inner">
-    <div>
-      <div class="ph-eyebrow">Multi-Touch Attribution Report</div>
-      <div class="ph-title">Flawless Fine Jewelry — Attribution Dashboard</div>
-      <div class="ph-meta">
-        Data from <span id="metaFrom">—</span> to <span id="metaTo">—</span>
-        &nbsp;·&nbsp; <span id="metaDays">—</span> days available
-        &nbsp;·&nbsp; Updated <span id="metaUpdated">—</span>
-      </div>
-    </div>
-  </div>
-</header>
+<!-- NAV -->
+<div class="nav">
+  <a href="#exec-insights">Executive Insights</a>
+  <a href="#kpis">KPI Overview</a>
+  <a href="#roles">1. Campaign Roles</a>
+  <a href="#mta-vs-lc">2. MTA vs Last Click</a>
+  <a href="#journey-behaviour">3. Customer Journey</a>
+  <a href="#paths">4. Conv Paths</a>
+  <a href="#campaign-performance">5. Campaign Performance</a>
+  <a href="#conv-breakdown">6. Conversion Types</a>
+  <a href="#appt-value">7. Appointments</a>
+  <a href="#methodology">Methodology</a>
+</div>
 
-<!-- ── MAIN CONTENT ── -->
-<main class="wrap">
+<div class="container">
 
-<!-- ①  KPI OVERVIEW -->
-<section id="kpis" class="section-block">
-  <div class="sec-hdr">
-    <div class="sec-num">1</div>
-    <h2>KPI Overview</h2>
-    <div class="sec-divider"></div>
-    <span class="fixed-badge" id="kpiBadge">28D</span>
+<!-- ── EXECUTIVE INSIGHTS ── -->
+<div id="exec-insights" style="margin-bottom:28px">
+  <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">◆ Executive Insights — What This Attribution Analysis Reveals</div>
+  <div class="exec-grid" id="execGrid">
+    <div class="exec-card" style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.25)"><div class="exec-label" style="color:#60a5fa">Loading...</div><div class="exec-body">Fetching attribution data...</div></div>
+    <div class="exec-card" style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.25)"><div class="exec-label" style="color:#f87171">Loading...</div><div class="exec-body">Fetching attribution data...</div></div>
+    <div class="exec-card" style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.25)"><div class="exec-label" style="color:#4ade80">Loading...</div><div class="exec-body">Fetching attribution data...</div></div>
+    <div class="exec-card" style="background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.25)"><div class="exec-label" style="color:#c084fc">Loading...</div><div class="exec-body">Fetching attribution data...</div></div>
   </div>
-  <div class="kpi-row" id="kpiRow">
-    <div class="kpi"><div class="kpi-lbl">Ad Spend</div><div class="kpi-val dim">—</div></div>
-    <div class="kpi"><div class="kpi-lbl">LC Revenue</div><div class="kpi-val dim">—</div></div>
-    <div class="kpi"><div class="kpi-lbl">LC ROAS</div><div class="kpi-val dim">—</div></div>
-    <div class="kpi"><div class="kpi-lbl">Conversions</div><div class="kpi-val dim">—</div></div>
-    <div class="kpi"><div class="kpi-lbl">MTA ROAS <span class="fixed-badge">90D</span></div><div class="kpi-val dim">—</div></div>
-    <div class="kpi"><div class="kpi-lbl">Total Assists <span class="fixed-badge">90D</span></div><div class="kpi-val dim">—</div></div>
+</div>
+
+<!-- ── 4 KEY QUESTIONS ── -->
+<div class="key-q-box">
+  <div class="key-q-title">✦ Direct Answers to 4 Key Questions — Beyond Last-Click Reporting</div>
+  <div class="key-q-grid" id="keyQGrid">
+    <div class="key-q-card" style="background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3)"><div class="key-q-answer">Loading...</div></div>
+    <div class="key-q-card" style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3)"><div class="key-q-answer">Loading...</div></div>
+    <div class="key-q-card" style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3)"><div class="key-q-answer">Loading...</div></div>
+    <div class="key-q-card" style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.5)"><div class="key-q-answer">Loading...</div></div>
+  </div>
+</div>
+
+<!-- ── KPI OVERVIEW ── -->
+<section id="kpis">
+  <div class="section-title"><div class="num">★</div>KPI Overview — Attribution Metrics <span class="fixed-badge" id="kpiBadge" style="margin-left:8px">28D</span></div>
+  <div class="attr-note">
+    <strong>Two conversion counts explained:</strong> Primary purchase goals (Offline Invoice + Website Purchase) are used for ROAS calculations. The full tracked count includes appointments, WhatsApp, and checkout signals — used in attribution analysis to understand each campaign's funnel role. Both are correct for their purpose.
+  </div>
+  <div class="kpi-grid" id="kpiRow">
+    <div class="kpi-card"><div class="label">Spend</div><div class="value dim">—</div><div class="sub">Total ad spend</div></div>
+    <div class="kpi-card kpi-gold"><div class="label">Revenue</div><div class="value dim">—</div><div class="sub">Last-click revenue</div></div>
+    <div class="kpi-card kpi-green"><div class="label">LC ROAS</div><div class="value dim">—</div><div class="sub">Revenue ÷ Spend</div></div>
+    <div class="kpi-card"><div class="label">Conversions</div><div class="value dim">—</div><div class="sub">Last-click purchases</div></div>
+    <div class="kpi-card kpi-blue"><div class="label">MTA ROAS <span class="fixed-badge">90D</span></div><div class="value dim">—</div><div class="sub">All-touch attribution</div></div>
+    <div class="kpi-card kpi-purple"><div class="label">Total Assists <span class="fixed-badge">90D</span></div><div class="value dim">—</div><div class="sub">Assisted conversions</div></div>
   </div>
 </section>
 
-<!-- ②  CAMPAIGN ROLE INTELLIGENCE -->
-<section id="roles" class="section-block">
-  <div class="sec-hdr">
-    <div class="sec-num">2</div>
-    <h2>Campaign Role Intelligence</h2>
-    <div class="sec-divider"></div>
-    <span class="fixed-badge" id="rolesBadge">90D Fixed</span>
-  </div>
-  <div class="tbl-wrap" style="margin-bottom:14px">
+<!-- ── SECTION 1: CAMPAIGN ROLES ── -->
+<section id="roles">
+  <div class="section-title"><div class="num">1</div>Campaign Role Intelligence — Introducer / Assist / Closer <span class="fixed-badge" id="rolesBadge" style="margin-left:auto">90D Fixed</span></div>
+  <div class="bq-line">Business Question</div>
+  <div class="bq-q">Which campaigns introduce, assist, and close conversions — and what does each campaign's role mean for budget decisions?</div>
+  <p class="section-sub">Role determined by Assist Ratio (assists ÷ last-click conversions). <strong style="color:#e879f9">Pure Introducer</strong>: zero last-click, top-of-funnel only. <strong style="color:#c084fc">Introducer</strong> (&gt;1.5): more assists than closes. <strong style="color:#60a5fa">Assist</strong> (0.5–1.5): balanced mid-funnel. <strong style="color:#4ade80">Closer</strong> (&lt;0.5): predominantly bottom-of-funnel.</p>
+  <div class="table-card">
     <table>
-      <thead>
-        <tr>
-          <th>Campaign</th>
-          <th>Role</th>
-          <th class="num">LC Conv</th>
-          <th class="num">LC Revenue</th>
-          <th class="num">Assists</th>
-          <th class="num">Assisted Rev</th>
-          <th class="num">Assist Ratio</th>
-          <th>What it does</th>
-        </tr>
-      </thead>
+      <thead><tr>
+        <th>Campaign</th><th>Role</th>
+        <th class="num">LC Conv</th><th class="num">LC Revenue</th>
+        <th class="num">Assists</th><th class="num">Assisted Rev</th>
+        <th class="num">Assist Ratio</th><th>Strategic Meaning</th>
+      </tr></thead>
       <tbody id="rolesTbody"></tbody>
     </table>
   </div>
-  <div class="cbox">
+  <div class="chart-full">
     <h3>Assist Ratio by Campaign</h3>
-    <p class="csub">Higher = more assists, lower = mostly closes</p>
-    <div class="ch"><canvas id="assistRatioChart" height="220"></canvas></div>
+    <div class="chart-sub">Assists per last-click conversion. Higher = more top-of-funnel impact. Purple = Introducer, Blue = Assist, Green = Closer.</div>
+    <div class="chart-wrap" style="height:220px"><canvas id="assistRatioChart"></canvas></div>
   </div>
+  <div class="insight" id="rolesInsight"></div>
 </section>
 
-<!-- ③  MTA vs LAST-CLICK -->
-<section id="mta-vs-lc" class="section-block">
-  <div class="sec-hdr">
-    <div class="sec-num">3</div>
-    <h2>MTA vs Last-Click Revenue</h2>
-    <div class="sec-divider"></div>
-    <span class="fixed-badge" id="mtaBadge">90D Fixed</span>
-  </div>
-  <div class="grid2">
-    <div class="tbl-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Campaign</th>
-            <th class="num">Ad Spend</th>
-            <th class="num">LC Revenue</th>
-            <th class="num">Assisted Rev</th>
-            <th class="num">True Revenue</th>
-            <th class="num">Uplift vs LC</th>
-          </tr>
-        </thead>
-        <tbody id="mtaTbody"></tbody>
-      </table>
-    </div>
-    <div class="cbox">
-      <h3>Revenue Attribution Comparison</h3>
-      <p class="csub">What Google Ads credits vs what each campaign actually influenced</p>
-      <div class="ch"><canvas id="retargetingChart" height="320"></canvas></div>
-    </div>
-  </div>
-</section>
+<!-- ── SECTION 2: MTA vs LAST CLICK ── -->
+<section id="mta-vs-lc">
+  <div class="section-title"><div class="num">2</div>Multi-Touch vs Last Click — The Attribution Gap <span class="fixed-badge" id="mtaBadge" style="margin-left:auto">90D Fixed</span></div>
+  <div class="bq-line">Business Question</div>
+  <div class="bq-q">How much campaign revenue influence is hidden by Last Click attribution — and which campaigns are most understated?</div>
+  <p class="section-sub">Attribution-Adjusted ROAS = (Last-Click Revenue + Assisted Revenue) ÷ Ad Spend. The gap between this figure and standard Last Click ROAS is the cost of the attribution blind spot for each campaign.</p>
 
-<!-- ④  CUSTOMER JOURNEY BEHAVIOUR -->
-<section id="journey-behaviour" class="section-block">
-  <div class="sec-hdr">
-    <div class="sec-num">4</div>
-    <h2>Customer Journey Behaviour</h2>
-    <div class="sec-divider"></div>
-    <span class="fixed-badge" id="journeyBadge">90D Fixed</span>
-  </div>
-
-  <div class="sec-label-plain">Days to Conversion</div>
-  <div class="grid2" style="margin-bottom:20px">
-    <div class="tbl-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Days to Conv</th>
-            <th class="num">Conversions</th>
-            <th class="num">% of Conv</th>
-            <th class="num">Revenue (£)</th>
-            <th class="num">% of Revenue</th>
-            <th>Buyer Profile</th>
-          </tr>
-        </thead>
-        <tbody id="timeLagTbody"></tbody>
-      </table>
+  <div class="mta-callout">
+    <div class="mta-side" style="background:rgba(59,130,246,.06)">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:10px">Standard Last-Click View</div>
+      <div style="font-size:38px;font-weight:900;color:var(--blue);margin-bottom:4px" id="mtaLcRoas">—</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px" id="mtaTopCamp">Top Campaign ROAS</div>
+      <div style="font-size:12px;color:var(--muted)">What Google Ads reports show by default</div>
     </div>
-    <div>
-      <div class="cbox mb14">
-        <h3>Conversions by Days to Convert</h3>
-        <div class="ch"><canvas id="timeLagConvChart" height="130"></canvas></div>
-      </div>
-      <div class="cbox">
-        <h3>Revenue by Days to Convert</h3>
-        <div class="ch"><canvas id="timeLagValChart" height="130"></canvas></div>
-      </div>
+    <div class="mta-divider">
+      <div style="font-size:26px;font-weight:900;color:var(--gold2)">→</div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);text-align:center;line-height:1.6">Multi-Touch<br>Attribution<br>Reveals</div>
+    </div>
+    <div class="mta-side" style="background:rgba(201,168,76,.06)">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gold2);margin-bottom:10px">Attribution-Adjusted View</div>
+      <div style="font-size:38px;font-weight:900;color:var(--gold2);margin-bottom:4px" id="mtaTrueRoas">—</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px" id="mtaTopCamp2">Top Campaign True ROAS</div>
+      <div style="font-size:12px;color:var(--muted)" id="mtaAssistedNote">Including assisted revenue influence</div>
     </div>
   </div>
 
-  <div class="sec-label-plain">Interactions to Conversion</div>
-  <div class="grid2">
-    <div class="tbl-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Interactions</th>
-            <th class="num">Conversions</th>
-            <th class="num">% of Conv</th>
-            <th class="num">Revenue (£)</th>
-            <th class="num">% of Revenue</th>
-          </tr>
-        </thead>
-        <tbody id="pathLenTbody"></tbody>
-      </table>
+  <div class="table-card">
+    <table>
+      <thead><tr>
+        <th>Campaign</th><th class="num">Ad Spend</th>
+        <th class="num">LC Revenue</th><th class="num">LC ROAS</th>
+        <th class="num">Assisted Rev</th><th class="num">True ROAS</th>
+        <th class="num">Uplift</th><th>Role</th>
+      </tr></thead>
+      <tbody id="mtaTbody"></tbody>
+    </table>
+  </div>
+  <div class="charts-row">
+    <div class="chart-card">
+      <h3>LC Revenue vs Assisted Revenue by Campaign</h3>
+      <div class="chart-sub">Green = additional revenue revealed by attribution analysis</div>
+      <div class="chart-wrap" style="height:240px"><canvas id="mtaChart"></canvas></div>
     </div>
-    <div>
-      <div class="cbox mb14">
-        <h3>Conversions by Path Length</h3>
-        <div class="ch"><canvas id="pathLenConvChart" height="130"></canvas></div>
-      </div>
-      <div class="cbox">
-        <h3>Revenue by Path Length</h3>
-        <div class="ch"><canvas id="pathLenValChart" height="130"></canvas></div>
-      </div>
+    <div class="chart-card">
+      <h3>Attribution-Adjusted ROAS vs Last-Click ROAS</h3>
+      <div class="chart-sub">Campaigns where the gap is largest are most understated by standard reporting</div>
+      <div class="chart-wrap" style="height:240px"><canvas id="roasGapChart"></canvas></div>
     </div>
   </div>
 </section>
 
-<!-- ⑤  CONVERSION PATHS -->
-<section id="paths" class="section-block">
-  <div class="sec-hdr">
-    <div class="sec-num">5</div>
-    <h2>Top Conversion Paths</h2>
-    <div class="sec-divider"></div>
-    <span class="fixed-badge" id="pathsBadge">90D Fixed</span>
+<!-- ── SECTION 3: CUSTOMER JOURNEY ── -->
+<section id="journey-behaviour">
+  <div class="section-title"><div class="num">3</div>Customer Journey Behaviour <span class="fixed-badge" id="journeyBadge" style="margin-left:auto">90D Fixed</span></div>
+  <div class="bq-line">Business Question</div>
+  <div class="bq-q">How long does it take customers to convert after seeing an ad — and how many ad interactions do they need before purchasing?</div>
+  <div class="charts-row">
+    <div class="chart-card">
+      <h3>Time Lag — Days to Conversion</h3>
+      <div class="chart-sub">Days between first ad interaction and purchase</div>
+      <div class="chart-wrap" style="height:180px"><canvas id="timeLagConvChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Time Lag — Revenue by Days</h3>
+      <div class="chart-sub">Revenue distribution across the conversion window</div>
+      <div class="chart-wrap" style="height:180px"><canvas id="timeLagValChart"></canvas></div>
+    </div>
   </div>
-  <div class="grid2">
-    <div class="tbl-wrap">
+  <div class="charts-row">
+    <div class="chart-card">
+      <h3>Path Length — Ad Interactions Before Purchase</h3>
+      <div class="chart-sub">Number of ad touchpoints before converting</div>
+      <div class="chart-wrap" style="height:180px"><canvas id="pathLenConvChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Path Length — Revenue by Interaction Count</h3>
+      <div class="chart-sub">Revenue from customers with different touchpoint counts</div>
+      <div class="chart-wrap" style="height:180px"><canvas id="pathLenValChart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 4: CONVERSION PATHS ── -->
+<section id="paths">
+  <div class="section-title"><div class="num">4</div>Top Conversion Paths <span class="fixed-badge" id="pathsBadge" style="margin-left:auto">90D Fixed</span></div>
+  <div class="bq-line">Business Question</div>
+  <div class="bq-q">Which sequences of campaigns drive the most conversions — and what do the most common customer journeys look like?</div>
+  <div class="charts-row" style="grid-template-columns:3fr 2fr">
+    <div class="table-card" style="margin-bottom:0">
       <table>
-        <thead>
-          <tr>
-            <th>Conversion Path</th>
-            <th>Path Type</th>
-            <th>Conversion Action</th>
-            <th class="num">Conversions</th>
-            <th class="num">% of Total</th>
-            <th class="num">Revenue (£)</th>
-          </tr>
-        </thead>
+        <thead><tr>
+          <th>Conversion Path</th><th>Path Type</th>
+          <th class="num">Conversions</th><th class="num">% of Total</th><th class="num">Revenue (£)</th>
+        </tr></thead>
         <tbody id="pathsTbody"></tbody>
       </table>
     </div>
-    <div class="cbox">
+    <div class="chart-card">
       <h3>Top Paths by Conversions</h3>
-      <p class="csub">Multi-touch paths that drove the most conversions</p>
-      <div class="ch"><canvas id="pathChart" height="320"></canvas></div>
+      <div class="chart-sub">Multi-touch paths that drove the most conversions</div>
+      <div class="chart-wrap" style="height:320px"><canvas id="pathChart"></canvas></div>
     </div>
   </div>
 </section>
 
-<!-- ⑥  CAMPAIGN PERFORMANCE -->
-<section id="campaign-performance" class="section-block">
-  <div class="sec-hdr">
-    <div class="sec-num">6</div>
-    <h2>Campaign Performance</h2>
-    <div class="sec-divider"></div>
-    <span class="fixed-badge" id="perfBadge">28D</span>
-  </div>
-  <div class="tbl-wrap">
+<!-- ── SECTION 5: CAMPAIGN PERFORMANCE ── -->
+<section id="campaign-performance">
+  <div class="section-title"><div class="num">5</div>Campaign Performance <span class="fixed-badge" id="perfBadge" style="margin-left:auto">28D</span></div>
+  <div class="bq-line">Business Question</div>
+  <div class="bq-q">How is each campaign performing on spend, conversions, revenue, and ROAS — and how does attribution-adjusted ROAS compare to standard reporting?</div>
+  <div class="table-card">
     <table>
-      <thead>
-        <tr>
-          <th>Campaign</th>
-          <th class="num">Ad Spend</th>
-          <th class="num">Conversions</th>
-          <th class="num">LC Revenue</th>
-          <th class="num">LC ROAS</th>
-          <th class="num">Attr-Adj ROAS <span class="fixed-badge">90D</span></th>
-          <th>Role</th>
-        </tr>
-      </thead>
+      <thead><tr>
+        <th>Campaign</th><th class="num">Spend</th>
+        <th class="num">Conversions</th><th class="num">LC Revenue</th>
+        <th class="num">LC ROAS</th><th class="num">MTA ROAS <span class="fixed-badge">90D</span></th>
+        <th>Role</th>
+      </tr></thead>
       <tbody id="perfTbody"></tbody>
     </table>
   </div>
 </section>
 
-<!-- ⑦  CONVERSION BREAKDOWN -->
-<section id="conv-breakdown" class="section-block">
-  <div class="sec-hdr">
-    <div class="sec-num">7</div>
-    <h2>Conversion Breakdown</h2>
-    <div class="sec-divider"></div>
-    <span class="fixed-badge" id="cbBadge">90D Fixed</span>
-  </div>
-  <div class="grid2">
-    <div class="tbl-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Conversion Action</th>
-            <th>Category</th>
-            <th class="num">Conversions</th>
-            <th class="num">Revenue (£)</th>
-            <th class="num">% Conv</th>
-            <th class="num">% Rev</th>
-          </tr>
-        </thead>
-        <tbody id="cbTbody"></tbody>
-      </table>
+<!-- ── SECTION 6: CONVERSION TYPE BREAKDOWN ── -->
+<section id="conv-breakdown">
+  <div class="section-title"><div class="num">6</div>Conversion Type Breakdown — What Each Campaign Converts <span class="fixed-badge" id="cbBadge" style="margin-left:auto">28D</span></div>
+  <div class="bq-line">Business Question</div>
+  <div class="bq-q">Which conversion types does each campaign drive — and why do campaigns reporting £0 revenue still represent real business value?</div>
+  <p class="section-sub">Conversions categorised into 3 tiers: <strong>Tier 1</strong> = Direct Revenue (Offline Invoice + Website Purchase). <strong>Tier 2</strong> = Appointment Pipeline (Appointments + Contact Form) — assigned £0 in Google Ads but feeds Offline Invoice revenue. <strong>Tier 3</strong> = Engagement Signals (WhatsApp + Checkout) — early-funnel intent indicators.</p>
+  <div id="tierCards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px"></div>
+  <div class="charts-row" style="grid-template-columns:3fr 2fr">
+    <div class="chart-card">
+      <h3>Revenue (Tier 1) vs Appointments (Tier 2) vs Engagement (Tier 3)</h3>
+      <div class="chart-sub">Stacked by campaign — shows full funnel contribution</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="tierStackChart"></canvas></div>
     </div>
-    <div>
-      <div class="cbox mb14">
-        <h3>Conversions by Type</h3>
-        <p class="csub">Revenue · Appointments · Engagement</p>
-        <div class="ch"><canvas id="convTierChart" height="180"></canvas></div>
-      </div>
-      <div class="cbox">
-        <h3>Revenue Sources</h3>
-        <p class="csub">Offline invoices vs website purchases</p>
-        <div class="ch"><canvas id="offlineInvoiceChart" height="140"></canvas></div>
-      </div>
+    <div class="chart-card">
+      <h3>Offline Invoice Breakdown — Who Drives High-Value Sales?</h3>
+      <div class="chart-sub" id="offlineSub">Most strategic conversion type</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="offlineInvoiceChart"></canvas></div>
     </div>
   </div>
+  <div class="table-card">
+    <table>
+      <thead><tr>
+        <th>Campaign</th><th>Role</th>
+        <th>Tier 1: Revenue Conversions</th><th class="num">Revenue £</th>
+        <th>Tier 2: Appointments / Pipeline</th><th>Tier 3: Engagement</th>
+      </tr></thead>
+      <tbody id="cbTbody"></tbody>
+    </table>
+  </div>
+  <div class="insight" id="cbInsight"></div>
 </section>
 
-<!-- ⑧  APPOINTMENT PIPELINE -->
-<section id="appt-value" class="section-block">
-  <div class="sec-hdr">
-    <div class="sec-num">8</div>
-    <h2>Appointment Pipeline</h2>
-    <div class="sec-divider"></div>
-    <span class="fixed-badge" id="apptBadge">90D Fixed</span>
-  </div>
-  <div class="grid2">
-    <div class="tbl-wrap">
+<!-- ── SECTION 7: APPOINTMENTS ── -->
+<section id="appt-value">
+  <div class="section-title"><div class="num">7</div>Appointment Pipeline <span class="fixed-badge" id="apptBadge" style="margin-left:auto">28D</span></div>
+  <div class="bq-line">Business Question</div>
+  <div class="bq-q">Which campaigns are driving the most appointment bookings — and what is the cost per booking for each appointment type?</div>
+  <div class="charts-row">
+    <div class="table-card" style="margin-bottom:0">
       <table>
-        <thead>
-          <tr>
-            <th>Appointment Type</th>
-            <th class="num">Bookings</th>
-            <th class="num">Campaigns</th>
-            <th class="num">Per Month</th>
-            <th class="num">Revenue Value</th>
-            <th class="num">Ad Spend (90D)</th>
-            <th class="num">Cost / Booking</th>
-          </tr>
-        </thead>
+        <thead><tr>
+          <th>Appointment Type</th><th class="num">Bookings</th>
+          <th class="num">Campaigns</th><th class="num">Per Month</th>
+          <th class="num">Ad Spend (90D)</th><th class="num">Cost / Booking</th>
+        </tr></thead>
         <tbody id="apptTbody"></tbody>
       </table>
     </div>
-    <div class="cbox">
+    <div class="chart-card">
       <h3>Booking Volume by Type</h3>
-      <p class="csub">90-day appointment bookings across all campaigns</p>
-      <div class="ch"><canvas id="apptFunnelChart" height="320"></canvas></div>
+      <div class="chart-sub">90-day appointment bookings across all campaigns</div>
+      <div class="chart-wrap" style="height:300px"><canvas id="apptFunnelChart"></canvas></div>
     </div>
   </div>
 </section>
 
-</main>
-
-<!-- ── GUIDE DRAWER ── -->
-<div class="guide-overlay" id="guideOverlay" onclick="guideClose()"></div>
-<div class="guide-drawer" id="guideDrawer">
-  <div class="guide-hdr">
-    <h2>📋 Dashboard Guide</h2>
-    <button class="guide-close" onclick="guideClose()">✕</button>
+<!-- ── METHODOLOGY ── -->
+<section id="methodology">
+  <div class="section-title"><div class="num">M</div>Methodology</div>
+  <div class="bta-box">
+    <div class="bta-header">◆ How This Attribution Analysis Works</div>
+    <div class="bta-grid">
+      <div>
+        <div class="bta-title">Data Source</div>
+        <div class="bta-body">All data comes directly from Google Ads via the Google Ads Scripts API. Campaign stats are refreshed every 30 minutes via GitHub Actions. Attribution data (assist ratios, MTA ROAS) is pulled from your account's path-of-conversion reports.</div>
+      </div>
+      <div>
+        <div class="bta-title">Attribution Model</div>
+        <div class="bta-body">Last-click revenue reflects what Google Ads reports in the Campaigns view. Multi-touch attribution (MTA) adds assisted revenue — value from campaigns that appeared in the conversion path but didn't receive the last click.</div>
+      </div>
+      <div>
+        <div class="bta-title">Conversion Tiers</div>
+        <div class="bta-body">Tier 1 = direct revenue (Offline Invoice, Website Purchase). Tier 2 = appointment pipeline (London In-Store, Manchester, Virtual, Contact Form). Tier 3 = engagement signals (WhatsApp, Checkout begins) — intent indicators without assigned revenue value.</div>
+      </div>
+    </div>
   </div>
-  <div class="guide-body">
+</section>
 
-    <!-- START HERE -->
-    <div class="guide-start">
-      <h4>How to use this dashboard</h4>
-      <ul class="guide-flow">
-        <li>
-          <div class="flow-label">Quick weekly check</div>
-          <div>Pick 7D or 28D at the top. Look at section ① for your spend and return, then ⑥ for how each campaign is performing.</div>
-        </li>
-        <li>
-          <div class="flow-label">Monthly review</div>
-          <div>Go through all 8 sections top to bottom on 28D. Don't skip ② and ③ — those two sections tell you which campaigns are actually worth keeping.</div>
-        </li>
-        <li>
-          <div class="flow-label">Before cutting a campaign</div>
-          <div>Check ② first. A campaign showing £0 revenue in Google Ads might be driving hundreds of assists. Cut it and your other campaigns drop too.</div>
-        </li>
-        <li>
-          <div class="flow-label">Appointment value</div>
-          <div>Go to ⑧ to see your booking numbers. Google Ads shows these as £0 — this section shows the real picture.</div>
-        </li>
-      </ul>
-      <div style="margin-top:14px">
-        <div style="font-size:0.74rem;color:var(--gold);font-weight:600;margin-bottom:6px">Which date range?</div>
-        <div class="guide-period">
-          <div class="gp"><span class="gp-btn">7D</span><span class="gp-txt">Did something change recently? Use this to check quickly.</span></div>
-          <div class="gp"><span class="gp-btn">28D</span><span class="gp-txt">Best for regular reviews. Enough data to be meaningful.</span></div>
-          <div class="gp"><span class="gp-btn">90D</span><span class="gp-txt">Use this when looking at sections 2, 3, 4, and 5 — they're all 90-day data.</span></div>
-          <div class="gp"><span class="gp-btn">1Y</span><span class="gp-txt">Seasonal trends. Is spend up in December? Is summer slower?</span></div>
-        </div>
-      </div>
-    </div>
+</div><!-- /container -->
 
-    <!-- SECTION 1 -->
-    <div class="guide-sec">
-      <div class="guide-sec-title">
-        <div class="guide-num">1</div>
-        <h3>KPI Overview</h3>
-        <span class="guide-tag dynamic">Updates with date</span>
-      </div>
-      <p class="guide-what">Your top-line numbers for the selected period — spend, revenue, and return on spend. The MTA ROAS and Total Assists cards are fixed to 90 days regardless of what date you pick.</p>
-      <div class="guide-action">The day-to-day number to watch is Last-Click ROAS. The MTA ROAS looks higher — but that's because one of your conversion actions ("Begin Checkout From Ads") has a value assigned to it in Google Ads that inflates the figure. More detail on this in the FAQ below.</div>
-    </div>
-
-    <!-- SECTION 2 -->
-    <div class="guide-sec">
-      <div class="guide-sec-title">
-        <div class="guide-num">2</div>
-        <h3>Campaign Role Intelligence</h3>
-        <span class="guide-tag fixed">90D Fixed</span>
-      </div>
-      <p class="guide-what">Google Ads only gives credit to the campaign that gets the last click before a sale. That makes some of your most important campaigns look like they're doing nothing. This section shows what each campaign is actually doing.</p>
-      <div class="role-legend">
-        <div class="rl-item"><span class="badge bi">Pure Introducer</span> Brings customers in but never gets the last click. Without this, the campaigns that do close have no one to close.</div>
-        <div class="rl-item"><span class="badge ba">Introducer</span> Mostly brings people in, occasionally closes. Works mainly at the start of the customer journey.</div>
-        <div class="rl-item"><span class="badge br">Assist</span> Sits in the middle — sometimes closes, often supports. Not top or bottom of funnel, just useful throughout.</div>
-        <div class="rl-item"><span class="badge bc">Closer</span> Gets the last click and the credit. These look great in Google Ads — but they depend on Introducer campaigns to bring customers in.</div>
-      </div>
-      <div class="guide-action" style="margin-top:10px">Don't cut a campaign based on revenue alone. Look at its assists. A campaign with low revenue but thousands of assists is feeding your closers — remove it and watch the closers drop.</div>
-      <div class="guide-why">This section stays at 90 days because Google only releases this data as a 90-day window. There's no shorter version available.</div>
-    </div>
-
-    <!-- SECTION 3 -->
-    <div class="guide-sec">
-      <div class="guide-sec-title">
-        <div class="guide-num">3</div>
-        <h3>MTA vs Last-Click</h3>
-        <span class="guide-tag fixed">90D Fixed</span>
-      </div>
-      <p class="guide-what">Google Ads gives all revenue credit to whichever campaign got the last click. This section splits that credit across every campaign that played a role in the sale. The True Revenue column is what each campaign actually influenced — not just what it officially closed.</p>
-      <div class="guide-action">Look for campaigns where True Revenue is much higher than Last-Click Revenue. That gap is how much Google Ads is undervaluing that campaign. It's the number to use when making budget decisions.</div>
-      <div class="guide-why">90-day fixed — same data source as section 2.</div>
-    </div>
-
-    <!-- SECTION 4 -->
-    <div class="guide-sec">
-      <div class="guide-sec-title">
-        <div class="guide-num">4</div>
-        <h3>Customer Journey Behaviour</h3>
-        <span class="guide-tag fixed">90D Fixed</span>
-      </div>
-      <p class="guide-what">How long customers take from their first ad click to purchase, and how many ads they see before they buy. Jewellery customers typically take longer than most — some research for weeks before committing.</p>
-      <div class="guide-action">If a chunk of your customers take more than 7 days to buy, your retargeting window needs to cover that. Most accounts are set to 7 days by default — those customers get dropped before they convert.</div>
-      <div class="guide-why">90-day fixed — Google doesn't offer this data for shorter windows.</div>
-    </div>
-
-    <!-- SECTION 5 -->
-    <div class="guide-sec">
-      <div class="guide-sec-title">
-        <div class="guide-num">5</div>
-        <h3>Top Conversion Paths</h3>
-        <span class="guide-tag fixed">90D Fixed</span>
-      </div>
-      <p class="guide-what">The actual sequence of campaigns customers clicked through before buying. "Shopping → Retargeting → Shopping" means they found you through Shopping, came back via a retargeting ad, then bought through Shopping again.</p>
-      <div class="guide-action">If Retargeting shows up in most of the high-revenue paths, that campaign is doing more than its own numbers show. That's useful to know before any conversation about cutting spend.</div>
-      <div class="guide-why">90-day fixed — Google only provides path data at this window.</div>
-    </div>
-
-    <!-- SECTION 6 -->
-    <div class="guide-sec">
-      <div class="guide-sec-title">
-        <div class="guide-num">6</div>
-        <h3>Campaign Performance</h3>
-        <span class="guide-tag dynamic">Updates with date</span>
-      </div>
-      <p class="guide-what">Standard performance numbers per campaign for your selected period. The last column shows each campaign's attribution-adjusted return — what it earns when all touchpoints are counted, not just the last click — so you can compare both figures side by side.</p>
-      <div class="guide-action">When the last-click return looks low but the attribution-adjusted return is strong, the campaign is contributing more than it's getting credit for. When both are low, that's worth investigating.</div>
-    </div>
-
-    <!-- SECTION 7 -->
-    <div class="guide-sec">
-      <div class="guide-sec-title">
-        <div class="guide-num">7</div>
-        <h3>Conversion Breakdown</h3>
-        <span class="guide-tag dynamic">Updates with date</span>
-      </div>
-      <p class="guide-what">Every type of conversion firing in your account for the selected period — purchases, offline invoices, appointment bookings, and smaller signals like checkout starts and time spent on site.</p>
-      <div class="guide-action">The ones that matter for revenue are Purchase, Offline Invoice, and Appointment. The high-volume rows like "Time Spent 5 Min" or "Call Click" are engagement signals — don't count them as sales.</div>
-    </div>
-
-    <!-- SECTION 8 -->
-    <div class="guide-sec">
-      <div class="guide-sec-title">
-        <div class="guide-num">8</div>
-        <h3>Appointment Pipeline</h3>
-        <span class="guide-tag dynamic">Updates with date</span>
-      </div>
-      <p class="guide-what">Appointment bookings by type for the selected period — In-Store, Virtual, Ring Builder. Shows volume, monthly rate, and cost per booking. Google Ads marks all of these as £0 because there's no online purchase, so they never appear in your standard revenue reports.</p>
-      <div class="guide-action">The cost per booking is the number to focus on. An in-store appointment that costs £X to generate and converts to a high-value sale in person is very good ROI — it just doesn't show up anywhere in Google Ads.</div>
-    </div>
-
-    <!-- FAQ -->
-    <div class="guide-faq">
-      <h4>COMMON QUESTIONS</h4>
-
-      <p class="guide-q">The MTA ROAS looks very high — should I trust it?</p>
-      <p class="guide-a">Not as a direct comparison to your last-click ROAS. One of your conversion actions ("Begin Checkout From Ads") has a monetary value attached to it in Google Ads settings, which inflates the MTA figure. Use the Last-Click ROAS in sections 1 and 6 for day-to-day decisions.</p>
-
-      <p class="guide-q">What's the difference between a conversion and an assist?</p>
-      <p class="guide-a">A conversion means that campaign was the last ad clicked before a purchase — Google gives it 100% of the credit. An assist means the campaign appeared earlier in the customer's journey but didn't get the final click. Google gives assists no credit at all. That's the gap this dashboard fills.</p>
-
-      <p class="guide-q">Why don't sections 2, 3, 4, and 5 update when I change the date?</p>
-      <p class="guide-a">Google only releases that attribution data as a fixed 90-day summary. There's no shorter version — it's a Google limitation. Sections 1, 6, 7, and 8 use daily data so they do update with your date selection.</p>
-
-      <p class="guide-q">How up to date is the data?</p>
-      <p class="guide-a">It refreshes every 30 minutes automatically. Check the "Last updated" time at the bottom of the page — you don't need to do anything to keep it current.</p>
-
-      <p class="guide-q">Some campaigns show £0 revenue — does that mean they're not working?</p>
-      <p class="guide-a">Not necessarily. It means they never got the last click before a purchase, so Google didn't credit them. Check the Assists column in section 2 and the True Revenue column in section 3 — a campaign with £0 last-click revenue can still be one of your best performers.</p>
-    </div>
-
-  </div>
+<div class="footer">
+  Last updated: <span id="footerUpdated">—</span> &nbsp;·&nbsp; Data range: <span id="metaFrom">—</span> to <span id="metaTo">—</span> &nbsp;·&nbsp; <span id="metaDays">—</span> days available
 </div>
 
-<footer class="footer">
-  Last updated: <span id="footerUpdated">—</span>
-  &nbsp;·&nbsp; Data auto-refreshes every 30 min
-  &nbsp;·&nbsp; <a href="https://github.com/saifurshahin1/flawless-attribution" target="_blank">GitHub</a>
-</footer>
-
 <script>
-/* ─── GLOBALS ─── */
-var G={stats:[],assisted:[],timeLag:[],pathLen:[],paths:[],breakdown:[],meta:{},dateFrom:null,dateTo:null,charts:{}};
+var G={meta:{},stats:[],assisted:[],timeLag:[],pathLen:[],paths:[],breakdown:[],dateFrom:null,dateTo:null,charts:{}};
 
 /* ─── HELPERS ─── */
-function fmtGBP(n){if(isNaN(n)||n===null)return'—';const a=Math.abs(n);if(a>=1e6)return'£'+(n/1e6).toFixed(2)+'M';if(a>=1000)return'£'+(n/1000).toFixed(1)+'K';return'£'+Math.round(n).toLocaleString();}
-function fmtN(n){if(!n)return'0';if(Math.abs(n)>=1000)return(n/1000).toFixed(1)+'K';return Math.round(n).toString();}
-function fmt8(d){if(typeof d==='string')return d;return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function fmtDS(d){const m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear();}
-function parseDate(s){if(!s)return null;const p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
-function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
+function addDays(d,n){var r=new Date(d);r.setDate(r.getDate()+n);return r;}
+function fmt8(d){return d.toISOString().slice(0,10).replace(/-/g,'');}
+function fmtDS(d){return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});}
+function parseDate(s){if(!s)return new Date();var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+function fmtGBP(v){
+  if(!v||isNaN(v))return'£0';
+  if(v>=1000000)return'£'+(v/1000000).toFixed(1)+'M';
+  if(v>=10000)return'£'+(v/1000).toFixed(1)+'K';
+  if(v>=1000)return'£'+(v/1000).toFixed(1)+'K';
+  return'£'+Math.round(v).toLocaleString();
+}
+function fmtN(n){return n>=1000?(n/1000).toFixed(1)+'K':String(n);}
+function destroyChart(id){if(G.charts[id]){G.charts[id].destroy();delete G.charts[id];}}
 
-function collapseTable(tbody,limit){
-  const rows=Array.from(tbody.querySelectorAll('tr:not(.tbl-more-row)'));
-  if(rows.length<=limit)return;
-  rows.slice(limit).forEach(r=>r.style.display='none');
-  const mr=document.createElement('tr');mr.className='tbl-more-row';
-  mr.innerHTML='<td colspan="20">▼ Show '+(rows.length-limit)+' more rows</td>';
-  mr.onclick=function(){rows.forEach(r=>r.style.display='');mr.remove();};
-  tbody.appendChild(mr);
+/* ─── ROLE BADGE ─── */
+function roleBadge(r){
+  const m={'Pure Introducer':'badge-pure','Introducer':'badge-introducer','Assist':'badge-assist','Closer':'badge-closer','Revenue Closer':'badge-rev'};
+  return`<span class="badge ${m[r]||'badge-x'}">${r||'—'}</span>`;
+}
+
+/* ─── STRATEGIC MEANING ─── */
+function getStrategicMeaning(r){
+  const role=r.campaign_role,ratio=+(r.assist_ratio||0);
+  if(role==='Pure Introducer')return'Brings customers in — never gets the last click';
+  if(role==='Introducer')return'Mostly brings people in ('+ratio.toFixed(1)+'× more assists than closes)';
+  if(role==='Assist'){
+    if(Math.abs(ratio-1)<=0.1)return'Closes and assists in equal measure';
+    if(ratio>0.75)return'More assist than close — works across the journey';
+    return'Mostly closes, some assist activity';
+  }
+  if(role==='Closer'||role==='Revenue Closer'){
+    if((r.last_click_conv||0)>50)return'Main closer — high volume of last-click sales';
+    if(ratio<0.15)return'Closes sales, very little assist activity';
+    return'Mostly closes, occasionally assists';
+  }
+  return'—';
+}
+
+/* ─── PATH TYPE ─── */
+function getPathType(path){
+  const segs=(path||'').split('>').map(s=>s.trim()).filter(Boolean);
+  if(segs.length===1){
+    if(segs[0].toLowerCase().includes('retarget'))return'<span class="badge badge-branded">BRANDED</span>';
+    return'<span class="badge badge-rev">DIRECT</span>';
+  }
+  const hasRet=segs.some(s=>s.toLowerCase().includes('retarget'));
+  if(hasRet)return'<span class="badge badge-assist">ASSISTED</span>';
+  return'<span class="badge badge-multi">MULTI</span>';
 }
 
 /* ─── PAGINATION ─── */
@@ -805,12 +517,12 @@ function initPag(id,allRows,renderRow,cols){
   drawPage(id);
 }
 function drawPage(id){
-  const p=PAG[id];
+  const p=PAG[id];if(!p)return;
   const total=p.allRows.length;
   const tp=Math.ceil(total/p.perPage)||1;
   p.page=Math.max(1,Math.min(p.page,tp));
   const s=(p.page-1)*p.perPage,e=s+p.perPage;
-  const tbody=document.getElementById(id);
+  const tbody=document.getElementById(id);if(!tbody)return;
   tbody.innerHTML=p.allRows.slice(s,e).map(p.renderRow).join('')+pagRow(id,total);
 }
 function pagRow(id,total){
@@ -829,51 +541,9 @@ function pagRow(id,total){
 function pagSet(id,n){PAG[id].perPage=n;PAG[id].page=1;drawPage(id);}
 function pagGo(id,dir){PAG[id].page+=dir;drawPage(id);}
 
-function getStrategicMeaning(r){
-  const role=r.campaign_role,ratio=+(r.assist_ratio||0);
-  if(role==='Pure Introducer')return'Brings customers in — never gets the last click';
-  if(role==='Introducer')return'Mostly brings people in ('+ratio.toFixed(1)+'× more assists than closes)';
-  if(role==='Assist'){
-    if(Math.abs(ratio-1)<=0.1)return'Closes and assists in equal measure';
-    if(ratio>0.75)return'More assist than close — works across the journey';
-    return'Mostly closes, some assist activity';
-  }
-  if(role==='Closer'){
-    if((r.last_click_conv||0)>50)return'Main closer — high volume of last-click sales';
-    if(ratio<0.15)return'Closes sales, very little assist activity';
-    return'Mostly closes, occasionally assists';
-  }
-  return'—';
-}
-
-function getBuyerProfile(b){
-  b=+b;
-  if(b===0)return'Bought on the same day';
-  if(b===1)return'Came back next day';
-  if(b<=3)return'Took 2–3 days';
-  if(b<=7)return'Took up to a week';
-  if(b<=14)return'Took 1–2 weeks';
-  if(b<=30)return'Took 2–4 weeks';
-  if(b<=60)return'Took 1–2 months';
-  return'Took over 2 months';
-}
-
-function getPathType(path){
-  const segs=path.split(' > '),uniq=[...new Set(segs)];
-  if(uniq.length===1){
-    const lp=path.toLowerCase();
-    if(lp.includes('retarget')||lp.includes('brand'))return'<span class="pt-badge pt-brand">Branded</span>';
-    return'<span class="pt-badge pt-direct">Direct</span>';
-  }
-  return'<span class="pt-badge pt-multi">Multi-Channel</span>';
-}
-
-function roleBadge(role){const m={'Pure Introducer':'bi','Introducer':'ba','Assist':'br','Closer':'bc'};return'<span class="badge '+(m[role]||'bx')+'">'+(role||'—')+'</span>';}
-function destroyChart(id){if(G.charts[id]){G.charts[id].destroy();delete G.charts[id];}}
-
-/* ─── DATA LOAD ─── */
+/* ─── DATA LOADING ─── */
 async function loadData(){
-  const[meta,stats,assisted,timeLag,pathLen,paths,breakdown]=await Promise.all([
+  const [meta,stats,assisted,timeLag,pathLen,paths,breakdown]=await Promise.all([
     fetch('data/meta.json').then(r=>r.json()),
     fetch('data/campaign_stats.json').then(r=>r.json()),
     fetch('data/assisted_conv.json').then(r=>r.json()),
@@ -882,439 +552,533 @@ async function loadData(){
     fetch('data/conv_paths.json').then(r=>r.json()),
     fetch('data/conv_breakdown.json').then(r=>r.json()),
   ]);
-  G.meta=meta;G.stats=stats.rows||stats;G.assisted=assisted.rows||assisted;
-  G.timeLag=timeLag.rows||timeLag;G.pathLen=pathLen.rows||pathLen;
-  G.paths=paths.rows||paths;G.breakdown=breakdown.rows||breakdown;
+  G.meta=meta;
+  G.stats=stats.rows||stats;
+  G.assisted=assisted.rows||assisted;
+  G.timeLag=timeLag.rows||timeLag;
+  G.pathLen=pathLen.rows||pathLen;
+  G.paths=paths.rows||paths;
+  G.breakdown=breakdown.rows||breakdown;
 }
 
+/* ─── UPDATE META ─── */
 function updateMeta(){
   const m=G.meta;
-  document.getElementById('metaFrom').textContent=m.data_from||'—';
-  document.getElementById('metaTo').textContent=m.data_to||'—';
-  document.getElementById('metaDays').textContent=m.days_available||'—';
-  document.getElementById('metaUpdated').textContent=m.last_updated||'—';
-  document.getElementById('footerUpdated').textContent=m.last_updated||'—';
-  const dr=G.assisted[0]?G.assisted[0].date_range:'90D Fixed';
-  ['rolesBadge','mtaBadge','journeyBadge','pathsBadge','cbBadge','apptBadge'].forEach(id=>{
-    const el=document.getElementById(id);if(el)el.textContent=dr;
-  });
+  const el=id=>document.getElementById(id);
+  if(el('metaFrom'))el('metaFrom').textContent=m.data_from||'—';
+  if(el('metaTo'))el('metaTo').textContent=m.data_to||'—';
+  if(el('metaDays'))el('metaDays').textContent=m.days_available||'—';
+  if(el('footerUpdated'))el('footerUpdated').textContent=m.last_updated||'—';
+  if(el('headerMeta')&&m.data_from)
+    el('headerMeta').textContent=`Google Ads Attribution Analysis · Data: ${m.data_from} to ${m.data_to} · Updated ${m.last_updated}`;
 }
 
-/* ─── DATE PICKER ─── */
-var DP={open:false,picking:'start',start:null,end:null,pendStart:null,pendEnd:null,
-  vy:new Date().getFullYear(),vm:new Date().getMonth()-1};
-
+/* ─── DATE CONTROLS ─── */
 function setPeriod(days){
   document.querySelectorAll('.qbtn').forEach(b=>b.classList.remove('active'));
   const btn=document.getElementById('qb'+days);if(btn)btn.classList.add('active');
   const end=addDays(new Date(),-1),start=addDays(end,-(days-1));
+  document.getElementById('dateFrom').value=start.toISOString().slice(0,10);
+  document.getElementById('dateTo').value=end.toISOString().slice(0,10);
   const label=fmtDS(start)+' – '+fmtDS(end);
-  document.getElementById('dpBtnLabel').textContent=label;
-  document.getElementById('kpiBadge').textContent=label;
-  document.getElementById('perfBadge').textContent=label;
-  DP.start=start;DP.end=end;
+  ['kpiBadge','perfBadge','cbBadge','apptBadge'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.textContent=label;
+  });
+  G.dateFrom=start;G.dateTo=end;
   applyDateRange(start,end);
 }
-
-function applyDateRange(from,to){
+function applyCustomDate(){
+  document.querySelectorAll('.qbtn').forEach(b=>b.classList.remove('active'));
+  const from=parseDate(document.getElementById('dateFrom').value);
+  const to=parseDate(document.getElementById('dateTo').value);
+  if(!from||!to||from>to)return;
+  const label=fmtDS(from)+' – '+fmtDS(to);
+  ['kpiBadge','perfBadge','cbBadge','apptBadge'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.textContent=label;
+  });
   G.dateFrom=from;G.dateTo=to;
+  applyDateRange(from,to);
+}
+function applyDateRange(from,to){
   const fs=fmt8(from),ts=fmt8(to);
   const f=G.stats.filter(r=>r.date>=fs&&r.date<=ts);
   const fb=G.breakdown.filter(r=>r.date>=fs&&r.date<=ts);
-  const label=fmtDS(from)+' – '+fmtDS(to);
-  document.getElementById('cbBadge').textContent=label;
-  document.getElementById('apptBadge').textContent=label;
-  renderKPIs(f);renderPerformance(f);renderConvBreakdown(fb);renderAppointments(fb);
+  renderKPIs(f);
+  renderPerformance(f);
+  renderConvBreakdown(fb);
+  renderAppointments(fb);
 }
 
-function dpToggle(){
-  DP.open=!DP.open;
-  document.getElementById('dpPanel').style.display=DP.open?'flex':'none';
-  if(DP.open){
-    DP.pendStart=DP.start;DP.pendEnd=DP.end;DP.picking='start';
-    if(DP.end){DP.vy=DP.end.getFullYear();DP.vm=DP.end.getMonth()-1;}
-    if(DP.vm<0){DP.vm=11;DP.vy--;}
-    dpRenderCals();dpUpdateBoxes();
-  }
-}
-
-function dpPreset(id){
-  const now=new Date(),yest=addDays(now,-1);
-  const map={last7:-6,last14:-13,last28:-27,last90:-89,last365:-364};
-  let s,e=yest;
-  if(map[id]!==undefined)s=addDays(yest,map[id]);
-  else if(id==='thismonth'){s=new Date(now.getFullYear(),now.getMonth(),1);}
-  else if(id==='lastmonth'){s=new Date(now.getFullYear(),now.getMonth()-1,1);e=new Date(now.getFullYear(),now.getMonth(),0);}
-  else if(id==='alltime'){const d=G.stats.map(r=>r.date).filter(Boolean).sort();s=parseDate(d[0]);}
-  if(!s||!e)return;
-  DP.pendStart=s;DP.pendEnd=e;
-  DP.vy=e.getFullYear();DP.vm=e.getMonth()-1;
-  if(DP.vm<0){DP.vm=11;DP.vy--;}
-  document.querySelectorAll('.dp-preset').forEach(p=>p.classList.remove('dp-active'));
-  const el=document.getElementById('dpp-'+id);if(el)el.classList.add('dp-active');
-  dpRenderCals();dpUpdateBoxes();
-}
-
-function dpDays(){
-  const n=parseInt(document.getElementById('dpN').value)||28;
-  const e=addDays(new Date(),-1),s=addDays(e,-(n-1));
-  DP.pendStart=s;DP.pendEnd=e;
-  DP.vy=e.getFullYear();DP.vm=e.getMonth()-1;
-  if(DP.vm<0){DP.vm=11;DP.vy--;}
-  dpRenderCals();dpUpdateBoxes();
-}
-
-function dpApply(){
-  if(!DP.pendStart||!DP.pendEnd)return;
-  DP.start=DP.pendStart;DP.end=DP.pendEnd;
-  const label=fmtDS(DP.start)+' – '+fmtDS(DP.end);
-  document.getElementById('dpBtnLabel').textContent=label;
-  document.getElementById('kpiBadge').textContent=label;
-  document.getElementById('perfBadge').textContent=label;
-  document.querySelectorAll('.qbtn').forEach(b=>b.classList.remove('active'));
-  DP.open=false;document.getElementById('dpPanel').style.display='none';
-  applyDateRange(DP.start,DP.end);
-}
-
-function dpCancel(){DP.open=false;document.getElementById('dpPanel').style.display='none';}
-
-function dpDayClick(ds){
-  const d=parseDate(ds);
-  if(DP.picking==='start'||(DP.pendStart&&DP.pendEnd)){DP.pendStart=d;DP.pendEnd=null;DP.picking='end';}
-  else{if(d<DP.pendStart){DP.pendEnd=DP.pendStart;DP.pendStart=d;}else DP.pendEnd=d;DP.picking='start';}
-  document.getElementById('dpBox1').classList.toggle('dp-box-active',DP.picking==='start');
-  document.getElementById('dpBox2').classList.toggle('dp-box-active',DP.picking==='end');
-  dpRenderCals();dpUpdateBoxes();
-}
-
-function dpNav(dir){
-  DP.vm+=dir;
-  if(DP.vm<0){DP.vm=11;DP.vy--;}if(DP.vm>11){DP.vm=0;DP.vy++;}
-  dpRenderCals();
-}
-
-function dpUpdateBoxes(){
-  document.getElementById('dpS').textContent=DP.pendStart?fmtDS(DP.pendStart):'—';
-  document.getElementById('dpE').textContent=DP.pendEnd?fmtDS(DP.pendEnd):'—';
-}
-
-function dpRenderCals(){
-  const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const DW=['Su','Mo','Tu','We','Th','Fr','Sa'];
-  const ts=fmt8(new Date());
-  let html='';
-  for(let m=0;m<2;m++){
-    let vm=DP.vm+m,vy=DP.vy;if(vm>11){vm-=12;vy++;}
-    html+=`<div class="dp-cal"><div class="dp-cal-hdr">
-      ${m===0?`<button class="dp-nav" onclick="dpNav(-1)">‹</button>`:'<span class="dp-nav-ph"></span>'}
-      <span class="dp-month-lbl">${MN[vm]} ${vy}</span>
-      ${m===1?`<button class="dp-nav" onclick="dpNav(1)">›</button>`:'<span class="dp-nav-ph"></span>'}
-    </div><div class="dp-cal-grid">`;
-    DW.forEach(d=>{html+=`<div class="dp-dow">${d}</div>`;});
-    const dow=new Date(vy,vm,1).getDay();
-    for(let i=0;i<dow;i++)html+='<div></div>';
-    const dim=new Date(vy,vm+1,0).getDate();
-    const s=DP.pendStart?fmt8(DP.pendStart):null,e=DP.pendEnd?fmt8(DP.pendEnd):null;
-    for(let d=1;d<=dim;d++){
-      const ds=vy+'-'+String(vm+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-      let cls='dp-day';
-      if(ds===ts)cls+=' dp-today-dot';
-      if(s&&e&&ds>=s&&ds<=e)cls+=' dp-in-range';
-      if(s&&ds===s)cls+=' dp-sel dp-start-sel';
-      if(e&&ds===e)cls+=' dp-sel dp-end-sel';
-      if(s&&ds===s&&!e)cls+=' dp-sel dp-single-sel';
-      html+=`<div class="${cls}" onclick="dpDayClick('${ds}')">${d}</div>`;
-    }
-    html+='</div></div>';
-  }
-  document.getElementById('dpCals').innerHTML=html;
-}
-
-document.addEventListener('click',e=>{
-  if(DP.open&&!document.getElementById('dpWrap').contains(e.target))dpCancel();
-});
-
-/* ─── SECTION 1: KPI OVERVIEW ─── */
-function renderKPIs(filtered){
-  let spend=0,conv=0,rev=0;
-  filtered.forEach(r=>{spend+=r.spend||0;conv+=r.conversions||0;rev+=r.revenue||0;});
+/* ─── KPI SECTION ─── */
+function renderKPIs(rows){
+  const spend=rows.reduce((s,r)=>s+(r.spend||0),0);
+  const rev=rows.reduce((s,r)=>s+(r.revenue||0),0);
+  const conv=rows.reduce((s,r)=>s+(r.conversions||0),0);
   const lcRoas=spend>0?rev/spend:0;
   let sp90=0,mr90=0;
   G.assisted.forEach(r=>{sp90+=r.spend||0;mr90+=(r.spend||0)*(r.mta_roas||0);});
   const mtaRoas=sp90>0?mr90/sp90:0;
   const assists=G.assisted.reduce((s,r)=>s+(r.assists||0),0);
   document.getElementById('kpiRow').innerHTML=`
-    <div class="kpi"><div class="kpi-lbl">Ad Spend</div><div class="kpi-val gold">${fmtGBP(spend)}</div><div class="kpi-sub">${conv.toFixed(0)} conversions</div></div>
-    <div class="kpi"><div class="kpi-lbl">LC Revenue</div><div class="kpi-val">${fmtGBP(rev)}</div><div class="kpi-sub">Last-click attribution</div></div>
-    <div class="kpi"><div class="kpi-lbl">LC ROAS</div><div class="kpi-val ${lcRoas>=4?'up':lcRoas>=2?'':'down'}">${lcRoas.toFixed(2)}x</div><div class="kpi-sub">Revenue ÷ Ad Spend</div></div>
-    <div class="kpi"><div class="kpi-lbl">Conversions</div><div class="kpi-val">${conv.toFixed(0)}</div><div class="kpi-sub">Last-click purchases</div></div>
-    <div class="kpi"><div class="kpi-lbl">MTA ROAS <span class="fixed-badge">90D</span></div><div class="kpi-val ${mtaRoas>=4?'up':''}">${mtaRoas.toFixed(2)}x</div><div class="kpi-sub">All-touch attribution</div></div>
-    <div class="kpi"><div class="kpi-lbl">Total Assists <span class="fixed-badge">90D</span></div><div class="kpi-val">${fmtN(Math.round(assists))}</div><div class="kpi-sub">Assisted conversions</div></div>
+    <div class="kpi-card"><div class="label">Ad Spend</div><div class="value">${fmtGBP(spend)}</div><div class="sub">Total spend in period</div></div>
+    <div class="kpi-card kpi-gold"><div class="label">Revenue</div><div class="value">${fmtGBP(rev)}</div><div class="sub">Last-click revenue</div></div>
+    <div class="kpi-card kpi-green"><div class="label">LC ROAS</div><div class="value ${lcRoas>=4?'up':lcRoas>=2?'':'down'}">${lcRoas.toFixed(2)}×</div><div class="sub">Revenue ÷ Ad Spend</div></div>
+    <div class="kpi-card"><div class="label">Conversions</div><div class="value">${conv.toFixed(0)}</div><div class="sub">Last-click purchases</div></div>
+    <div class="kpi-card kpi-blue"><div class="label">MTA ROAS <span class="fixed-badge">90D</span></div><div class="value">${mtaRoas.toFixed(2)}×</div><div class="sub">All-touch attribution</div></div>
+    <div class="kpi-card kpi-purple"><div class="label">Total Assists <span class="fixed-badge">90D</span></div><div class="value">${fmtN(Math.round(assists))}</div><div class="sub">Assisted conversions</div></div>
   `;
 }
 
-/* ─── SECTION 2: CAMPAIGN ROLE INTELLIGENCE ─── */
+/* ─── EXECUTIVE INSIGHTS ─── */
+function renderExecInsights(){
+  const asst=G.assisted,tl=G.timeLag,pl=G.pathLen;
+
+  const totalPL=pl.reduce((s,r)=>s+(r.conversions||0),0)||1;
+  const single=pl.filter(r=>+r.bucket===1).reduce((s,r)=>s+(r.conversions||0),0);
+  const multiPct=((totalPL-single)/totalPL*100);
+  const singlePct=(single/totalPL*100);
+
+  const totalLC=asst.reduce((s,r)=>s+(r.last_click_value||0),0);
+  const totalMTA=asst.reduce((s,r)=>s+(r.mta_roas||0)*(r.spend||0),0);
+  const sorted=[...asst].sort((a,b)=>((b.mta_roas||0)*(b.spend||0))-((a.mta_roas||0)*(a.spend||0)));
+  const topCamp=sorted[0];
+  const topAssist=topCamp?Math.max(0,(topCamp.mta_roas||0)*(topCamp.spend||0)-(topCamp.last_click_value||0)):0;
+  const mtaMult=totalLC>0?totalMTA/totalLC:0;
+
+  const totalTL=tl.reduce((s,r)=>s+(r.conversions||0),0)||1;
+  const fastConv=tl.filter(r=>+r.bucket===0).reduce((s,r)=>s+(r.conversions||0),0);
+  const fastRev=tl.filter(r=>+r.bucket===0).reduce((s,r)=>s+(r.conversion_value||0),0);
+  const slowConv=tl.filter(r=>+r.bucket>=12).reduce((s,r)=>s+(r.conversions||0),0);
+  const slowRev=tl.filter(r=>+r.bucket>=12).reduce((s,r)=>s+(r.conversion_value||0),0);
+  const totalTLRev=tl.reduce((s,r)=>s+(r.conversion_value||0),0)||1;
+  const fastRevPct=(fastRev/totalTLRev*100);
+  const slowRevPct=(slowRev/totalTLRev*100);
+
+  const top3Rev=sorted.slice(0,3).reduce((s,r)=>s+(r.mta_roas||0)*(r.spend||0),0);
+  const top3Pct=totalMTA>0?(top3Rev/totalMTA*100):0;
+  const top3Names=sorted.slice(0,3).map(r=>r.campaign).join(', ');
+
+  document.getElementById('execGrid').innerHTML=`
+    <div class="exec-card" style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.25)">
+      <div class="exec-label" style="color:#60a5fa">Single-Touch Dominates Volume; Multi-Touch Drives Value</div>
+      <div class="exec-body">${singlePct.toFixed(1)}% of conversions are single-touch — Last Click captures these accurately. The remaining ${multiPct.toFixed(1)}% involve 2+ campaigns. Customers who interact with multiple ads generate revenue at a significantly higher per-conversion rate than single-touch buyers.</div>
+    </div>
+    <div class="exec-card" style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.25)">
+      <div class="exec-label" style="color:#f87171">Last Click Understates Account Revenue by ${mtaMult>0?mtaMult.toFixed(1)+'×':'—'}</div>
+      <div class="exec-body">Last Click reports total revenue at <strong style="color:#f87171">${fmtGBP(totalLC)}</strong>. Attribution analysis identifies <strong style="color:#f87171">${fmtGBP(totalMTA)} in total campaign influence</strong> — a ${fmtGBP(totalMTA-totalLC)} gap. ${topCamp?.campaign||'Top campaign'} alone accounts for ${fmtGBP(topAssist)} in assisted revenue that does not appear in any standard Google Ads report.</div>
+    </div>
+    <div class="exec-card" style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.25)">
+      <div class="exec-label" style="color:#4ade80">Fast Buyers Are the Majority; High-Value Buyers Take Longer</div>
+      <div class="exec-body">${(fastConv/totalTL*100).toFixed(1)}% of customers convert within 24 hours, generating ${fmtGBP(fastRev)} (${fastRevPct.toFixed(1)}% of revenue). Customers who take 12+ days represent ${(slowConv/totalTL*100).toFixed(1)}% of conversions but <strong style="color:var(--green)">${slowRevPct.toFixed(1)}% of revenue</strong>. Your retargeting window length directly determines whether this segment is captured.</div>
+    </div>
+    <div class="exec-card" style="background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.25)">
+      <div class="exec-label" style="color:#c084fc">Revenue Concentrated Across a Three-Campaign Funnel</div>
+      <div class="exec-body">${top3Pct.toFixed(0)}% of attributed revenue traces to three campaigns: ${top3Names}. The funnel is sequential. <strong style="color:var(--purple)">Disrupting any tier reduces the others' effectiveness</strong> — with a measurable 2–4 week lag before impact appears in reported conversions.</div>
+    </div>
+  `;
+}
+
+/* ─── 4 KEY QUESTIONS ─── */
+function renderKeyQuestions(){
+  const asst=G.assisted;
+  if(!asst.length)return;
+  const byRole=r=>r.campaign_role;
+  const intros=[...asst].filter(r=>byRole(r)==='Introducer'||byRole(r)==='Pure Introducer').sort((a,b)=>(b.assist_ratio||0)-(a.assist_ratio||0));
+  const assists=[...asst].filter(r=>byRole(r)==='Assist').sort((a,b)=>Math.abs((a.assist_ratio||0)-1)-Math.abs((b.assist_ratio||0)-1));
+  const closers=[...asst].filter(r=>byRole(r)==='Closer'||byRole(r)==='Revenue Closer').sort((a,b)=>(b.last_click_value||0)-(a.last_click_value||0));
+  const topMTA=[...asst].sort((a,b)=>(b.mta_roas||0)-(a.mta_roas||0));
+  const q1=intros[0];const q2=assists[0];const q3=closers[0]||topMTA[0];const q4=topMTA[0];
+  document.getElementById('keyQGrid').innerHTML=`
+    <div class="key-q-card" style="background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3)">
+      <div class="key-q-label" style="color:#c084fc">Which campaign acquires new customers?</div>
+      <div class="key-q-answer">${q1?.campaign||'—'}</div>
+      <div class="key-q-sub">${q1?(q1.assists||0).toFixed(0)+' assists vs '+(q1.last_click_conv||0).toFixed(0)+' closes — '+(q1.campaign_role||'Introducer')+' role. Introduces '+(q1.assist_ratio||0).toFixed(2)+'× new customers per close.':'No Introducer campaign found in current data.'}</div>
+    </div>
+    <div class="key-q-card" style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3)">
+      <div class="key-q-label" style="color:#60a5fa">Which campaign assists conversions?</div>
+      <div class="key-q-answer">${q2?.campaign||'—'}</div>
+      <div class="key-q-sub">${q2?(q2.last_click_conv||0).toFixed(0)+' closes + '+(q2.assists||0).toFixed(0)+' assists — balanced mid-funnel. Controls the middle step of the customer journey.':'No Assist campaign found in current data.'}</div>
+    </div>
+    <div class="key-q-card" style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3)">
+      <div class="key-q-label" style="color:#4ade80">Which campaign closes deals?</div>
+      <div class="key-q-answer">${q3?.campaign||'—'}</div>
+      <div class="key-q-sub">${q3?(q3.last_click_conv||0).toFixed(0)+' primary conversions, '+fmtGBP(q3.last_click_value||0)+' direct revenue.':'No Closer campaign found.'}</div>
+    </div>
+    <div class="key-q-card" style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.5)">
+      <div class="key-q-label" style="color:var(--gold2)">Is ${q4?.campaign||'top campaign'} spend justified?</div>
+      <div class="key-q-answer" style="color:var(--gold2)">Yes — ${(q4?.mta_roas||0).toFixed(0)}× ROAS</div>
+      <div class="key-q-sub">${q4?fmtGBP(q4.spend||0)+' spend drives '+fmtGBP((q4.mta_roas||0)*(q4.spend||0))+' total influence. Direct '+fmtGBP(q4.last_click_value||0)+' + Assisted '+fmtGBP(Math.max(0,(q4.mta_roas||0)*(q4.spend||0)-(q4.last_click_value||0)))+'.':'—'}</div>
+    </div>
+  `;
+}
+
+/* ─── SECTION 1: CAMPAIGN ROLES ─── */
 function renderRoles(){
-  const rows=[...G.assisted].filter(r=>(r.spend||0)>0||(r.assists||0)>0)
-    .sort((a,b)=>(b.last_click_value||0)-(a.last_click_value||0));
-  if(rows[0]&&rows[0].date_range)document.getElementById('rolesBadge').textContent=rows[0].date_range;
+  const rows=[...G.assisted].sort((a,b)=>(b.last_click_value||0)-(a.last_click_value||0));
+  const dr=rows[0]?.date_range||'90D Fixed';
+  const badge=document.getElementById('rolesBadge');if(badge)badge.textContent=dr;
+
   function rolesRow(r){
     const aRev=Math.max(0,(r.mta_roas||0)*(r.spend||0)-(r.last_click_value||0));
+    const cc=r.campaign_role==='Closer'||r.campaign_role==='Revenue Closer'?'var(--green)':
+              r.campaign_role==='Assist'?'var(--blue)':
+              r.campaign_role==='Introducer'?'var(--purple)':
+              r.campaign_role==='Pure Introducer'?'#e879f9':'var(--gold2)';
     return`<tr>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.campaign}">${r.campaign}</td>
+      <td style="font-weight:600;color:${cc};max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.campaign}">${r.campaign}</td>
       <td>${roleBadge(r.campaign_role)}</td>
       <td class="num">${(r.last_click_conv||0).toFixed(0)}</td>
       <td class="num">${fmtGBP(r.last_click_value||0)}</td>
       <td class="num">${(r.assists||0).toFixed(0)}</td>
       <td class="num">${aRev>100?fmtGBP(aRev):'—'}</td>
-      <td class="num">${(r.assist_ratio||0).toFixed(2)}x</td>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${getStrategicMeaning(r)}">${getStrategicMeaning(r)}</td>
+      <td class="num">${(r.assist_ratio||0)>0?(r.assist_ratio).toFixed(2):'∞'}</td>
+      <td style="font-size:12px;color:var(--muted);max-width:200px">${getStrategicMeaning(r)}</td>
     </tr>`;
   }
   initPag('rolesTbody',rows,rolesRow,8);
+
+  const top=[...rows].sort((a,b)=>(b.assist_ratio||0)-(a.assist_ratio||0)).slice(0,10);
   destroyChart('assistRatioChart');
-  const top=rows.filter(r=>(r.assists||0)+(r.last_click_conv||0)>0).slice(0,12);
   G.charts['assistRatioChart']=new Chart(document.getElementById('assistRatioChart').getContext('2d'),{
     type:'bar',
     data:{
-      labels:top.map(r=>r.campaign.length>28?r.campaign.slice(0,26)+'…':r.campaign),
-      datasets:[{label:'Assist Ratio',data:top.map(r=>+(r.assist_ratio||0).toFixed(2)),
-        backgroundColor:top.map(r=>({'Pure Introducer':'rgba(168,85,247,.7)','Introducer':'rgba(59,130,246,.7)','Assist':'rgba(201,168,76,.7)','Closer':'rgba(34,197,94,.7)'}[r.campaign_role]||'rgba(99,104,128,.5)')),
-        borderRadius:4}]
+      labels:top.map(r=>r.campaign.length>22?r.campaign.slice(0,20)+'…':r.campaign),
+      datasets:[{
+        data:top.map(r=>+(r.assist_ratio||0).toFixed(2)),
+        backgroundColor:top.map(r=>
+          r.campaign_role==='Pure Introducer'?'rgba(232,121,249,.8)':
+          r.campaign_role==='Introducer'?'rgba(168,85,247,.7)':
+          r.campaign_role==='Assist'?'rgba(59,130,246,.7)':'rgba(34,197,94,.7)'),
+        borderRadius:4
+      }]
     },
-    options:{indexAxis:'y',responsive:true,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'Ratio: '+c.raw+'x'}}},
-      scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#636880',font:{size:10}}},
-              y:{grid:{display:false},ticks:{color:'#e2e4ef',font:{size:10}}}}}
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>'Assist Ratio: '+v.raw+'×'}}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:10}}},
+        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:10}}}
+      }
+    }
   });
+
+  const intro=rows.find(r=>r.campaign_role==='Introducer'||r.campaign_role==='Pure Introducer');
+  const closer=rows.find(r=>r.campaign_role==='Closer'||r.campaign_role==='Revenue Closer');
+  const ins=document.getElementById('rolesInsight');
+  if(ins&&intro&&closer){
+    ins.innerHTML=`
+      <div class="insight-row"><span class="insight-label">Finding:</span> ${intro.campaign}'s assist ratio is ${(intro.assist_ratio||0).toFixed(2)} — ${(intro.assists||0).toFixed(0)} customer introductions for ${(intro.last_click_conv||0).toFixed(0)} last-click conversions. ${closer.campaign} drives ${fmtGBP(closer.last_click_value||0)} in direct revenue with ${(closer.assists||0).toFixed(0)} assists.</div>
+      <div class="insight-row insight-muted"><span class="insight-label" style="color:var(--text)">Why it matters:</span> In Last Click reporting, ${intro.campaign} appears to contribute only ${fmtGBP(intro.last_click_value||0)}. Its real role is to seed ${closer.campaign} and other campaigns with audiences that convert at higher order values — a function that does not appear in any standard report.</div>
+      <div class="insight-row insight-muted"><span class="insight-label" style="color:var(--text)">Business implication:</span> A budget cut to ${intro.campaign} based on last-click volume would reduce ${closer.campaign}'s convertible audience within 2–3 weeks — visible as a conversion decline in the closer campaigns, not in ${intro.campaign} itself.</div>
+    `;
+  }else if(ins){ins.style.display='none';}
 }
 
-/* ─── SECTION 3: MTA vs LAST-CLICK ─── */
+/* ─── SECTION 2: MTA vs LAST CLICK ─── */
 function renderMTA(){
-  const rows=[...G.assisted].filter(r=>(r.spend||0)>0)
-    .sort((a,b)=>(b.last_click_value||0)-(a.last_click_value||0));
-  if(rows[0]&&rows[0].date_range)document.getElementById('mtaBadge').textContent=rows[0].date_range;
-  const tbody=document.getElementById('mtaTbody');
-  tbody.innerHTML=rows.map(r=>{
+  const rows=[...G.assisted].filter(r=>(r.spend||0)>0).sort((a,b)=>(b.last_click_value||0)-(a.last_click_value||0));
+  const dr=rows[0]?.date_range||'90D Fixed';
+  const badge=document.getElementById('mtaBadge');if(badge)badge.textContent=dr;
+
+  const top=rows[0];
+  if(top){
+    const lcR=(top.spend>0)?top.last_click_value/top.spend:0;
+    const trueR=top.mta_roas||0;
+    const aRev=Math.max(0,trueR*top.spend-top.last_click_value);
+    const setTxt=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+    setTxt('mtaLcRoas',lcR.toFixed(1)+'×');
+    setTxt('mtaTopCamp',top.campaign+' Last-Click ROAS');
+    setTxt('mtaTrueRoas',trueR.toFixed(0)+'×');
+    setTxt('mtaTopCamp2',top.campaign+' True ROAS');
+    setTxt('mtaAssistedNote','Including '+fmtGBP(aRev)+' in assisted revenue influence');
+  }
+
+  function mtaRow(r){
     const trueRev=(r.mta_roas||0)*(r.spend||0);
     const aRev=Math.max(0,trueRev-(r.last_click_value||0));
-    const uplift=(r.last_click_value||0)>0?(trueRev/(r.last_click_value||1)-1)*100:0;
+    const lcR=(r.spend>0)?r.last_click_value/r.spend:0;
+    const trueR=r.mta_roas||0;
+    const uplift=lcR>0?((trueR/lcR-1)*100):0;
     return`<tr>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.campaign}">${r.campaign}</td>
+      <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.campaign}">${r.campaign}</td>
       <td class="num">${fmtGBP(r.spend||0)}</td>
       <td class="num">${fmtGBP(r.last_click_value||0)}</td>
-      <td class="num">${aRev>100?fmtGBP(aRev):'—'}</td>
-      <td class="num gold">${fmtGBP(trueRev)}</td>
-      <td class="num ${uplift>0?'up':uplift<-5?'down':''}">${uplift>0?'+':''}${uplift.toFixed(0)}%</td>
+      <td class="num ${lcR>=4?'up':lcR>=2?'':'down'}">${lcR.toFixed(2)}×</td>
+      <td class="num">${aRev>10?fmtGBP(aRev):'—'}</td>
+      <td class="num up">${trueR>0?trueR.toFixed(2)+'×':'—'}</td>
+      <td class="num ${uplift>0?'up':''}">${trueR>0&&uplift>0?'+'+uplift.toFixed(0)+'%':'—'}</td>
+      <td>${roleBadge(r.campaign_role)}</td>
     </tr>`;
-  }).join('');
-  collapseTable(tbody,8);
-  destroyChart('retargetingChart');
-  const top=rows.slice(0,10);
-  G.charts['retargetingChart']=new Chart(document.getElementById('retargetingChart').getContext('2d'),{
+  }
+  initPag('mtaTbody',rows,mtaRow,8);
+
+  const top8=rows.slice(0,8);
+  const labels=top8.map(r=>r.campaign.length>16?r.campaign.slice(0,14)+'…':r.campaign);
+  destroyChart('mtaChart');
+  G.charts['mtaChart']=new Chart(document.getElementById('mtaChart').getContext('2d'),{
     type:'bar',
-    data:{labels:top.map(r=>r.campaign.length>24?r.campaign.slice(0,22)+'…':r.campaign),
-      datasets:[
-        {label:'LC Revenue',data:top.map(r=>r.last_click_value||0),backgroundColor:'rgba(59,130,246,.7)',borderRadius:3},
-        {label:'MTA Revenue',data:top.map(r=>(r.mta_roas||0)*(r.spend||0)),backgroundColor:'rgba(34,197,94,.4)',borderRadius:3}
-      ]},
-    options:{indexAxis:'y',responsive:true,
-      plugins:{legend:{display:true,labels:{color:'#e2e4ef',font:{size:10},boxWidth:10}},
-        tooltip:{callbacks:{label:c=>c.dataset.label+': £'+Math.round(c.raw).toLocaleString()}}},
-      scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#636880',font:{size:10},callback:v=>'£'+Math.round(v/1000)+'K'}},
-              y:{grid:{display:false},ticks:{color:'#e2e4ef',font:{size:10}}}}}
+    data:{labels,datasets:[
+      {label:'LC Revenue',data:top8.map(r=>r.last_click_value||0),backgroundColor:'rgba(59,130,246,.7)',borderRadius:3},
+      {label:'Assisted Revenue',data:top8.map(r=>Math.max(0,(r.mta_roas||0)*(r.spend||0)-(r.last_click_value||0))),backgroundColor:'rgba(34,197,94,.5)',borderRadius:3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#e8eaf0',font:{size:10},boxWidth:10}}},
+      scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}}},
+               y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9},callback:v=>'£'+(v>=1000?(v/1000).toFixed(0)+'K':v)}}}
+    }
+  });
+  destroyChart('roasGapChart');
+  G.charts['roasGapChart']=new Chart(document.getElementById('roasGapChart').getContext('2d'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'LC ROAS',data:top8.map(r=>r.spend>0?+(r.last_click_value/r.spend).toFixed(2):0),backgroundColor:'rgba(59,130,246,.6)',borderRadius:3},
+      {label:'MTA ROAS',data:top8.map(r=>+(r.mta_roas||0).toFixed(2)),backgroundColor:'rgba(201,168,76,.7)',borderRadius:3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#e8eaf0',font:{size:10},boxWidth:10}}},
+      scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}}},
+               y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9},callback:v=>v+'×'}}}
+    }
   });
 }
 
-/* ─── SECTION 4: CUSTOMER JOURNEY ─── */
+/* ─── SECTION 3: CUSTOMER JOURNEY ─── */
 function renderJourney(){
-  const tlRows=[...G.timeLag].sort((a,b)=>a.bucket-b.bucket);
-  const tlTC=tlRows.reduce((s,r)=>s+(r.conversions||0),0);
-  const tlTV=tlRows.reduce((s,r)=>s+(r.conversion_value||0),0);
-  const tlTbody=document.getElementById('timeLagTbody');
-  tlTbody.innerHTML=tlRows.map(r=>{
-    const b=+r.bucket,lbl=b===0?'Same day':b===1?'1 day':(r.label||b+' days');
-    return`<tr>
-      <td>${lbl}</td>
-      <td class="num">${(r.conversions||0).toFixed(1)}</td>
-      <td class="num dim">${tlTC>0?((r.conversions||0)/tlTC*100).toFixed(1)+'%':'—'}</td>
-      <td class="num">${fmtGBP(r.conversion_value||0)}</td>
-      <td class="num dim">${tlTV>0?((r.conversion_value||0)/tlTV*100).toFixed(1)+'%':'—'}</td>
-      <td><div class="buyer-prof">${getBuyerProfile(b)}</div></td>
-    </tr>`;
-  }).join('');
-  collapseTable(tlTbody,8);
-
-  const plRows=[...G.pathLen].sort((a,b)=>a.bucket-b.bucket);
-  const plTC=plRows.reduce((s,r)=>s+(r.conversions||0),0);
-  const plTV=plRows.reduce((s,r)=>s+(r.conversion_value||0),0);
-  const plTbody=document.getElementById('pathLenTbody');
-  plTbody.innerHTML=plRows.map(r=>`<tr>
-    <td>${r.label||r.bucket}</td>
-    <td class="num">${(r.conversions||0).toFixed(1)}</td>
-    <td class="num dim">${plTC>0?((r.conversions||0)/plTC*100).toFixed(1)+'%':'—'}</td>
-    <td class="num">${fmtGBP(r.conversion_value||0)}</td>
-    <td class="num dim">${plTV>0?((r.conversion_value||0)/plTV*100).toFixed(1)+'%':'—'}</td>
-  </tr>`).join('');
-  collapseTable(plTbody,8);
-
-  if(G.assisted[0]&&G.assisted[0].date_range)document.getElementById('journeyBadge').textContent=G.assisted[0].date_range;
-
+  const tl=G.timeLag,pl=G.pathLen;
+  const dr=G.assisted[0]?.date_range||'90D Fixed';
+  const badge=document.getElementById('journeyBadge');if(badge)badge.textContent=dr;
   const bar=(labels,data,color,gbp)=>({
     type:'bar',data:{labels,datasets:[{data,backgroundColor:color,borderRadius:3}]},
-    options:{responsive:true,plugins:{legend:{display:false}},scales:{
-      x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#636880',font:{size:9}}},
-      y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#636880',font:{size:9},callback:gbp?v=>'£'+Math.round(v/1000)+'K':undefined}}
-    }}
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}}},
+               y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9},callback:gbp?v=>'£'+(v>=1000?(v/1000).toFixed(0)+'K':v):undefined}}}}
   });
-  const tlL=tlRows.map(r=>+r.bucket===0?'0d':+r.bucket===1?'1d':(r.label||r.bucket+'d'));
-  const plL=plRows.map(r=>r.label||r.bucket);
-  destroyChart('timeLagConvChart');G.charts['timeLagConvChart']=new Chart(document.getElementById('timeLagConvChart').getContext('2d'),bar(tlL,tlRows.map(r=>r.conversions||0),'rgba(59,130,246,.7)',false));
-  destroyChart('timeLagValChart');G.charts['timeLagValChart']=new Chart(document.getElementById('timeLagValChart').getContext('2d'),bar(tlL,tlRows.map(r=>r.conversion_value||0),'rgba(34,197,94,.6)',true));
-  destroyChart('pathLenConvChart');G.charts['pathLenConvChart']=new Chart(document.getElementById('pathLenConvChart').getContext('2d'),bar(plL,plRows.map(r=>r.conversions||0),'rgba(168,85,247,.7)',false));
-  destroyChart('pathLenValChart');G.charts['pathLenValChart']=new Chart(document.getElementById('pathLenValChart').getContext('2d'),bar(plL,plRows.map(r=>r.conversion_value||0),'rgba(201,168,76,.6)',true));
+  const tlL=tl.map(r=>+r.bucket===0?'0d':+r.bucket===1?'1d':(r.label||r.bucket+'d'));
+  const plL=pl.map(r=>r.label||r.bucket);
+  destroyChart('timeLagConvChart');G.charts['timeLagConvChart']=new Chart(document.getElementById('timeLagConvChart').getContext('2d'),bar(tlL,tl.map(r=>r.conversions||0),'rgba(59,130,246,.7)',false));
+  destroyChart('timeLagValChart');G.charts['timeLagValChart']=new Chart(document.getElementById('timeLagValChart').getContext('2d'),bar(tlL,tl.map(r=>r.conversion_value||0),'rgba(34,197,94,.6)',true));
+  destroyChart('pathLenConvChart');G.charts['pathLenConvChart']=new Chart(document.getElementById('pathLenConvChart').getContext('2d'),bar(plL,pl.map(r=>r.conversions||0),'rgba(168,85,247,.7)',false));
+  destroyChart('pathLenValChart');G.charts['pathLenValChart']=new Chart(document.getElementById('pathLenValChart').getContext('2d'),bar(plL,pl.map(r=>r.conversion_value||0),'rgba(201,168,76,.6)',true));
 }
 
-/* ─── SECTION 5: TOP CONVERSION PATHS ─── */
+/* ─── SECTION 4: CONVERSION PATHS ─── */
 function renderPaths(){
   const rows=[...G.paths].sort((a,b)=>(b.conversion_value||0)-(a.conversion_value||0));
-  if(G.assisted[0]&&G.assisted[0].date_range)document.getElementById('pathsBadge').textContent=G.assisted[0].date_range;
-  const tbody=document.getElementById('pathsTbody');
+  const dr=G.assisted[0]?.date_range||'90D Fixed';
+  const badge=document.getElementById('pathsBadge');if(badge)badge.textContent=dr;
   const total=rows.reduce((s,r)=>s+(r.conversions||0),0);
-  tbody.innerHTML=rows.map(r=>`<tr>
-    <td style="max-width:300px;word-break:break-word;font-size:0.82rem">${r.path}</td>
-    <td>${getPathType(r.path)}</td>
-    <td style="font-size:0.8rem;color:#9ca3b0">${r.conversion_action||'—'}</td>
-    <td class="num">${(r.conversions||0).toFixed(1)}</td>
-    <td class="num dim">${total>0?((r.conversions||0)/total*100).toFixed(1)+'%':'—'}</td>
-    <td class="num">${fmtGBP(r.conversion_value||0)}</td>
-  </tr>`).join('');
-  collapseTable(tbody,8);
-  destroyChart('pathChart');
+  function pathRow(r){
+    return`<tr>
+      <td style="font-size:0.82rem;word-break:break-word;max-width:300px">${r.path}</td>
+      <td>${getPathType(r.path)}</td>
+      <td class="num">${(r.conversions||0).toFixed(1)}</td>
+      <td class="num dim">${total>0?((r.conversions||0)/total*100).toFixed(1)+'%':'—'}</td>
+      <td class="num">${fmtGBP(r.conversion_value||0)}</td>
+    </tr>`;
+  }
+  initPag('pathsTbody',rows,pathRow,5);
   const top=rows.slice(0,10);
+  destroyChart('pathChart');
   G.charts['pathChart']=new Chart(document.getElementById('pathChart').getContext('2d'),{
     type:'bar',
     data:{
-      labels:top.map(r=>{const segs=r.path.split(' > ');return segs.length>3?segs[0]+' › … › '+segs[segs.length-1]:r.path;}),
-      datasets:[{label:'Revenue',data:top.map(r=>r.conversion_value||0),
-        backgroundColor:top.map(r=>r.path.split(' > ').length===1?'rgba(59,130,246,.7)':r.path.split(' > ').length===2?'rgba(168,85,247,.7)':'rgba(201,168,76,.7)'),
+      labels:top.map(r=>{const s=r.path.split('>');return s.length>3?s[0].trim()+' › … › '+s[s.length-1].trim():r.path;}),
+      datasets:[{data:top.map(r=>r.conversions||0),
+        backgroundColor:top.map(r=>r.path.split('>').length===1?'rgba(59,130,246,.7)':r.path.split('>').length===2?'rgba(168,85,247,.7)':'rgba(201,168,76,.7)'),
         borderRadius:4}]
     },
-    options:{indexAxis:'y',responsive:true,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'£'+Math.round(c.raw).toLocaleString()}}},
-      scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#636880',font:{size:10},callback:v=>'£'+Math.round(v/1000)+'K'}},
-              y:{grid:{display:false},ticks:{color:'#e2e4ef',font:{size:10}}}}}
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}}},
+               y:{grid:{display:false},ticks:{color:'#e8eaf0',font:{size:9}}}}
+    }
   });
 }
 
-/* ─── SECTION 6: CAMPAIGN PERFORMANCE (date-filtered) ─── */
-function renderPerformance(filtered){
-  const byCampaign={};
-  filtered.forEach(r=>{
-    if(!byCampaign[r.campaign])byCampaign[r.campaign]={campaign:r.campaign,spend:0,conversions:0,revenue:0};
-    byCampaign[r.campaign].spend+=r.spend||0;
-    byCampaign[r.campaign].conversions+=r.conversions||0;
-    byCampaign[r.campaign].revenue+=r.revenue||0;
+/* ─── SECTION 5: CAMPAIGN PERFORMANCE ─── */
+function renderPerformance(rows){
+  const byCamp={};
+  rows.forEach(r=>{
+    if(!byCamp[r.campaign])byCamp[r.campaign]={campaign:r.campaign,spend:0,conversions:0,revenue:0};
+    byCamp[r.campaign].spend+=r.spend||0;
+    byCamp[r.campaign].conversions+=r.conversions||0;
+    byCamp[r.campaign].revenue+=r.revenue||0;
   });
-  const rows=Object.values(byCampaign).sort((a,b)=>b.revenue-a.revenue);
-  const assistedMap={};G.assisted.forEach(r=>{assistedMap[r.campaign]=r;});
-  const tbody=document.getElementById('perfTbody');
-  // HTML cols: Campaign | Spend | Conversions | LC Revenue | LC ROAS | Attr-Adj ROAS (90D) | Role
-  tbody.innerHTML=rows.map(r=>{
-    const a=assistedMap[r.campaign]||{};
-    const lcRoas=r.spend>0?r.revenue/r.spend:0;
-    const mtaRoas=a.mta_roas||0;
+  const campRows=Object.values(byCamp).sort((a,b)=>b.revenue-a.revenue);
+  const amap={};G.assisted.forEach(r=>{amap[r.campaign]=r;});
+  function perfRow(r){
+    const a=amap[r.campaign]||{};
+    const lcR=r.spend>0?r.revenue/r.spend:0;
+    const mtaR=a.mta_roas||0;
     return`<tr>
-      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.campaign}">${r.campaign}</td>
+      <td style="font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.campaign}">${r.campaign}</td>
       <td class="num">${fmtGBP(r.spend)}</td>
       <td class="num">${r.conversions.toFixed(0)}</td>
       <td class="num">${fmtGBP(r.revenue)}</td>
-      <td class="num ${lcRoas>=4?'up':lcRoas>=2?'':'down'}">${lcRoas.toFixed(2)}x</td>
-      <td class="num ${mtaRoas>=4?'up':mtaRoas>0&&mtaRoas<2?'down':''}">${mtaRoas>0?mtaRoas.toFixed(2)+'x':'—'}</td>
-      <td>${a.campaign_role?roleBadge(a.campaign_role):'<span class="badge bx">—</span>'}</td>
+      <td class="num ${lcR>=4?'up':lcR>=2?'':'down'}">${lcR.toFixed(2)}×</td>
+      <td class="num ${mtaR>=4?'up':mtaR>0&&mtaR<2?'down':''}">${mtaR>0?mtaR.toFixed(2)+'×':'—'}</td>
+      <td>${a.campaign_role?roleBadge(a.campaign_role):'<span class="badge badge-x">—</span>'}</td>
     </tr>`;
-  }).join('');
-  collapseTable(tbody,10);
+  }
+  initPag('perfTbody',campRows,perfRow,7);
 }
 
-/* ─── SECTION 7: CONVERSION BREAKDOWN ─── */
+/* ─── SECTION 6: CONVERSION TYPE BREAKDOWN ─── */
 function renderConvBreakdown(bkData){
   bkData=bkData||G.breakdown;
-  const byAction={};
-  bkData.forEach(r=>{
-    const k=r.conversion_action;
-    if(!byAction[k])byAction[k]={action:k,category:r.conversion_category||'',conversions:0,conversion_value:0};
-    byAction[k].conversions+=r.conversions||0;
-    byAction[k].conversion_value+=r.conversion_value||0;
-  });
-  const rows=Object.values(byAction).sort((a,b)=>b.conversion_value-a.conversion_value||b.conversions-a.conversions);
-  function cbBadge(cat,action){
-    const lc=(cat+action).toLowerCase();
-    if(lc.includes('appoint'))return'<span class="badge ba">Appointment</span>';
-    if(lc.includes('offline')||lc.includes('invoice'))return'<span class="badge br">Offline</span>';
-    if(lc.includes('purchase')||lc.includes('transaction'))return'<span class="badge bc">Purchase</span>';
-    if(lc.includes('checkout'))return'<span class="badge bx">Micro</span>';
-    return'<span class="badge bx">Other</span>';
+  const amap={};G.assisted.forEach(r=>{amap[r.campaign]=r;});
+
+  function getTier(action){
+    const lc=(action||'').toLowerCase();
+    if(lc.includes('offline')||lc.includes('invoice')||(lc.includes('purchase')&&!lc.includes('time'))||lc.includes('transaction'))return 1;
+    if(lc.includes('appoint')||lc.includes('in-store')||lc.includes('in store')||lc.includes('virtual')||lc.includes('manchester')||lc.includes('contact')||lc.includes('lead form')||lc.includes('ring builder')||lc.includes('call click')||lc.includes('calls from'))return 2;
+    return 3;
   }
-  const totalConv=rows.reduce((s,r)=>s+r.conversions,0);
-  const totalRev=rows.reduce((s,r)=>s+r.conversion_value,0);
-  const tbody=document.getElementById('cbTbody');
-  tbody.innerHTML=rows.map(r=>`<tr>
-    <td style="font-size:0.85rem">${r.action}</td>
-    <td>${cbBadge(r.category,r.action)}</td>
-    <td class="num">${r.conversions.toFixed(1)}</td>
-    <td class="num">${r.conversion_value>0?fmtGBP(r.conversion_value):'—'}</td>
-    <td class="num dim">${totalConv>0?(r.conversions/totalConv*100).toFixed(1)+'%':'—'}</td>
-    <td class="num dim">${totalRev>0&&r.conversion_value>0?(r.conversion_value/totalRev*100).toFixed(1)+'%':'—'}</td>
-  </tr>`).join('');
-  collapseTable(tbody,8);
+  function tLab(action){
+    const lc=(action||'').toLowerCase();
+    if(lc.includes('offline')||lc.includes('invoice'))return'Offline Invoice';
+    if(lc.includes('purchase')||lc.includes('transaction'))return'Website';
+    if(lc.includes('london in-store')||lc.includes('london in store'))return'London In-Store';
+    if(lc.includes('manchester'))return'Manchester';
+    if(lc.includes('ring builder in-store')||lc.includes('ring builder in store'))return'Ring Builder In-Store';
+    if(lc.includes('ring builder'))return'Ring Builder Virtual';
+    if(lc.includes('virtual'))return'Virtual';
+    if(lc.includes('contact')||lc.includes('lead form'))return'Contact Form';
+    if(lc.includes('call'))return'Call';
+    if(lc.includes('whatsapp'))return'WhatsApp';
+    if(lc.includes('checkout'))return'Checkout';
+    if(lc.includes('conversation'))return'Conversation';
+    if(lc.includes('youtube'))return'YouTube';
+    if(lc.includes('time spent'))return'Time on Site';
+    return(action||'').replace(' || GTM','').trim();
+  }
 
-  // Tier doughnut chart
-  const tiers={Appointment:{conv:0,color:'rgba(59,130,246,.8)'},Purchase:{conv:0,color:'rgba(34,197,94,.8)'},
-               Offline:{conv:0,color:'rgba(201,168,76,.8)'},Micro:{conv:0,color:'rgba(168,85,247,.5)'},Other:{conv:0,color:'rgba(99,104,128,.5)'}};
-  rows.forEach(r=>{
-    const lc=(r.category+r.action).toLowerCase();
-    const t=lc.includes('appoint')?'Appointment':lc.includes('purchase')||lc.includes('transaction')?'Purchase':
-             lc.includes('offline')||lc.includes('invoice')?'Offline':lc.includes('checkout')?'Micro':'Other';
-    tiers[t].conv+=r.conversions;
-  });
-  const tk=Object.keys(tiers).filter(k=>tiers[k].conv>0);
-  destroyChart('convTierChart');
-  G.charts['convTierChart']=new Chart(document.getElementById('convTierChart').getContext('2d'),{
-    type:'doughnut',
-    data:{labels:tk,datasets:[{data:tk.map(k=>+tiers[k].conv.toFixed(1)),
-      backgroundColor:tk.map(k=>tiers[k].color),borderWidth:1,borderColor:'#16192a'}]},
-    options:{responsive:true,plugins:{
-      legend:{position:'right',labels:{color:'#e2e4ef',font:{size:10},padding:10}},
-      tooltip:{callbacks:{label:c=>c.label+': '+c.raw+' ('+Math.round(c.raw/totalConv*100)+'%)'}}
-    }}
+  const byCamp={};
+  bkData.forEach(r=>{
+    const camp=r.campaign;
+    if(!byCamp[camp])byCamp[camp]={campaign:camp,t1:{},t1Rev:0,t2:{},t3:{},role:amap[camp]?.campaign_role||''};
+    const tier=getTier(r.conversion_action||'');
+    const label=tLab(r.conversion_action||'');
+    const conv=r.conversions||0;
+    if(tier===1){byCamp[camp].t1[label]=(byCamp[camp].t1[label]||0)+conv;byCamp[camp].t1Rev+=r.conversion_value||0;}
+    else if(tier===2){byCamp[camp].t2[label]=(byCamp[camp].t2[label]||0)+conv;}
+    else{byCamp[camp].t3[label]=(byCamp[camp].t3[label]||0)+conv;}
   });
 
-  // Offline by campaign chart
+  const campRows=Object.values(byCamp).sort((a,b)=>b.t1Rev-a.t1Rev||
+    Object.values(b.t2).reduce((s,v)=>s+v,0)-Object.values(a.t2).reduce((s,v)=>s+v,0));
+
+  const rColors={Closer:'var(--green)',Assist:'var(--blue)',Introducer:'var(--purple)','Pure Introducer':'#e879f9','Revenue Closer':'var(--gold2)'};
+
+  // Tier 1 revenue cards
+  const t1Camps=campRows.filter(c=>c.t1Rev>0).slice(0,4);
+  document.getElementById('tierCards').innerHTML=t1Camps.map(c=>{
+    const col=rColors[c.role]||'var(--gold2)';
+    const convStr=Object.entries(c.t1).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${v.toFixed(0)}× ${k}`).join(' + ')||'—';
+    return`<div class="kpi-card" style="border-left:3px solid ${col}">
+      <div class="label">${c.campaign} — Tier 1</div>
+      <div class="value" style="color:${col};font-size:22px">${fmtGBP(c.t1Rev)}</div>
+      <div class="sub">${convStr}</div>
+    </div>`;
+  }).join('');
+
+  // Stacked bar chart (conversion COUNTS)
+  const top6=campRows.slice(0,6);
+  const cLabels=top6.map(c=>{
+    let n=c.campaign.replace('Sales-Performance Max-12th May 2023','Sales-PMax')
+                    .replace('-12th May 2023','').replace(' - Manual CPC','')
+                    .replace('Hatton Garden Mobile','Hatton Gdn Mobile');
+    return n.length>20?n.slice(0,18)+'…':n;
+  });
+  destroyChart('tierStackChart');
+  G.charts['tierStackChart']=new Chart(document.getElementById('tierStackChart').getContext('2d'),{
+    type:'bar',
+    data:{labels:cLabels,datasets:[
+      {label:'Tier 1: Revenue',data:top6.map(c=>+Object.values(c.t1).reduce((s,v)=>s+v,0).toFixed(1)),backgroundColor:'rgba(34,197,94,.8)',borderRadius:2},
+      {label:'Tier 2: Pipeline',data:top6.map(c=>+Object.values(c.t2).reduce((s,v)=>s+v,0).toFixed(1)),backgroundColor:'rgba(59,130,246,.7)',borderRadius:2},
+      {label:'Tier 3: Engagement',data:top6.map(c=>+Object.entries(c.t3).filter(([k])=>!k.includes('Time')&&!k.includes('YouTube')).reduce((s,[,v])=>s+v,0).toFixed(1)),backgroundColor:'rgba(168,85,247,.5)',borderRadius:2}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#e8eaf0',font:{size:10},boxWidth:10}}},
+      scales:{x:{stacked:true,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}}},
+               y:{stacked:true,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}}}}
+    }
+  });
+
+  // Offline invoice doughnut
   const offByCamp={};
   bkData.filter(r=>{const lc=(r.conversion_action||'').toLowerCase();return lc.includes('offline')||lc.includes('invoice');})
-    .forEach(r=>{if(!offByCamp[r.campaign])offByCamp[r.campaign]={campaign:r.campaign,conv:0,val:0};
-      offByCamp[r.campaign].conv+=r.conversions||0;offByCamp[r.campaign].val+=r.conversion_value||0;});
-  const offRows=Object.values(offByCamp).sort((a,b)=>b.val-a.val).slice(0,10);
+    .forEach(r=>{
+      if(!offByCamp[r.campaign])offByCamp[r.campaign]={campaign:r.campaign,conv:0,val:0};
+      offByCamp[r.campaign].conv+=r.conversions||0;
+      offByCamp[r.campaign].val+=r.conversion_value||0;
+    });
+  const offRows=Object.values(offByCamp).sort((a,b)=>b.val-a.val).slice(0,6);
+  const tOffV=offRows.reduce((s,r)=>s+r.val,0);
+  const tOffC=offRows.reduce((s,r)=>s+r.conv,0);
+  const avgOff=tOffC>0?tOffV/tOffC:0;
+  const offSubEl=document.getElementById('offlineSub');
+  if(offSubEl)offSubEl.textContent=tOffC>0?`Avg ${fmtGBP(Math.round(avgOff))}/sale (${fmtGBP(Math.round(tOffV))} ÷ ${Math.round(tOffC)} invoices) — most strategic conversion type`:'Offline invoice data loading...';
+  const dCol=['rgba(34,197,94,.85)','rgba(59,130,246,.85)','rgba(201,168,76,.85)','rgba(168,85,247,.7)','rgba(249,115,22,.7)','rgba(99,104,128,.6)'];
   destroyChart('offlineInvoiceChart');
   G.charts['offlineInvoiceChart']=new Chart(document.getElementById('offlineInvoiceChart').getContext('2d'),{
-    type:'bar',
-    data:{labels:offRows.map(r=>r.campaign.length>24?r.campaign.slice(0,22)+'…':r.campaign),
-      datasets:[
-        {label:'Conversions',data:offRows.map(r=>+r.conv.toFixed(1)),backgroundColor:'rgba(201,168,76,.7)',borderRadius:3},
-        {label:'Revenue',data:offRows.map(r=>r.val),backgroundColor:'rgba(34,197,94,.35)',borderRadius:3}
-      ]},
-    options:{indexAxis:'y',responsive:true,
-      plugins:{legend:{display:true,labels:{color:'#e2e4ef',font:{size:10},boxWidth:10}}},
-      scales:{y:{grid:{display:false},ticks:{color:'#e2e4ef',font:{size:9}}},
-              x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#636880',font:{size:9}}}}}
+    type:'doughnut',
+    data:{
+      labels:offRows.map(r=>`${r.campaign.slice(0,18)} (${fmtGBP(Math.round(r.val))})`),
+      datasets:[{data:offRows.map(r=>r.val),backgroundColor:dCol,borderWidth:1,borderColor:'#1a1d27'}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{color:'#e8eaf0',font:{size:9},padding:8}}}
+    }
   });
+
+  // Campaign tier table
+  const tbody=document.getElementById('cbTbody');
+  tbody.innerHTML=campRows.map(c=>{
+    const t1Str=Object.keys(c.t1).length
+      ?Object.entries(c.t1).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${v.toFixed(0)}× ${k}`).join(' + ')
+      :'<span style="color:var(--red)">NONE — £0 direct</span>';
+    const t2Items=Object.entries(c.t2).sort((a,b)=>b[1]-a[1]).filter(([,v])=>v>=0.3);
+    const t2Extra=(c.role==='Introducer'||c.role==='Pure Introducer')&&t2Items.length?' → feeds Retargeting':'';
+    const t2OffNote=(c.role==='Closer'||c.role==='Revenue Closer')&&!Object.keys(c.t1).length&&t2Items.length?' → offline not tracked':'';
+    const t2Str=t2Items.length?t2Items.map(([k,v])=>`${Math.round(v)} ${k}`).join(', ')+(t2Extra||t2OffNote):'—';
+    const t3Items=Object.entries(c.t3).sort((a,b)=>b[1]-a[1]).filter(([k,v])=>v>=0.3&&!k.includes('Time')&&!k.includes('YouTube'));
+    const t3Str=t3Items.length?t3Items.map(([k,v])=>`${v.toFixed(1)}× ${k}`).join(', '):'—';
+    const cc=rColors[c.role]||'var(--text)';
+    const revColor=c.t1Rev>0?'var(--green)':'var(--red)';
+    return`<tr>
+      <td style="font-weight:600;color:${cc}">${c.campaign}</td>
+      <td>${c.role?roleBadge(c.role):'<span class="badge badge-x">—</span>'}</td>
+      <td style="font-size:0.82rem">${t1Str}</td>
+      <td class="num" style="color:${revColor};font-weight:700">${fmtGBP(c.t1Rev)}</td>
+      <td style="font-size:0.82rem">${t2Str}</td>
+      <td style="font-size:0.82rem">${t3Str}</td>
+    </tr>`;
+  }).join('');
+
+  // Insight box
+  const totalT1Rev=campRows.reduce((s,c)=>s+c.t1Rev,0);
+  const offRev=bkData.filter(r=>{const lc=(r.conversion_action||'').toLowerCase();return lc.includes('offline')||lc.includes('invoice');}).reduce((s,r)=>s+(r.conversion_value||0),0);
+  const webRev=bkData.filter(r=>{const lc=(r.conversion_action||'').toLowerCase();return lc.includes('purchase');}).reduce((s,r)=>s+(r.conversion_value||0),0);
+  const noRevCamps=campRows.filter(c=>c.t1Rev===0&&Object.values(c.t2).reduce((s,v)=>s+v,0)>0).map(c=>c.campaign);
+  const insEl=document.getElementById('cbInsight');
+  if(insEl){
+    const offPct=totalT1Rev>0?(offRev/totalT1Rev*100).toFixed(1):0;
+    insEl.innerHTML=`
+      <div class="insight-row"><span class="insight-label">Finding:</span> ${totalT1Rev>0?offPct+'% of reported revenue ('+fmtGBP(totalT1Rev)+') comes from Offline Invoice ('+fmtGBP(offRev)+') and Website Purchase ('+fmtGBP(webRev)+').':fmtGBP(totalT1Rev)+' in Tier 1 revenue tracked in this period.'} All appointment, WhatsApp, and checkout conversions carry £0 assigned value in Google Ads — yet they represent the intermediate steps that produce those invoices.</div>
+      <div class="insight-row insight-muted"><span class="insight-label" style="color:var(--text)">Why it matters:</span> ${noRevCamps.length>0?noRevCamps.join(' and ')+' report £0 direct revenue but generate appointment pipeline volume. Their apparent zero-revenue status is a measurement gap, not a performance gap — the revenue they seed shows up in other campaigns\' Offline Invoice column.':'All campaigns are generating some direct revenue in this period.'}</div>
+      <div class="insight-row insight-muted"><span class="insight-label" style="color:var(--text)">Business implication:</span> Smart Bidding is currently optimising for Offline Invoice and Website Purchase only. Campaigns generating appointment volume receive no bidding signal. Assigning conversion values to appointments would immediately change how automated bidding allocates budget across campaign tiers.</div>
+    `;
+  }
 }
 
-/* ─── SECTION 8: APPOINTMENTS ─── */
+/* ─── SECTION 7: APPOINTMENTS ─── */
 function renderAppointments(breakdown){
   breakdown=breakdown||G.breakdown;
-  const apptRows=breakdown.filter(r=>(r.conversion_action||'').toLowerCase().includes('appoint'));
+  const amap={};G.assisted.forEach(r=>{amap[r.campaign]=r;});
+  const apptRows=breakdown.filter(r=>{
+    const lc=(r.conversion_action||'').toLowerCase();
+    return lc.includes('appoint')||lc.includes('in-store')||lc.includes('in store')||lc.includes('virtual')||lc.includes('manchester');
+  });
   const byAction={};
   apptRows.forEach(r=>{
     const k=r.conversion_action;
@@ -1324,59 +1088,36 @@ function renderAppointments(breakdown){
     byAction[k].campaigns.add(r.campaign);
   });
   const rows=Object.values(byAction).sort((a,b)=>b.conversions-a.conversions);
-  const totalAppt=rows.reduce((s,r)=>s+r.conversions,0);
-  const totalPurch=G.assisted.reduce((s,r)=>s+(r.last_click_conv||0),0);
-  const totalSpend=G.assisted.reduce((s,r)=>s+(r.spend||0),0);
-  const totalAssists=G.assisted.reduce((s,r)=>s+(r.assists||0),0);
   const tbody=document.getElementById('apptTbody');
-  // Match HTML cols: Appointment Type | Bookings (90D) | Campaigns | Per Month | Revenue | Ad Spend | Cost/Booking
-  // Build spend-per-campaign map from assisted data
-  const apptSpendMap={};
-  G.assisted.forEach(r=>{apptSpendMap[r.campaign]=r.spend||0;});
-  tbody.innerHTML=rows.length?rows.map(r=>{
-    const campArr=[...r.campaigns];
-    const campSpend=campArr.reduce((s,c)=>s+(apptSpendMap[c]||0),0);
-    const perMonth=(r.conversions/3).toFixed(1);
-    const costPerBook=r.conversions>0?campSpend/r.conversions:0;
+  tbody.innerHTML=rows.map(r=>{
+    const camps=[...r.campaigns];
+    const spend90=camps.reduce((s,c)=>{const a=amap[c];return s+(a?.spend||0);},0);
+    const costPer=r.conversions>0?spend90/r.conversions:0;
+    const perMonth=r.conversions/3;
+    const shortName=(r.action||'').replace(' || GTM','').replace(' Appointment','').replace(' In-Store','').replace(' In Store','');
     return`<tr>
-      <td style="font-size:0.85rem">${r.action}</td>
-      <td class="num">${r.conversions.toFixed(1)}</td>
-      <td class="num dim">${campArr.length} campaign${campArr.length!==1?'s':''}</td>
-      <td class="num dim">${perMonth}/mo</td>
-      <td class="num">${r.conversion_value>0?fmtGBP(r.conversion_value):'—'}</td>
-      <td class="num">${fmtGBP(campSpend)}</td>
-      <td class="num">${costPerBook>0?fmtGBP(costPerBook):'—'}</td>
+      <td style="font-size:0.85rem">${shortName}</td>
+      <td class="num">${r.conversions.toFixed(0)}</td>
+      <td class="num dim">${camps.length}</td>
+      <td class="num">${perMonth.toFixed(1)}</td>
+      <td class="num">${spend90>0?fmtGBP(spend90):'—'}</td>
+      <td class="num ${costPer<200?'up':costPer<500?'':'down'}">${costPer>0?fmtGBP(costPer):'—'}</td>
     </tr>`;
-  }).join(''):'<tr><td colspan="7" style="text-align:center;color:#636880;padding:1.5rem">No appointment data in 90D window</td></tr>';
-
-  // Funnel: Spend → Assists → Appointments → Purchases
+  }).join('');
   destroyChart('apptFunnelChart');
-  const fd=[
-    {l:'Ad Spend',v:totalSpend,c:'rgba(201,168,76,.7)',isgbp:true},
-    {l:'Assists (touches)',v:totalAssists,c:'rgba(59,130,246,.7)',isgbp:false},
-    {l:'Appointments (90D)',v:totalAppt,c:'rgba(168,85,247,.7)',isgbp:false},
-    {l:'LC Purchases',v:totalPurch,c:'rgba(34,197,94,.7)',isgbp:false},
-  ];
+  const dCol=['rgba(59,130,246,.8)','rgba(34,197,94,.7)','rgba(201,168,76,.7)','rgba(168,85,247,.7)','rgba(249,115,22,.7)','rgba(20,184,166,.7)'];
   G.charts['apptFunnelChart']=new Chart(document.getElementById('apptFunnelChart').getContext('2d'),{
     type:'bar',
-    data:{labels:fd.map(r=>r.l),datasets:[{data:fd.map(r=>r.v),backgroundColor:fd.map(r=>r.c),borderRadius:6}]},
-    options:{responsive:true,plugins:{legend:{display:false},
-      tooltip:{callbacks:{label:c=>fd[c.dataIndex].isgbp?'£'+Math.round(c.raw).toLocaleString():Math.round(c.raw).toLocaleString()}}},
-      scales:{x:{grid:{display:false},ticks:{color:'#e2e4ef',font:{size:10}}},
-              y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#636880',font:{size:10}}}}}
+    data:{
+      labels:rows.map(r=>(r.action||'').replace(' || GTM','').replace(' Appointment','').replace(' In Store','').replace(' In-Store','')),
+      datasets:[{data:rows.map(r=>+r.conversions.toFixed(1)),backgroundColor:dCol,borderRadius:4}]
+    },
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}}},
+               y:{grid:{display:false},ticks:{color:'#e8eaf0',font:{size:9}}}}
+    }
   });
-}
-
-/* ─── GUIDE DRAWER ─── */
-function guideToggle(){
-  const d=document.getElementById('guideDrawer'),o=document.getElementById('guideOverlay');
-  const isOpen=d.classList.contains('open');
-  if(isOpen){d.classList.remove('open');o.classList.remove('open');}
-  else{d.classList.add('open');o.classList.add('open');}
-}
-function guideClose(){
-  document.getElementById('guideDrawer').classList.remove('open');
-  document.getElementById('guideOverlay').classList.remove('open');
 }
 
 /* ─── INIT ─── */
@@ -1384,15 +1125,16 @@ async function initDashboard(){
   try{
     await loadData();
     updateMeta();
-    setPeriod(28);       // calls applyDateRange → renderKPIs, renderPerformance, renderConvBreakdown, renderAppointments
+    renderExecInsights();
+    renderKeyQuestions();
     renderRoles();
     renderMTA();
     renderJourney();
     renderPaths();
+    setPeriod(28);
   }catch(e){console.error('Dashboard error:',e);}
 }
 initDashboard();
 </script>
-
 </body>
 </html>
