@@ -16,7 +16,8 @@
 body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;scroll-behavior:smooth}
 
 /* ── HEADER ── */
-.header{background:linear-gradient(135deg,#1a1d27 0%,#0f1117 100%);border-bottom:2px solid var(--gold);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:300}
+.sticky-top{position:sticky;top:0;z-index:300}
+.header{background:linear-gradient(135deg,#1a1d27 0%,#0f1117 100%);border-bottom:2px solid var(--gold);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .header-left h1{font-size:22px;font-weight:700;color:var(--gold2);letter-spacing:.5px}
 .header-left p{color:var(--muted);font-size:13px;margin-top:4px}
 .header-badge{background:rgba(201,168,76,.15);border:1px solid var(--gold);color:var(--gold2);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
@@ -58,7 +59,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .dp-apply:hover{background:var(--gold2)}
 
 /* ── NAV ── */
-.nav{display:flex;gap:6px;padding:12px 32px;background:#13161f;border-bottom:1px solid var(--border);flex-wrap:wrap;position:sticky;top:0;z-index:200}
+.nav{display:flex;gap:6px;padding:12px 32px;background:#13161f;border-bottom:1px solid var(--border);flex-wrap:wrap}
 .nav a{color:var(--muted);text-decoration:none;padding:5px 13px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid transparent;transition:all .2s;white-space:nowrap}
 .nav a:hover{color:var(--text);border-color:var(--border);background:var(--card)}
 
@@ -178,6 +179,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
 </head>
 <body>
 
+<!-- STICKY WRAPPER -->
+<div class="sticky-top">
 <!-- HEADER -->
 <div class="header">
   <div class="header-left">
@@ -234,6 +237,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <a href="#journey-map">9. Full Journey Map</a>
   <a href="#methodology">Methodology</a>
 </div>
+</div><!-- /sticky-top -->
 
 <div class="container">
 
