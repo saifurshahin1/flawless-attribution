@@ -194,10 +194,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="dp-panel" id="dpPanel">
         <div class="dp-body">
           <div class="dp-presets" id="dpPresets">
+            <div class="dp-preset" onclick="dpToday()">Today</div>
+            <div class="dp-preset" onclick="dpYesterday()">Yesterday</div>
+            <div style="height:1px;background:var(--border);margin:4px 8px"></div>
             <div class="dp-preset" data-days="7"   onclick="dpPreset(7)">Last 7 days</div>
             <div class="dp-preset active" data-days="28"  onclick="dpPreset(28)">Last 28 days</div>
             <div class="dp-preset" data-days="90"  onclick="dpPreset(90)">Last 90 days</div>
             <div class="dp-preset" data-days="365" onclick="dpPreset(365)">Last 12 months</div>
+            <div style="height:1px;background:var(--border);margin:4px 8px"></div>
             <div class="dp-preset" data-days="0" id="dpCustomBtn">Custom range</div>
           </div>
           <div class="dp-divider"></div>
@@ -632,6 +636,18 @@ function dpClose(){
   DP.open=false;
   document.getElementById('dpTrigger').classList.remove('open');
   document.getElementById('dpPanel').classList.remove('open');
+}
+function dpToday(){
+  const t=new Date();t.setHours(0,0,0,0);
+  DP.start=t;DP.end=new Date(t);DP.step=0;DP.hover=null;DP.presetDays=0;
+  document.querySelectorAll('.dp-preset').forEach(el=>el.classList.remove('active'));
+  dpCommit();
+}
+function dpYesterday(){
+  const t=addDays(new Date(),-1);t.setHours(0,0,0,0);
+  DP.start=t;DP.end=new Date(t);DP.step=0;DP.hover=null;DP.presetDays=0;
+  document.querySelectorAll('.dp-preset').forEach(el=>el.classList.remove('active'));
+  dpCommit();
 }
 function dpPreset(days){
   const end=addDays(new Date(),-1),start=addDays(end,-(days-1));
