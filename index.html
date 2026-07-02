@@ -111,6 +111,17 @@ tr:hover td{background:rgba(255,255,255,.012)}
 .tbl-more-row:hover td{color:var(--text);background:rgba(255,255,255,.03)}
 .num{text-align:right}
 
+/* ── PAGINATION ── */
+.pag-row>td{padding:0!important;border-bottom:none!important}
+.pag-ctrl{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--card2);border-top:1px solid var(--border)}
+.pag-lbl{font-size:11px;color:var(--muted)}
+.pag-sel{background:#0e1026;border:1px solid var(--border);color:var(--text);border-radius:3px;padding:3px 6px;font-size:11px;cursor:pointer;outline:none}
+.pag-sel:hover{border-color:var(--blue)}
+.pag-range{font-size:11px;color:var(--text);margin-left:auto}
+.pag-btn{background:none;border:1px solid var(--border);color:var(--muted);width:26px;height:26px;border-radius:3px;cursor:pointer;font-size:14px;line-height:1;padding:0;transition:all .15s}
+.pag-btn:hover:not([disabled]){border-color:var(--blue);color:var(--blue)}
+.pag-btn[disabled]{opacity:.3;cursor:not-allowed}
+
 /* ── BADGES ── */
 .badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10px;font-weight:600}
 .bi{background:rgba(168,85,247,.15);color:#c084fc;border:1px solid rgba(168,85,247,.25)}
@@ -751,6 +762,37 @@ function collapseTable(tbody,limit){
   tbody.appendChild(mr);
 }
 
+/* ─── PAGINATION ─── */
+var PAG={};
+function initPag(id,allRows,renderRow,cols){
+  PAG[id]={allRows,renderRow,cols,page:1,perPage:10};
+  drawPage(id);
+}
+function drawPage(id){
+  const p=PAG[id];
+  const total=p.allRows.length;
+  const tp=Math.ceil(total/p.perPage)||1;
+  p.page=Math.max(1,Math.min(p.page,tp));
+  const s=(p.page-1)*p.perPage,e=s+p.perPage;
+  const tbody=document.getElementById(id);
+  tbody.innerHTML=p.allRows.slice(s,e).map(p.renderRow).join('')+pagRow(id,total);
+}
+function pagRow(id,total){
+  const p=PAG[id];
+  const tp=Math.ceil(total/p.perPage)||1;
+  const s=(p.page-1)*p.perPage+1,e=Math.min(p.page*p.perPage,total);
+  const opts=[10,25,50].map(n=>`<option value="${n}"${n===p.perPage?' selected':''}>${n}</option>`).join('');
+  return`<tr class="pag-row"><td colspan="${p.cols}"><div class="pag-ctrl">
+    <span class="pag-lbl">Rows per page:</span>
+    <select class="pag-sel" onchange="pagSet('${id}',+this.value)">${opts}</select>
+    <span class="pag-range">${s}–${e} of ${total}</span>
+    <button class="pag-btn" onclick="pagGo('${id}',-1)"${p.page<=1?' disabled':''}>‹</button>
+    <button class="pag-btn" onclick="pagGo('${id}',1)"${p.page>=tp?' disabled':''}>›</button>
+  </div></td></tr>`;
+}
+function pagSet(id,n){PAG[id].perPage=n;PAG[id].page=1;drawPage(id);}
+function pagGo(id,dir){PAG[id].page+=dir;drawPage(id);}
+
 function getStrategicMeaning(r){
   const role=r.campaign_role,ratio=+(r.assist_ratio||0);
   if(role==='Pure Introducer')return'Pure introducer — never closes alone';
@@ -980,8 +1022,7 @@ function renderRoles(){
   const rows=[...G.assisted].filter(r=>(r.spend||0)>0||(r.assists||0)>0)
     .sort((a,b)=>(b.last_click_value||0)-(a.last_click_value||0));
   if(rows[0]&&rows[0].date_range)document.getElementById('rolesBadge').textContent=rows[0].date_range;
-  const tbody=document.getElementById('rolesTbody');
-  tbody.innerHTML=rows.map(r=>{
+  function rolesRow(r){
     const aRev=Math.max(0,(r.mta_roas||0)*(r.spend||0)-(r.last_click_value||0));
     return`<tr>
       <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.campaign}">${r.campaign}</td>
@@ -991,10 +1032,10 @@ function renderRoles(){
       <td class="num">${(r.assists||0).toFixed(0)}</td>
       <td class="num">${aRev>100?fmtGBP(aRev):'—'}</td>
       <td class="num">${(r.assist_ratio||0).toFixed(2)}x</td>
-      <td><div class="strat-mean">${getStrategicMeaning(r)}</div></td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${getStrategicMeaning(r)}">${getStrategicMeaning(r)}</td>
     </tr>`;
-  }).join('');
-  collapseTable(tbody,8);
+  }
+  initPag('rolesTbody',rows,rolesRow,8);
   destroyChart('assistRatioChart');
   const top=rows.filter(r=>(r.assists||0)+(r.last_click_conv||0)>0).slice(0,12);
   G.charts['assistRatioChart']=new Chart(document.getElementById('assistRatioChart').getContext('2d'),{
