@@ -82,6 +82,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .wrap{max-width:1380px;margin:0 auto;padding:32px 28px}
 .section-block{margin-bottom:52px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid2>*,.grid3>*{min-width:0}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 
 /* ── SECTION HEADER ── */
@@ -352,29 +353,27 @@ tr:hover td{background:rgba(255,255,255,.012)}
     <div class="sec-divider"></div>
     <span class="fixed-badge" id="rolesBadge">90D Fixed</span>
   </div>
-  <div class="grid2">
-    <div class="tbl-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Campaign</th>
-            <th>Role</th>
-            <th class="num">LC Conv</th>
-            <th class="num">LC Revenue</th>
-            <th class="num">Assists</th>
-            <th class="num">Assisted Rev</th>
-            <th class="num">Assist Ratio</th>
-            <th>What it does</th>
-          </tr>
-        </thead>
-        <tbody id="rolesTbody"></tbody>
-      </table>
-    </div>
-    <div class="cbox">
-      <h3>Assist Ratio by Campaign</h3>
-      <p class="csub">Higher = more assists, lower = mostly closes</p>
-      <div class="ch"><canvas id="assistRatioChart" height="320"></canvas></div>
-    </div>
+  <div class="tbl-wrap" style="margin-bottom:14px">
+    <table>
+      <thead>
+        <tr>
+          <th>Campaign</th>
+          <th>Role</th>
+          <th class="num">LC Conv</th>
+          <th class="num">LC Revenue</th>
+          <th class="num">Assists</th>
+          <th class="num">Assisted Rev</th>
+          <th class="num">Assist Ratio</th>
+          <th>What it does</th>
+        </tr>
+      </thead>
+      <tbody id="rolesTbody"></tbody>
+    </table>
+  </div>
+  <div class="cbox">
+    <h3>Assist Ratio by Campaign</h3>
+    <p class="csub">Higher = more assists, lower = mostly closes</p>
+    <div class="ch"><canvas id="assistRatioChart" height="220"></canvas></div>
   </div>
 </section>
 
