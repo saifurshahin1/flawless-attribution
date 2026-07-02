@@ -699,8 +699,8 @@ tr:hover td{background:rgba(255,255,255,.012)}
         <span class="guide-tag fixed">90D Fixed</span>
       </div>
       <p class="guide-what">Two questions answered here: how long does it take for someone to go from first ad click to purchase, and how many ad touchpoints do they need along the way? For jewellery — especially engagement rings, bespoke pieces, and in-store appointments — these numbers tend to be longer and higher than most industries.</p>
-      <div class="guide-action">💡 If 68% of your customers buy on the same day and 30%+ take more than a week, your retargeting window needs to cover both. Most accounts default to 7 days — that's missing everyone in the second group. The Buyer Profile column translates the numbers into plain descriptions of who each group actually is.</div>
-      <div class="guide-why">⏱ Why 90D fixed: Google Ads Time Lag and Path Length are 90-day aggregates only. There's no per-day version of these reports available from the API.</div>
+      <div class="guide-action">💡 Look at how many customers convert on the same day vs how many take a week or longer. If a significant share takes more than 7 days, your retargeting window should match that — most accounts leave it at the default 7 days and miss those customers entirely. The Buyer Profile column puts each group into plain language.</div>
+      <div class="guide-why">⏱ Why 90D fixed: Google only makes this data available as a 90-day summary. There is no shorter window option — it's a Google limitation, not a dashboard one.</div>
     </div>
 
     <!-- SECTION 5 -->
@@ -722,8 +722,8 @@ tr:hover td{background:rgba(255,255,255,.012)}
         <h3>Campaign Performance</h3>
         <span class="guide-tag dynamic">Updates with date</span>
       </div>
-      <p class="guide-what">Your standard per-campaign breakdown for the selected period — spend, conversions, revenue, and ROAS. The Attr-Adj ROAS column brings in each campaign's 90D MTA ROAS for comparison, so you can see in one row what Google Ads reports vs what multi-touch attribution shows.</p>
-      <div class="guide-action">💡 When LC ROAS is low but Attr-Adj ROAS is high, the campaign is doing more than Google Ads is crediting. When both are low, that's a genuine performance problem worth investigating.</div>
+      <p class="guide-what">Your standard per-campaign breakdown for the selected period — spend, conversions, revenue, and ROAS. The last column (Attr-Adj ROAS) shows each campaign's attribution-adjusted return — meaning what it earns when all touchpoints are counted, not just the last click. You can compare the two in the same row.</p>
+      <div class="guide-action">💡 When last-click ROAS is low but attribution-adjusted ROAS is high, the campaign is doing more work than Google Ads is crediting it for. When both are low, that's a genuine performance problem worth looking into.</div>
     </div>
 
     <!-- SECTION 7 -->
@@ -745,7 +745,7 @@ tr:hover td{background:rgba(255,255,255,.012)}
         <span class="guide-tag dynamic">Updates with date</span>
       </div>
       <p class="guide-what">Appointment bookings broken down by type — London In-Store, Manchester In-Store, London Virtual, Ring Builder In-Store, Ring Builder Virtual — for the selected period. Shows bookings, campaigns involved, monthly run-rate, and cost per booking. These conversions are set to £0 value in Google Ads, so they never show up in standard revenue reports.</p>
-      <div class="guide-action">💡 A £124 cost-per-booking for a London In-Store appointment is excellent — that visit typically converts to a £3,000–£8,000+ sale in-store. The ad spend driving those bookings is generating returns that are completely invisible in your Google Ads dashboard. This section makes that visible.</div>
+      <div class="guide-action">💡 In-store appointments almost always convert to high-value sales — but Google Ads records them as £0 because no online purchase happens at that moment. This section shows you the real volume and cost of those bookings, so the return on that ad spend is no longer invisible.</div>
     </div>
 
     <!-- FAQ -->
@@ -753,16 +753,16 @@ tr:hover td{background:rgba(255,255,255,.012)}
       <h4>COMMON QUESTIONS</h4>
 
       <p class="guide-q">The MTA ROAS number looks very high — is that right?</p>
-      <p class="guide-a">Not exactly. Your account has a conversion action called "Begin Checkout From Ads" which has a significant monetary value assigned to it in Google Ads settings. Because MTA ROAS includes all conversion values (not just purchases), that checkout action inflates the total considerably. The number to trust for actual ROAS is the LC ROAS in sections 1 and 6 — that's based on real purchase revenue only.</p>
+      <p class="guide-a">Not exactly. Your account has a conversion action called "Begin Checkout From Ads" which has a monetary value assigned to it in Google Ads settings. Because the MTA ROAS figure includes all conversion values — not just actual purchases — that checkout action inflates the number significantly. The figure to trust for real return on spend is the Last-Click ROAS shown in sections 1 and 6. That one is based on purchase revenue only.</p>
 
       <p class="guide-q">What's the difference between a Conversion and an Assist?</p>
       <p class="guide-a">A conversion = a campaign was the last one clicked before the purchase. It gets 100% of the credit in Google Ads. An assist = a campaign appeared somewhere earlier in the customer's journey but wasn't the final click. Google Ads gives assists zero credit by default — which is exactly the problem this dashboard is built to fix.</p>
 
       <p class="guide-q">Why don't sections 2, 3, 4, and 5 change when I switch date ranges?</p>
-      <p class="guide-a">Those four sections pull from Google Ads attribution reports — assist ratios, time-to-convert, path sequences. Google only makes these available as a rolling 90-day window. There's no API endpoint to get a "7-day assist ratio." Sections 1, 6, 7, and 8 use daily campaign data so they respond to whatever period you pick.</p>
+      <p class="guide-a">Those four sections use attribution data that Google only provides as a 90-day summary. There is no way to get a 7-day or 28-day version of that data — Google simply doesn't make it available for shorter windows. Sections 1, 6, 7, and 8 use daily campaign data, so those ones do update when you change the date range.</p>
 
       <p class="guide-q">How fresh is this data?</p>
-      <p class="guide-a">The dashboard auto-refreshes every 30 minutes from BigQuery. The "Last updated" timestamp at the bottom of the page shows exactly when. A separate Google Ads script runs at 2:00 AM UK time each night to pull the full previous day's attribution data into BigQuery.</p>
+      <p class="guide-a">The data refreshes automatically every 30 minutes. The "Last updated" timestamp at the bottom of the page shows exactly when it last pulled from Google Ads. You don't need to do anything — it stays current on its own.</p>
 
       <p class="guide-q">Why do some campaigns show £0 revenue?</p>
       <p class="guide-a">Because they never got the last click before a purchase — Google Ads didn't credit them with any revenue. That doesn't mean they're not working. Check the Assists column in section 2 and the True Revenue column in section 3. A campaign with £0 last-click revenue and 8,000+ assists is one of your most valuable assets.</p>
