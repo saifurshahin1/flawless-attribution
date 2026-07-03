@@ -307,6 +307,8 @@ def gen_conv_paths_api() -> bool:
 
     try:
         from google.ads.googleads.client import GoogleAdsClient
+        from google.oauth2.credentials import Credentials
+        from google.auth.transport.requests import Request as GoogleRequest
     except ImportError:
         print("  conv_paths_api: google-ads library not installed")
         return False
@@ -314,16 +316,21 @@ def gen_conv_paths_api() -> bool:
     login_customer_id = os.environ.get("GOOGLE_ADS_LOGIN_CUSTOMER_ID", "").replace("-", "").strip()
 
     try:
-        creds = {
-            "developer_token": dev_token,
-            "client_id":       client_id,
-            "client_secret":   client_secret,
-            "refresh_token":   refresh_token,
-            "use_proto_plus":  True,
-        }
+        # Build OAuth2 credentials manually — works for both Web and Desktop app clients
+        oauth2_creds = Credentials(
+            token=None,
+            refresh_token=refresh_token,
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=client_id,
+            client_secret=client_secret,
+        )
+        oauth2_creds.refresh(GoogleRequest())
+
+        dict_creds = {"developer_token": dev_token, "use_proto_plus": True}
         if login_customer_id:
-            creds["login_customer_id"] = login_customer_id
-        ads = GoogleAdsClient.load_from_dict(creds)
+            dict_creds["login_customer_id"] = login_customer_id
+
+        ads = GoogleAdsClient.load_from_dict(dict_creds, credentials=oauth2_creds)
         svc = ads.get_service("GoogleAdsService")
 
         gaql = """
