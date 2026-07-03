@@ -261,7 +261,10 @@ function exportPathLength(dates) {
 // 6. CONVERSION PATHS — top multi-touch paths (may be limited by privacy)
 // ─────────────────────────────────────────────────────────────────────────────
 function exportConvPaths(dates) {
-  var rows = [];
+  // Aggregate by path+action because segments.date returns one row per day per path.
+  // Without aggregation, duplicate insertIds cause BigQuery to keep only 1 row per path,
+  // making totals ~90x too low.
+  var pathMap = {};
   try {
     var iter = AdsApp.search(
       'SELECT top_combinations_view.conversion_action_name, ' +
@@ -277,24 +280,42 @@ function exportConvPaths(dates) {
       var pathStr = pArr.map(function(p) {
         return p.campaignName || p.campaignGroup || p.channelType || '?';
       }).join(' > ');
+      var action = r.topCombinationsView.conversionActionName || '';
+      var key    = pathStr + '||' + action;
 
-      rows.push({
-        insertId: slug(pathStr).slice(0, 60) + '_' + dates.start,
-        json: {
+      if (!pathMap[key]) {
+        pathMap[key] = {
           path:             pathStr,
-          conversion_action: r.topCombinationsView.conversionActionName || '',
+          conversion_action: action,
           attribution_type:  r.topCombinationsView.pathAttributionType || '',
-          conversions:       r2(r.metrics.conversions || 0),
-          conversion_value:  r2(r.metrics.conversionsValue || 0),
-          date_range:        dates.label,
-          pulled_at:         new Date().toISOString()
-        }
-      });
+          conversions:       0,
+          conversion_value:  0
+        };
+      }
+      pathMap[key].conversions      += r2(r.metrics.conversions || 0);
+      pathMap[key].conversion_value += r2(r.metrics.conversionsValue || 0);
     }
   } catch(e) {
     Logger.log('Conv paths note (privacy threshold may apply): ' + e);
   }
-  Logger.log('Conv paths: ' + rows.length + ' rows');
+
+  var rows = Object.keys(pathMap).map(function(key) {
+    var item = pathMap[key];
+    return {
+      insertId: slug(item.path).slice(0, 60) + '_' + dates.start,
+      json: {
+        path:              item.path,
+        conversion_action: item.conversion_action,
+        attribution_type:  item.attribution_type,
+        conversions:       r2(item.conversions),
+        conversion_value:  r2(item.conversion_value),
+        date_range:        dates.label,
+        pulled_at:         new Date().toISOString()
+      }
+    };
+  });
+
+  Logger.log('Conv paths: ' + rows.length + ' unique paths');
   if (rows.length > 0) {
     bqReplace('ads_conv_paths', schemaConvPaths(), rows);
   }
