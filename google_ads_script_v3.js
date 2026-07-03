@@ -269,8 +269,7 @@ function exportConvPaths(dates) {
     var iter = AdsApp.search(
       'SELECT segments.conversion_action_name, ' +
       '  metrics.conversions, metrics.conversions_value ' +
-      'FROM top_combinations_view ' +
-      'WHERE segments.date BETWEEN "' + dates.start + '" AND "' + dates.end + '"'
+      'FROM top_combinations_view'
     );
     while (iter.hasNext()) {
       var r      = iter.next();
