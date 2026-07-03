@@ -314,6 +314,10 @@ def gen_conv_paths_api() -> bool:
     login_customer_id = os.environ.get("GOOGLE_ADS_LOGIN_CUSTOMER_ID", "").replace("-", "").strip()
 
     try:
+        from datetime import date, timedelta
+        end_date   = date.today() - timedelta(days=1)
+        start_date = end_date - timedelta(days=89)
+
         dict_creds = {
             "developer_token":  dev_token,
             "client_id":        client_id,
@@ -327,7 +331,7 @@ def gen_conv_paths_api() -> bool:
         ads = GoogleAdsClient.load_from_dict(dict_creds)
         svc = ads.get_service("GoogleAdsService")
 
-        gaql = """
+        gaql = f"""
             SELECT
                 campaign.name,
                 segments.conversion_action_name,
@@ -337,7 +341,7 @@ def gen_conv_paths_api() -> bool:
                 metrics.all_conversions,
                 metrics.all_conversions_value
             FROM campaign
-            WHERE segments.date DURING LAST_90_DAYS
+            WHERE segments.date BETWEEN '{start_date}' AND '{end_date}'
               AND metrics.impressions > 0
             ORDER BY metrics.cost_micros DESC
             LIMIT 500
@@ -386,7 +390,7 @@ def gen_conv_paths_api() -> bool:
             })
 
         rows.sort(key=lambda x: x["spend"], reverse=True)
-        save("conv_paths.json", {"rows": rows, "period": "LAST_90_DAYS", "source": "google_ads_api"})
+        save("conv_paths.json", {"rows": rows, "period": f"{start_date} to {end_date}", "source": "google_ads_api"})
         print(f"  conv_paths (API): {len(rows)} campaigns ✓")
         return True
 
