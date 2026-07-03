@@ -325,21 +325,26 @@ function exportConvPaths(dates) {
 function bqReplace(table, schema, rows) {
   if (!rows.length) { Logger.log(table + ': 0 rows — skipped'); return; }
 
-  // Drop existing table (ignore error on first run)
+  // Drop existing table
   try { BigQuery.Tables.remove(CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET, table); } catch(_) {}
-  Utilities.sleep(3000); // wait for BQ to propagate the deletion
+  Utilities.sleep(1000);
 
-  // Create table with schema
+  // Create table
   try {
     BigQuery.Tables.insert(
-      {
-        tableReference: { projectId: CONFIG.BQ_PROJECT, datasetId: CONFIG.BQ_DATASET, tableId: table },
-        schema: { fields: schema }
-      },
+      { tableReference: { projectId: CONFIG.BQ_PROJECT, datasetId: CONFIG.BQ_DATASET, tableId: table },
+        schema: { fields: schema } },
       CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET
     );
-  } catch(e) { Logger.log(table + ' create: ' + e); }
-  Utilities.sleep(2000); // wait for table to become ready
+  } catch(e) { Logger.log(table + ' create err: ' + e); return; }
+
+  // Poll until BigQuery confirms table is ready (max 30s)
+  var ready = false;
+  for (var w = 0; w < 15; w++) {
+    Utilities.sleep(2000);
+    try { BigQuery.Tables.get(CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET, table); ready = true; break; } catch(_) {}
+  }
+  if (!ready) { Logger.log(table + ': not ready after 30s, skipping insert'); return; }
 
   // Stream insert in batches of 500
   var n = 0;
@@ -350,7 +355,7 @@ function bqReplace(table, schema, rows) {
       CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET, table
     );
     if (resp.insertErrors && resp.insertErrors.length) {
-      Logger.log(table + ' error row 0: ' + JSON.stringify(resp.insertErrors[0]));
+      Logger.log(table + ' row err: ' + JSON.stringify(resp.insertErrors[0]));
     }
     n += batch.length;
   }
