@@ -182,6 +182,28 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .path-arrow{color:var(--muted);font-size:10px;margin:0 1px}
 .path-bar{height:4px;border-radius:2px;background:var(--blue);opacity:.6;margin-top:4px}
 
+/* ── GUIDE MODAL ── */
+.guide-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center;padding:20px}
+.guide-inner{background:#1a1d2e;border:1px solid var(--border);border-radius:12px;width:100%;max-width:780px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+.guide-header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border);flex-shrink:0}
+.guide-header h2{font-size:15px;font-weight:700;color:var(--text);margin:0}
+.guide-close{background:none;border:1px solid var(--border);color:var(--muted);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;line-height:1}
+.guide-close:hover{border-color:var(--text);color:var(--text)}
+.guide-body{overflow-y:auto;padding:24px;flex:1}
+.guide-body h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#818cf8;margin:24px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.guide-body h3:first-child{margin-top:0}
+.guide-body p{font-size:12px;color:var(--muted);line-height:1.7;margin:0 0 10px}
+.guide-body p b{color:var(--text)}
+.guide-body ul{margin:0 0 12px;padding-left:18px}
+.guide-body ul li{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:4px}
+.guide-body ul li b{color:var(--text)}
+.guide-gtable{width:100%;border-collapse:collapse;margin:10px 0 16px;font-size:11px}
+.guide-gtable th{text-align:left;color:var(--muted);font-weight:600;padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+.guide-gtable td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--muted);vertical-align:top;line-height:1.5}
+.guide-gtable td:first-child{color:var(--text);font-weight:600;white-space:nowrap}
+.guide-gtable td b{color:var(--text)}
+.guide-divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+
 /* ── FOOTER ── */
 .footer{text-align:center;color:var(--muted);font-size:11px;padding:24px;border-top:1px solid var(--border);margin-top:16px}
 
@@ -250,6 +272,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <a href="#influence-map">3. Attribution Gap</a>
   <a href="#conv-breakdown">4. Conversion Types</a>
   <a href="#appt-value">5. Appointments</a>
+  <button onclick="document.getElementById('guideModal').style.display='flex'" style="margin-left:auto;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#818cf8;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;letter-spacing:.3px">? How to Read This Report</button>
 </div>
 </div><!-- /sticky-top -->
 
@@ -1266,5 +1289,88 @@ async function initDashboard(){
 }
 initDashboard();
 </script>
+
+<!-- ── GUIDE MODAL ── -->
+<div id="guideModal" class="guide-modal" onclick="if(event.target===this)this.style.display='none'">
+  <div class="guide-inner">
+    <div class="guide-header">
+      <h2>How to Read This Report</h2>
+      <button class="guide-close" onclick="document.getElementById('guideModal').style.display='none'">✕</button>
+    </div>
+    <div class="guide-body">
+
+      <h3>Why everything shows 90 days</h3>
+      <p>Flawless sells engagement rings and fine jewellery. Nobody buys a £5,000 ring on their first Google search.</p>
+      <p>A typical customer might:</p>
+      <ul>
+        <li>See a Shopping ad in April, browse the site, leave</li>
+        <li>Get retargeted in May, look at specific rings</li>
+        <li>Search "Hatton Garden jewellers" in June, click a Search ad, book an appointment</li>
+      </ul>
+      <p>That's a 60-day journey across 3 campaigns. If we only looked at 30 days, we'd give 100% of the credit to the Search ad and make Retargeting look useless.</p>
+      <p><b>90 days captures the full buying cycle</b> — from the first time someone discovers Flawless to the day they convert. It also matches Google Ads' maximum attribution window, so no touchpoint gets missed.</p>
+
+      <hr class="guide-divider">
+      <h3>KPI Overview</h3>
+      <table class="guide-gtable">
+        <tr><td>Spend</td><td>Total amount spent across all campaigns in the selected period.</td></tr>
+        <tr><td>LC Conv</td><td><b>Last-Click Conversions</b> — conversions where a Flawless ad was the very last thing the customer clicked before converting.</td></tr>
+        <tr><td>LC Revenue</td><td>Revenue tied to those last-click conversions only.</td></tr>
+        <tr><td>MTA Revenue</td><td><b>Multi-Touch Attribution Revenue</b> — instead of giving all credit to the last click, MTA shares credit across every campaign that touched the customer. Almost always higher than LC Revenue because it captures campaigns that did the groundwork.</td></tr>
+        <tr><td>LC ROAS</td><td>For every £1 spent, how many £ came back — measured by last-click only.</td></tr>
+        <tr><td>MTA ROAS</td><td>Same calculation using MTA Revenue. The more accurate picture of what each campaign is actually worth.</td></tr>
+      </table>
+
+      <hr class="guide-divider">
+      <h3>Section 1 — Campaign Roles</h3>
+      <ul>
+        <li><b>Introducer</b> — Usually the first touchpoint. Customers discover Flawless through it but don't convert immediately. Cutting an Introducer feels safe on paper (low direct conversions) but quietly kills your pipeline. Within 2–3 weeks you'll see fewer leads on your Closer campaigns too.</li>
+        <li><b>Assist</b> — Shows up in the middle of the journey. Keeps the customer warm between first visit and final decision.</li>
+        <li><b>Closer</b> — Gets the last click. High direct conversions, fewer assists. Traditional reporting loves this campaign — but it only works because Introducers and Assists did the work first.</li>
+        <li><b>Pure Introducer</b> — Never gets the final click, only ever assists. Zero direct conversions but still genuinely contributing.</li>
+      </ul>
+      <table class="guide-gtable">
+        <tr><th>Column</th><th>What it means</th></tr>
+        <tr><td>LC Conv</td><td>Conversions this campaign closed directly</td></tr>
+        <tr><td>LC Revenue</td><td>Revenue from those direct closes</td></tr>
+        <tr><td>All Conv</td><td>Every conversion this campaign touched, including assists</td></tr>
+        <tr><td>Assists</td><td>Times it helped another campaign get the sale</td></tr>
+        <tr><td>Assist Ratio</td><td>How many assists per 1 direct close. A ratio of 48 means for every 1 sale it closes, it assisted 48 others that a different campaign got credit for.</td></tr>
+        <tr><td>LC ROAS</td><td>Return based on direct closes only</td></tr>
+        <tr><td>MTA ROAS</td><td>Return including all assisted conversions</td></tr>
+      </table>
+
+      <hr class="guide-divider">
+      <h3>Section 2 — Attribution Models</h3>
+      <p>Side by side: what last-click says each campaign earned vs what it actually earned when you account for the full journey.</p>
+      <p>If a campaign shows £500 under last-click but £12,000 under MTA — that campaign is being seriously underfunded based on incomplete data.</p>
+
+      <hr class="guide-divider">
+      <h3>Section 3 — Attribution Gap</h3>
+      <p>The bars show LC ROAS in blue and MTA ROAS in green for every active campaign. If the green bar is much longer than the blue — that campaign is doing more than it's getting credit for.</p>
+      <table class="guide-gtable">
+        <tr><th>Signal</th><th>What it means</th><th>What to do</th></tr>
+        <tr><td>Scale Up</td><td>Strong on both. MTA is 3× LC or more</td><td>Increase budget confidently</td></tr>
+        <tr><td>Hidden Value</td><td>Average on last-click, strong on MTA</td><td>Don't judge it by LC alone</td></tr>
+        <tr><td>Don't Cut</td><td>Last-click looks unprofitable but MTA is healthy</td><td>Keep it running — it's feeding your Closers</td></tr>
+        <tr><td>Review</td><td>Weak on both</td><td>Look into targeting, creative, or landing page</td></tr>
+        <tr><td>On Track</td><td>Performing as expected</td><td>Maintain current budget</td></tr>
+      </table>
+
+      <hr class="guide-divider">
+      <h3>Section 4 — Conversion Types</h3>
+      <ul>
+        <li><b>Tier 1</b> — High-intent actions. In-store appointments, virtual consultations, ring builder completions, invoices. These turn into real sales.</li>
+        <li><b>Tier 2</b> — Mid-intent. WhatsApp messages, contact form submissions, phone calls. Warm leads that need follow-up.</li>
+        <li><b>Tier 3</b> — Soft engagement signals. Useful for spotting which campaigns attract genuinely interested visitors vs casual browsers.</li>
+      </ul>
+
+      <hr class="guide-divider">
+      <h3>Section 5 — Appointments</h3>
+      <p>Which campaigns are putting people in your showroom or on a call. Broken down by location — London in-store, Manchester in-store, virtual, and ring builder sessions. The most direct link between ad spend and your sales team's calendar.</p>
+
+    </div>
+  </div>
+</div>
 </body>
 </html>
