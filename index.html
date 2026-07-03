@@ -1112,25 +1112,6 @@ function renderInfluenceMap(){
     </tr>`;
   }).join('');
 
-  // Insight
-  const biggest=chartRows[0];
-  const biggestDontCut=dontCut.sort((a,b)=>(b.mta_roas||0)-(a.mta_roas||0))[0];
-  const ins=document.getElementById('agInsight');
-  if(ins) ins.innerHTML=`
-    <div class="insight-row"><span class="insight-label">Key Finding:</span>
-      Last-click attribution accounts for ${fmtGBP(totalLcRev)} in attributed revenue.
-      MTA (all-touch) attribution shows ${fmtGBP(totalMtaRev)} — a gap of ${fmtGBP(hiddenVal)}.
-      This gap represents revenue that campaigns earned through assisted touches but never received credit for.
-    </div>
-    ${biggest?`<div class="insight-row insight-muted"><span class="insight-label" style="color:var(--text)">Highest contributor:</span>
-      ${biggest.campaign} has an MTA ROAS of ${(biggest.mta_roas||0).toFixed(1)}x vs LC ROAS of ${(biggest.lc_roas||0).toFixed(1)}x —
-      it contributes ${fmtGBP((biggest.mta_roas||0)*(biggest.spend||0))} in assisted revenue, ${((biggest.mta_roas||0)/(biggest.lc_roas||1)).toFixed(1)}× more than last-click shows.
-    </div>`:''}
-    ${biggestDontCut?`<div class="insight-row insight-muted"><span class="insight-label" style="color:var(--gold2)">Don't cut:</span>
-      ${biggestDontCut.campaign} has LC ROAS of ${(biggestDontCut.lc_roas||0).toFixed(2)}x (looks unprofitable) but MTA ROAS of ${(biggestDontCut.mta_roas||0).toFixed(1)}x.
-      Pausing it based on last-click data alone would be a mistake.
-    </div>`:''}
-  `;
 }
 
 /* ─── INIT ─── */
