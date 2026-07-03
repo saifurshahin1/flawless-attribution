@@ -288,9 +288,109 @@ def gen_path_length():
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 5. CONVERSION PATHS — from GA4 BigQuery export (events_* tables)
-#    Reconstructs actual campaign touch sequences per converting user.
-#    Falls back to ads_conv_paths (Google Ads Scripts) if GA4 not available.
+# 5a. CONVERSION PATHS — Google Ads API (primary source)
+#     Pulls campaign-level conversion contribution data via REST API.
+# ─────────────────────────────────────────────────────────────────────────────
+def gen_conv_paths_api() -> bool:
+    import os
+    from collections import defaultdict
+
+    dev_token     = os.environ.get("GOOGLE_ADS_DEVELOPER_TOKEN", "").strip()
+    client_id     = os.environ.get("GOOGLE_ADS_CLIENT_ID", "").strip()
+    client_secret = os.environ.get("GOOGLE_ADS_CLIENT_SECRET", "").strip()
+    refresh_token = os.environ.get("GOOGLE_ADS_REFRESH_TOKEN", "").strip()
+    customer_id   = os.environ.get("GOOGLE_ADS_CUSTOMER_ID", "").replace("-", "").strip()
+
+    if not all([dev_token, client_id, client_secret, refresh_token, customer_id]):
+        print("  conv_paths_api: credentials not set — skipping")
+        return False
+
+    try:
+        from google.ads.googleads.client import GoogleAdsClient
+    except ImportError:
+        print("  conv_paths_api: google-ads library not installed")
+        return False
+
+    try:
+        ads = GoogleAdsClient.load_from_dict({
+            "developer_token": dev_token,
+            "client_id":       client_id,
+            "client_secret":   client_secret,
+            "refresh_token":   refresh_token,
+            "use_proto_plus":  True,
+        })
+        svc = ads.get_service("GoogleAdsService")
+
+        gaql = """
+            SELECT
+                campaign.name,
+                segments.conversion_action_name,
+                metrics.cost_micros,
+                metrics.conversions,
+                metrics.conversions_value,
+                metrics.all_conversions,
+                metrics.all_conversions_value
+            FROM campaign
+            WHERE segments.date DURING LAST_90_DAYS
+              AND metrics.impressions > 0
+            ORDER BY metrics.cost_micros DESC
+            LIMIT 500
+        """
+
+        camps = defaultdict(lambda: {
+            "spend": 0.0, "lc": 0.0, "lc_val": 0.0,
+            "all": 0.0, "all_val": 0.0,
+            "actions": defaultdict(float),
+        })
+
+        for row in svc.search(customer_id=customer_id, query=gaql):
+            n = row.campaign.name
+            camps[n]["spend"]   += row.metrics.cost_micros / 1_000_000
+            camps[n]["lc"]      += row.metrics.conversions
+            camps[n]["lc_val"]  += row.metrics.conversions_value
+            camps[n]["all"]     += row.metrics.all_conversions
+            camps[n]["all_val"] += row.metrics.all_conversions_value
+            act = row.segments.conversion_action_name
+            if act and row.metrics.all_conversions > 0:
+                camps[n]["actions"][act] += row.metrics.all_conversions
+
+        rows = []
+        for name, v in camps.items():
+            if v["spend"] < 5:
+                continue
+            assists = max(0.0, v["all"] - v["lc"])
+            ratio   = assists / v["lc"] if v["lc"] > 0 else (99.0 if assists > 0 else 0.0)
+            role    = ("Pure Opener" if v["lc"] == 0 and assists > 0
+                       else "Opener"  if ratio >= 1.5
+                       else "Assist"  if ratio >= 0.5
+                       else "Closer")
+            top_act = max(v["actions"], key=v["actions"].get) if v["actions"] else ""
+            rows.append({
+                "campaign":     name,
+                "spend":        round(v["spend"],   2),
+                "lc_conv":      round(v["lc"],      1),
+                "lc_value":     round(v["lc_val"],  2),
+                "all_conv":     round(v["all"],      1),
+                "assists":      round(assists,       1),
+                "assist_ratio": round(ratio,         2),
+                "top_action":   top_act,
+                "role":         role,
+                "source":       "google_ads_api",
+                "period":       "LAST_90_DAYS",
+            })
+
+        rows.sort(key=lambda x: x["spend"], reverse=True)
+        save("conv_paths.json", {"rows": rows, "period": "LAST_90_DAYS", "source": "google_ads_api"})
+        print(f"  conv_paths (API): {len(rows)} campaigns ✓")
+        return True
+
+    except Exception as e:
+        print(f"  conv_paths_api error: {e}")
+        return False
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5b. CONVERSION PATHS — from GA4 BigQuery export (fallback)
 # ─────────────────────────────────────────────────────────────────────────────
 def gen_conv_paths():
     from datetime import date, timedelta
@@ -499,7 +599,7 @@ if __name__ == "__main__":
         ("assisted_conv",   gen_assisted_conv),
         ("time_lag",        gen_time_lag),
         ("path_length",     gen_path_length),
-        ("conv_paths",      gen_conv_paths),
+        ("conv_paths",      lambda: gen_conv_paths_api() or gen_conv_paths()),
         ("conv_breakdown",  gen_conv_breakdown),
         ("meta",            gen_meta),
     ]

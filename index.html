@@ -310,7 +310,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <a href="#roles">1. Campaign Roles</a>
   <a href="#attr-models">2. Attribution Models</a>
   <a href="#influence-map">3. Attribution Gap</a>
-  <a href="#conv-breakdown">4. Conversion Types</a>
+  <a href="#conv-paths">4. Journey Contribution</a>
+  <a href="#conv-breakdown">5. Conversion Types</a>
   <a href="#appt-value">5. Appointments</a>
   <button onclick="document.getElementById('guideModal').style.display='flex'" style="margin-left:auto;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#818cf8;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;letter-spacing:.3px">? How to Read This Report</button>
   <button id="themeToggle" onclick="toggleTheme()" title="Toggle theme" style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.35);color:#c9a84c;padding:5px 11px;border-radius:20px;font-size:14px;cursor:pointer;line-height:1;transition:all .2s">☀</button>
@@ -417,31 +418,31 @@ tr:hover td{background:rgba(255,255,255,.02)}
 </section>
 
 <!-- ── SECTION 4: CONVERSION PATHS — hidden until Google Ads API access confirmed ── -->
-<section id="conv-paths" style="display:none">
-  <div class="section-title"><div class="num">4</div>Conversion Paths — Actual Campaign Sequences <span class="fixed-badge" style="margin-left:auto">90D · GA4</span></div>
+<section id="conv-paths">
+  <div class="section-title"><div class="num">4</div>Conversion Journey Contribution <span class="fixed-badge" style="margin-left:auto" id="pathBadge">90D · Google Ads API</span></div>
   <div class="bq-line">Business Question</div>
-  <div class="bq-q">Which sequences of campaigns lead to conversions — and specifically, which campaigns assisted Sales PMax, and which did PMax assist?</div>
-  <div id="pathSummaryCards" class="ag-summary" style="grid-template-columns:repeat(3,1fr)"></div>
-  <div style="display:flex;align-items:center;gap:10px;margin:12px 0 8px">
-    <span style="font-size:11px;color:var(--muted)">Filter by campaign:</span>
-    <select id="pathCampFilter" class="pag-sel" style="min-width:220px">
-      <option value="">All paths</option>
-    </select>
-    <span style="font-size:11px;color:var(--muted)" id="pathFilterCount"></span>
+  <div class="bq-q">Which campaigns participate across the full customer journey — from first brand touchpoint to final conversion — and how does each campaign's real footprint compare to what Last Click shows?</div>
+  <div id="pathSummaryCards" class="ag-summary" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+    <div class="chart-wrap" style="height:260px"><canvas id="pathContribChart"></canvas></div>
+    <div class="chart-wrap" style="height:260px"><canvas id="pathRatioChart"></canvas></div>
   </div>
   <div class="table-card">
     <table>
       <thead><tr>
-        <th>Campaign Path</th>
-        <th class="num" style="width:90px">Conversions</th>
-        <th class="num" style="width:100px">Revenue</th>
-        <th class="num" style="width:60px">Steps</th>
+        <th>Campaign</th>
+        <th>Journey Role</th>
+        <th class="num">Spend £</th>
+        <th class="num">Direct Conv</th>
+        <th class="num">Journey Assists</th>
+        <th class="num">Assist Ratio</th>
+        <th>Top Conversion Action</th>
       </tr></thead>
       <tbody id="pathTbody"></tbody>
     </table>
   </div>
   <div id="pathNoData" style="display:none;text-align:center;padding:32px;color:var(--muted);font-size:12px">
-    No GA4 conversion path data available yet. Run the GitHub Actions workflow after the next script run.
+    Waiting for Google Ads API data — workflow will populate this on next run.
   </div>
 </section>
 
@@ -1214,13 +1215,12 @@ function renderInfluenceMap(){
 
 }
 
-/* ─── SECTION 4: CONVERSION PATHS (GA4) ─── */
+/* ─── SECTION 4: CONVERSION JOURNEY CONTRIBUTION ─── */
 function renderConvPaths(){
-  const rows=G.paths||[];
+  const rows=(G.paths||[]).filter(r=>r.campaign); // API format: {campaign, spend, lc_conv, assists, ...}
   const noData=document.getElementById('pathNoData');
   const tbody=document.getElementById('pathTbody');
   const cards=document.getElementById('pathSummaryCards');
-  const filter=document.getElementById('pathCampFilter');
 
   if(!rows.length){
     if(noData)noData.style.display='block';
@@ -1228,91 +1228,96 @@ function renderConvPaths(){
   }
   if(noData)noData.style.display='none';
 
-  // Parse each path into an array of campaign names
-  const parsed=rows.map(r=>({
-    ...r,
-    steps:(r.path||'').split(' > ').map(s=>s.trim()).filter(Boolean)
-  }));
+  const source=G.pathsMeta.source||'google_ads_api';
+  const badge=document.getElementById('pathBadge');
+  if(badge) badge.textContent=source==='google_ads_api'?'90D · Google Ads API':'90D · GA4';
 
-  // Campaign colour palette (auto-assigned)
-  const campColors={};
-  const palette=['#6366f1','#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#84cc16','#ec4899','#14b8a6','#a78bfa'];
-  let ci=0;
-  function campColor(name){
-    if(!campColors[name]){campColors[name]=palette[ci%palette.length];ci++;}
-    return campColors[name];
-  }
-
-  // Identify the PMax campaign name dynamically
-  const pmax=parsed.flatMap(r=>r.steps).find(s=>s.toLowerCase().includes('performance max')||s.toLowerCase().includes('pmax'))||'';
+  const sorted=[...rows].sort((a,b)=>(b.spend||0)-(a.spend||0));
+  const top8=sorted.slice(0,8);
 
   // Summary cards
-  const totalConv=parsed.reduce((s,r)=>s+(r.conversions||0),0);
-  const multiStep=parsed.filter(r=>r.steps.length>1);
-  const multiConv=multiStep.reduce((s,r)=>s+(r.conversions||0),0);
-  const pmaxPaths=parsed.filter(r=>r.steps.some(s=>s===pmax||s.toLowerCase().includes('performance max')));
-  const pmaxConv=pmaxPaths.reduce((s,r)=>s+(r.conversions||0),0);
-  const pmaxAssist=pmaxPaths.filter(r=>r.steps.length>1&&r.steps[r.steps.length-1]!==pmax);
-  const pmaxClose=pmaxPaths.filter(r=>r.steps[r.steps.length-1]===pmax);
+  const topOpener=[...rows].sort((a,b)=>(b.assist_ratio||0)-(a.assist_ratio||0))[0];
+  const topCloser=[...rows].sort((a,b)=>(b.lc_conv||0)-(a.lc_conv||0))[0];
+  const totalAll=rows.reduce((s,r)=>s+(r.all_conv||0),0);
+  const totalLC=rows.reduce((s,r)=>s+(r.lc_conv||0),0);
+  const multiRatio=totalLC>0?Math.round((totalAll-totalLC)/totalLC*100):0;
 
   if(cards) cards.innerHTML=`
     <div class="ag-card">
-      <div class="ag-card-label">Multi-Touch Conversions</div>
-      <div class="ag-card-val" style="color:var(--blue)">${multiConv.toFixed(0)}</div>
-      <div class="ag-card-sub">${totalConv>0?Math.round(multiConv/totalConv*100):0}% of all ${totalConv.toFixed(0)} conversions involved 2+ campaigns</div>
+      <div class="ag-card-label">Top Journey Starter</div>
+      <div class="ag-card-val" style="color:var(--purple);font-size:13px;line-height:1.3">${topOpener?.campaign?.length>30?topOpener.campaign.slice(0,28)+'…':topOpener?.campaign||'—'}</div>
+      <div class="ag-card-sub">Assist ratio ${(topOpener?.assist_ratio||0).toFixed(1)}× — seeds ${(topOpener?.assists||0).toFixed(0)} assisted paths</div>
     </div>
     <div class="ag-card">
-      <div class="ag-card-label">PMax as Closer</div>
-      <div class="ag-card-val" style="color:var(--green)">${pmaxClose.reduce((s,r)=>s+(r.conversions||0),0).toFixed(0)} conv</div>
-      <div class="ag-card-sub">${pmaxClose.length} path types where ${pmax||'PMax'} was the final touch</div>
+      <div class="ag-card-label">Top Closer</div>
+      <div class="ag-card-val" style="color:var(--green);font-size:13px;line-height:1.3">${topCloser?.campaign?.length>30?topCloser.campaign.slice(0,28)+'…':topCloser?.campaign||'—'}</div>
+      <div class="ag-card-sub">${(topCloser?.lc_conv||0).toFixed(0)} direct conversions · ${fmtGBP(topCloser?.lc_value||0)} revenue</div>
     </div>
     <div class="ag-card">
-      <div class="ag-card-label">PMax as Assister</div>
-      <div class="ag-card-val" style="color:var(--gold2)">${pmaxAssist.reduce((s,r)=>s+(r.conversions||0),0).toFixed(0)} conv</div>
-      <div class="ag-card-sub">${pmaxAssist.length} path types where ${pmax||'PMax'} assisted another campaign</div>
+      <div class="ag-card-label">Journey Multiplier</div>
+      <div class="ag-card-val" style="color:var(--gold)">${multiRatio}%</div>
+      <div class="ag-card-sub">More conversion touchpoints than Last Click counts — assisted paths vs direct closes</div>
     </div>`;
 
-  // Populate campaign filter dropdown
-  const allCamps=[...new Set(parsed.flatMap(r=>r.steps))].sort();
-  if(filter){
-    filter.innerHTML='<option value="">All paths</option>'+
-      allCamps.map(c=>`<option value="${c}">${c}</option>`).join('');
-    filter.onchange=()=>renderPathTable(filter.value);
-  }
+  // Chart 1: LC conv vs assists stacked bar
+  destroyChart('pathContribChart');
+  G.charts['pathContribChart']=new Chart(document.getElementById('pathContribChart').getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:top8.map(r=>r.campaign.length>22?r.campaign.slice(0,20)+'…':r.campaign),
+      datasets:[
+        {label:'Direct (Last Click)',data:top8.map(r=>+(r.lc_conv||0).toFixed(1)),backgroundColor:'rgba(34,197,94,.75)',borderRadius:3},
+        {label:'Journey Assists',data:top8.map(r=>+(Math.min(r.assists||0,r.lc_conv*50||9999)).toFixed(1)),backgroundColor:'rgba(168,85,247,.55)',borderRadius:3}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#8b90a8',font:{size:10},boxWidth:10}},
+        tooltip:{callbacks:{label:v=>v.dataset.label+': '+v.raw}}},
+      scales:{
+        x:{stacked:true,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}}},
+        y:{stacked:true,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}},
+          title:{display:true,text:'Conversions',color:'#8b90a8',font:{size:9}}}
+      }
+    }
+  });
 
-  // Max conversions for bar scaling
-  const maxConv=Math.max(...parsed.map(r=>r.conversions||0),1);
+  // Chart 2: Assist ratio bar
+  destroyChart('pathRatioChart');
+  const ratioTop=[...rows].sort((a,b)=>(b.assist_ratio||0)-(a.assist_ratio||0)).slice(0,8);
+  G.charts['pathRatioChart']=new Chart(document.getElementById('pathRatioChart').getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:ratioTop.map(r=>r.campaign.length>22?r.campaign.slice(0,20)+'…':r.campaign),
+      datasets:[{
+        label:'Assist Ratio',
+        data:ratioTop.map(r=>Math.min(+(r.assist_ratio||0).toFixed(1),100)),
+        backgroundColor:ratioTop.map(r=>
+          r.role==='Opener'||r.role==='Pure Opener'?'rgba(168,85,247,.75)':
+          r.role==='Assist'?'rgba(59,130,246,.7)':'rgba(34,197,94,.7)'),
+        borderRadius:4,barThickness:18
+      }]
+    },
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>v.raw+'× assists per LC conv'}}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b90a8',font:{size:9}},
+          title:{display:true,text:'Assist Ratio (×)',color:'#8b90a8',font:{size:9}}},
+        y:{grid:{display:false},ticks:{color:'#c8cad4',font:{size:10}}}
+      }
+    }
+  });
 
-  function renderPathTable(campFilter){
-    const filtered=campFilter
-      ?parsed.filter(r=>r.steps.includes(campFilter))
-      :parsed;
-    const cnt=document.getElementById('pathFilterCount');
-    if(cnt) cnt.textContent=campFilter?`${filtered.length} paths found`:'';
-
-    if(!tbody)return;
-    tbody.innerHTML=filtered.map(r=>{
-      const pathHtml=r.steps.map((s,i)=>{
-        const col=campColor(s);
-        const isLast=i===r.steps.length-1;
-        return (i>0?'<span class="path-arrow">›</span>':'')+
-          `<span class="path-camp" style="background:${col}22;color:${col};border:1px solid ${col}44">${s}</span>`+
-          (isLast?'<span style="font-size:9px;color:var(--muted);margin-left:3px">[close]</span>':'');
-      }).join('');
-      const barW=Math.round(((r.conversions||0)/maxConv)*100);
-      return`<tr>
-        <td>
-          <div class="path-str">${pathHtml}</div>
-          <div class="path-bar" style="width:${barW}%"></div>
-        </td>
-        <td class="num">${(r.conversions||0).toFixed(0)}</td>
-        <td class="num">${r.conversion_value>0?fmtGBP(r.conversion_value):'—'}</td>
-        <td class="num dim">${r.steps.length}</td>
-      </tr>`;
-    }).join('');
-  }
-
-  renderPathTable('');
+  // Table
+  const roleColor=r=>r==='Closer'?'var(--green)':r==='Assist'?'var(--blue)':r==='Opener'?'var(--purple)':'#e879f9';
+  if(tbody) tbody.innerHTML=sorted.map(r=>`<tr>
+    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600" title="${r.campaign}">${r.campaign}</td>
+    <td>${roleBadge(r.role||'—')}</td>
+    <td class="num">${fmtGBP(r.spend||0)}</td>
+    <td class="num">${(r.lc_conv||0).toFixed(0)}</td>
+    <td class="num" style="color:var(--purple)">${(r.assists||0).toFixed(0)}</td>
+    <td class="num">${(r.assist_ratio||0)>0?(r.assist_ratio).toFixed(1)+'×':'∞'}</td>
+    <td style="font-size:10px;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.top_action||''}">${r.top_action||'—'}</td>
+  </tr>`).join('');
 }
 
 /* ─── INIT ─── */
