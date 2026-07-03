@@ -330,42 +330,46 @@ def gen_conv_paths():
           WHERE event_name = 'session_start'
             AND _TABLE_SUFFIX BETWEEN '{start_s}' AND '{end_s}'
         ),
-        purchases AS (
+        conversions AS (
           SELECT
             user_pseudo_id,
             TIMESTAMP_MICROS(event_timestamp) AS ts,
-            (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'transaction_id') AS txn_id,
-            COALESCE(
-              (SELECT value.double_value FROM UNNEST(event_params) WHERE key = 'value'),
-              (SELECT SAFE_CAST(value.string_value AS FLOAT64) FROM UNNEST(event_params) WHERE key = 'value'),
-              0.0
-            ) AS revenue
+            CONCAT(user_pseudo_id, '_', CAST(event_timestamp AS STRING)) AS conv_id,
+            event_name AS conversion_type
           FROM `{PROJECT}.{ga4_ds}.events_*`
-          WHERE event_name = 'purchase'
-            AND _TABLE_SUFFIX BETWEEN '{start_s}' AND '{end_s}'
+          WHERE event_name IN (
+            'Complete_Ring_s',
+            'london_inStore_apponitment_s',
+            'manchester_inStore_appointment_s',
+            'london_virtual_appointment_s',
+            'contact_us_s',
+            'mobile_whatsapp_clicks_s',
+            'desktop_ whatsapp_clicks_s'
+          )
+          AND _TABLE_SUFFIX BETWEEN '{start_s}' AND '{end_s}'
         ),
         path_build AS (
           SELECT
-            p.txn_id,
-            p.revenue,
+            c.conv_id,
+            c.conversion_type,
             ARRAY_TO_STRING(
               ARRAY_AGG(s.campaign IGNORE NULLS ORDER BY s.ts),
               ' > '
             ) AS path
-          FROM purchases p
-          JOIN sessions s ON s.user_pseudo_id = p.user_pseudo_id
-            AND s.ts <= p.ts
-            AND s.ts >= TIMESTAMP_SUB(p.ts, INTERVAL 90 DAY)
-          GROUP BY p.txn_id, p.revenue
+          FROM conversions c
+          JOIN sessions s ON s.user_pseudo_id = c.user_pseudo_id
+            AND s.ts <= c.ts
+            AND s.ts >= TIMESTAMP_SUB(c.ts, INTERVAL 90 DAY)
+          GROUP BY c.conv_id, c.conversion_type
         )
         SELECT
           path,
-          COUNT(*)             AS conversions,
-          ROUND(SUM(revenue),2) AS conversion_value
+          COUNT(*)  AS conversions,
+          0.0       AS conversion_value
         FROM path_build
         WHERE path IS NOT NULL AND path != ''
         GROUP BY path
-        ORDER BY conversions DESC, conversion_value DESC
+        ORDER BY conversions DESC
         LIMIT 50
         """
         try:
