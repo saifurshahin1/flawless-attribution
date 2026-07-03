@@ -1217,7 +1217,20 @@ function renderInfluenceMap(){
 
 /* ─── SECTION 4: CONVERSION JOURNEY CONTRIBUTION ─── */
 function renderConvPaths(){
-  const rows=(G.paths||[]).filter(r=>r.campaign); // API format: {campaign, spend, lc_conv, assists, ...}
+  let rows=(G.paths||[]).filter(r=>r.campaign); // API format: {campaign, spend, lc_conv, assists, ...}
+
+  // Fallback: derive from assisted_conv BigQuery table (always available)
+  if(!rows.length&&(G.assisted||[]).length){
+    rows=G.assisted.filter(r=>r.campaign&&(r.spend||r.last_click_conv||r.assists)).map(r=>{
+      const lc=r.last_click_conv||0,assists=r.assists||0;
+      const ratio=lc>0?assists/lc:(assists>0?99:0);
+      const role=r.campaign_role||(lc===0&&assists>0?'Pure Introducer':ratio>=1.5?'Introducer':ratio>=0.5?'Assist':'Closer');
+      return{campaign:r.campaign,spend:r.spend||0,lc_conv:lc,lc_value:r.last_click_value||0,
+        all_conv:r.all_conversions||(lc+assists),assists,assist_ratio:Math.round(ratio*100)/100,
+        top_action:'',role,source:'assisted_bq'};
+    });
+  }
+
   const noData=document.getElementById('pathNoData');
   const tbody=document.getElementById('pathTbody');
   const cards=document.getElementById('pathSummaryCards');

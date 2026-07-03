@@ -385,9 +385,9 @@ def gen_conv_paths_api() -> bool:
                 continue
             assists = max(0.0, v["all"] - v["lc"])
             ratio   = assists / v["lc"] if v["lc"] > 0 else (99.0 if assists > 0 else 0.0)
-            role    = ("Pure Opener" if v["lc"] == 0 and assists > 0
-                       else "Opener"  if ratio >= 1.5
-                       else "Assist"  if ratio >= 0.5
+            role    = ("Pure Introducer" if v["lc"] == 0 and assists > 0
+                       else "Introducer" if ratio >= 1.5
+                       else "Assist"     if ratio >= 0.5
                        else "Closer")
             top_act = max(v["actions"], key=v["actions"].get) if v["actions"] else ""
             rows.append({
