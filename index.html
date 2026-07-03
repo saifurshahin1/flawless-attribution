@@ -1014,6 +1014,8 @@ function renderInfluenceMap(){
   const intro=[],asst=[],closer=[];
   rows.forEach(r=>{
     const role=(r.campaign_role||'').toLowerCase();
+    const hasActivity=(r.last_click_conv||0)>0||(r.all_conversions||0)>0||(r.assists||0)>0;
+    if(!hasActivity)return; // skip inactive campaigns
     if(role.includes('introducer'))intro.push(r);
     else if(role.includes('assist'))asst.push(r);
     else closer.push(r);
@@ -1024,19 +1026,17 @@ function renderInfluenceMap(){
 
   function card(r,type){
     const isC=type==='closer';
-    const assistsReceived=Math.max(0,(r.all_conversions||0)-(r.last_click_conv||0));
-    const pct=r.all_conversions>0?Math.round(assistsReceived/r.all_conversions*100):0;
+    const lcRoas=r.lc_roas||0;
     const main=isC
       ?`<b>${(r.last_click_conv||0).toFixed(0)}</b> conversions closed`
       :`<b>${(r.assists||0).toFixed(0)}</b> assists given`;
     const sub=isC
-      ?`${assistsReceived} received assists (${pct}% multi-touch)`
+      ?`LC ROAS ${lcRoas.toFixed(2)}x · ${(r.assists||0).toFixed(0)} assists given to others`
       :`${(r.last_click_conv||0).toFixed(0)} also closed directly`;
     return`<div class="inf-card">
       <div class="inf-name">${r.campaign}</div>
       <div class="inf-meta">${main}</div>
       <div class="inf-meta" style="opacity:.65">${sub}</div>
-      ${isC&&pct>0?`<div class="inf-pct-bar"><div class="inf-pct-fill" style="width:${pct}%;background:var(--green)"></div></div>`:''}
     </div>`;
   }
 
