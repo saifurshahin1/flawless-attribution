@@ -331,10 +331,10 @@ def gen_conv_paths_api() -> bool:
         ads = GoogleAdsClient.load_from_dict(dict_creds)
         svc = ads.get_service("GoogleAdsService")
 
-        gaql = f"""
+        # Query 1: spend + conversions (cost_micros incompatible with conversion_action_name)
+        gaql_spend = f"""
             SELECT
                 campaign.name,
-                segments.conversion_action_name,
                 metrics.cost_micros,
                 metrics.conversions,
                 metrics.conversions_value,
@@ -342,9 +342,21 @@ def gen_conv_paths_api() -> bool:
                 metrics.all_conversions_value
             FROM campaign
             WHERE segments.date BETWEEN '{start_date}' AND '{end_date}'
-              AND metrics.impressions > 0
+              AND metrics.cost_micros > 0
             ORDER BY metrics.cost_micros DESC
             LIMIT 500
+        """
+
+        # Query 2: conversion action breakdown (no cost metrics)
+        gaql_actions = f"""
+            SELECT
+                campaign.name,
+                segments.conversion_action_name,
+                metrics.all_conversions
+            FROM campaign
+            WHERE segments.date BETWEEN '{start_date}' AND '{end_date}'
+              AND metrics.all_conversions > 0
+            LIMIT 1000
         """
 
         camps = defaultdict(lambda: {
@@ -353,13 +365,16 @@ def gen_conv_paths_api() -> bool:
             "actions": defaultdict(float),
         })
 
-        for row in svc.search(customer_id=customer_id, query=gaql):
+        for row in svc.search(customer_id=customer_id, query=gaql_spend):
             n = row.campaign.name
             camps[n]["spend"]   += row.metrics.cost_micros / 1_000_000
             camps[n]["lc"]      += row.metrics.conversions
             camps[n]["lc_val"]  += row.metrics.conversions_value
             camps[n]["all"]     += row.metrics.all_conversions
             camps[n]["all_val"] += row.metrics.all_conversions_value
+
+        for row in svc.search(customer_id=customer_id, query=gaql_actions):
+            n   = row.campaign.name
             act = row.segments.conversion_action_name
             if act and row.metrics.all_conversions > 0:
                 camps[n]["actions"][act] += row.metrics.all_conversions
