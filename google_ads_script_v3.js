@@ -325,28 +325,19 @@ function exportConvPaths(dates) {
 function bqReplace(table, schema, rows) {
   if (!rows.length) { Logger.log(table + ': 0 rows — skipped'); return; }
 
-  // Drop existing table
-  try { BigQuery.Tables.remove(CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET, table); } catch(_) {}
-  Utilities.sleep(1000);
-
-  // Create table
+  // Create table only if it does not exist (never drop — avoids BQ propagation race)
   try {
     BigQuery.Tables.insert(
       { tableReference: { projectId: CONFIG.BQ_PROJECT, datasetId: CONFIG.BQ_DATASET, tableId: table },
         schema: { fields: schema } },
       CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET
     );
-  } catch(e) { Logger.log(table + ' create err: ' + e); return; }
-
-  // Poll until BigQuery confirms table is ready (max 30s)
-  var ready = false;
-  for (var w = 0; w < 15; w++) {
-    Utilities.sleep(2000);
-    try { BigQuery.Tables.get(CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET, table); ready = true; break; } catch(_) {}
+    Utilities.sleep(3000); // new table: wait for it to be ready
+  } catch(_) {
+    // table already exists — fine, proceed
   }
-  if (!ready) { Logger.log(table + ': not ready after 30s, skipping insert'); return; }
 
-  // Stream insert in batches of 500
+  // Stream insert in batches of 500 (insertId handles deduplication)
   var n = 0;
   for (var i = 0; i < rows.length; i += 500) {
     var batch = rows.slice(i, i + 500);

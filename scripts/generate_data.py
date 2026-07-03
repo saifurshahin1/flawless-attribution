@@ -102,14 +102,14 @@ def gen_campaign_stats():
       recent AS (
         SELECT
           CAST(date AS STRING) AS date, campaign,
-          SUM(cost_gbp)                AS spend,
-          SUM({conv_col})              AS conversions,
-          SUM({rev_col})               AS revenue,
-          SUM(all_conversions)         AS all_conversions,
-          SUM({allv_col})              AS all_conv_value
+          cost_gbp             AS spend,
+          {conv_col}           AS conversions,
+          {rev_col}            AS revenue,
+          all_conversions,
+          {allv_col}           AS all_conv_value
         FROM `{PROJECT}.{DATASET}.ads_campaign_stats`
         WHERE CAST(date AS STRING) NOT IN (SELECT DISTINCT date FROM live)
-        GROUP BY date, campaign
+        QUALIFY ROW_NUMBER() OVER (PARTITION BY date, campaign ORDER BY pulled_at DESC) = 1
       )"""
 
     if history:
@@ -344,18 +344,34 @@ def gen_conv_breakdown():
     conv_col = "conversions" if "conversions" in c else "conversions_lastclick"
     val_col  = "conversion_value" if "conversion_value" in c else "revenue_lastclick"
 
-    sql = f"""
-    SELECT
-        CAST(date AS STRING) AS date,
-        campaign,
-        conversion_action,
-        {'conversion_category,' if 'conversion_category' in c else "'' AS conversion_category,"}
-        SUM({conv_col})  AS conversions,
-        SUM({val_col})   AS conversion_value
+    has_pt  = "pulled_at" in c
+    has_cat = "conversion_category" in c
+    cat_sel = "conversion_category," if has_cat else "'' AS conversion_category,"
+    cat_gb  = ", conversion_category" if has_cat else ""
+
+    if has_pt:
+        sql = f"""
+    WITH deduped AS (
+      SELECT CAST(date AS STRING) AS date, campaign, conversion_action,
+        {cat_sel} {conv_col} AS conversions, {val_col} AS conversion_value
+      FROM `{PROJECT}.{DATASET}.{table}`
+      WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
+      QUALIFY ROW_NUMBER() OVER (
+        PARTITION BY date, campaign, conversion_action{cat_gb} ORDER BY pulled_at DESC
+      ) = 1
+    )
+    SELECT date, campaign, conversion_action, conversion_category,
+      conversions, conversion_value
+    FROM deduped
+    ORDER BY date DESC, conversion_value DESC, conversions DESC
+    """
+    else:
+        sql = f"""
+    SELECT CAST(date AS STRING) AS date, campaign, conversion_action,
+      {cat_sel} SUM({conv_col}) AS conversions, SUM({val_col}) AS conversion_value
     FROM `{PROJECT}.{DATASET}.{table}`
     WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
-    GROUP BY date, campaign, conversion_action {',' if 'conversion_category' in c else ''}
-             {'conversion_category' if 'conversion_category' in c else ''}
+    GROUP BY date, campaign, conversion_action{cat_gb}
     ORDER BY date DESC, conversion_value DESC, conversions DESC
     """
     rows = q(sql)
