@@ -12,6 +12,46 @@
   --green:#22c55e;--blue:#3b82f6;--purple:#a855f7;
   --orange:#f97316;--red:#ef4444;--teal:#14b8a6;
 }
+[data-theme="light"]{
+  --bg:#f0f3fa;--card:#ffffff;--card2:#f5f7fc;--border:#dde2f0;
+  --gold:#a07000;--gold2:#7a5200;--text:#1a1d2e;--muted:#5a6380;
+  --green:#16a34a;--blue:#2563eb;--purple:#7c3aed;
+  --orange:#c2570a;--red:#dc2626;--teal:#0d9488;
+}
+[data-theme="light"] body{background:var(--bg);color:var(--text)}
+[data-theme="light"] .header{background:linear-gradient(135deg,#ffffff 0%,#eef1fa 100%);border-bottom-color:var(--gold)}
+[data-theme="light"] .header-left h1{color:var(--gold2)}
+[data-theme="light"] .header-badge{background:rgba(160,112,0,.1);border-color:var(--gold);color:var(--gold2)}
+[data-theme="light"] .sticky-top{box-shadow:0 2px 12px rgba(0,0,0,.08)}
+[data-theme="light"] .dp-panel{box-shadow:0 12px 40px rgba(0,0,0,.15)}
+[data-theme="light"] .dp-day:hover:not(.dp-empty){background:rgba(0,0,0,.07)}
+[data-theme="light"] .dp-preset:hover{background:rgba(0,0,0,.05);color:var(--text)}
+[data-theme="light"] .section-title{background:var(--card);border-color:var(--border)}
+[data-theme="light"] .kpi-card,.kpi-grid{background:var(--card)}
+[data-theme="light"] .table-card{background:var(--card);border-color:var(--border)}
+[data-theme="light"] table thead th{background:var(--card2);color:var(--muted);border-color:var(--border)}
+[data-theme="light"] table tbody tr:hover{background:rgba(0,0,0,.03)}
+[data-theme="light"] table tbody td{border-color:var(--border);color:var(--text)}
+[data-theme="light"] .chart-wrap{background:var(--card);border-color:var(--border)}
+[data-theme="light"] .insight{background:var(--card2);border-color:var(--border)}
+[data-theme="light"] .bq-q{color:var(--muted);border-left-color:var(--gold)}
+[data-theme="light"] .fixed-badge{background:rgba(160,112,0,.1);color:var(--gold);border-color:var(--gold)}
+[data-theme="light"] .ag-card{background:var(--card);border-color:var(--border)}
+[data-theme="light"] .ag-card-label{color:var(--muted)}
+[data-theme="light"] .ag-card-val{color:var(--text)}
+[data-theme="light"] .ag-bar-val{color:var(--muted)}
+[data-theme="light"] .guide-inner{background:#ffffff;border-color:var(--border)}
+[data-theme="light"] .guide-header{border-bottom-color:var(--border)}
+[data-theme="light"] .guide-header h2{color:var(--text)}
+[data-theme="light"] .guide-body p,.guide-body li{color:var(--muted)}
+[data-theme="light"] .guide-gtable td{color:var(--muted)}
+[data-theme="light"] .guide-gtable th{color:var(--muted);border-color:var(--border)}
+[data-theme="light"] .guide-gtable td:first-child{color:var(--text)}
+[data-theme="light"] .guide-divider{border-color:var(--border)}
+[data-theme="light"] .pag-sel{background:var(--card);border-color:var(--border);color:var(--text)}
+[data-theme="light"] .nav{background:#ffffff;border-bottom-color:var(--border)}
+[data-theme="light"] .nav a{color:var(--muted)}
+[data-theme="light"] .nav a:hover{color:var(--text);background:var(--card2)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;scroll-behavior:smooth}
 
@@ -273,6 +313,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <a href="#conv-breakdown">4. Conversion Types</a>
   <a href="#appt-value">5. Appointments</a>
   <button onclick="document.getElementById('guideModal').style.display='flex'" style="margin-left:auto;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#818cf8;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;letter-spacing:.3px">? How to Read This Report</button>
+  <button id="themeToggle" onclick="toggleTheme()" title="Toggle theme" style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.35);color:#c9a84c;padding:5px 11px;border-radius:20px;font-size:14px;cursor:pointer;line-height:1;transition:all .2s">☀</button>
 </div>
 </div><!-- /sticky-top -->
 
@@ -1285,6 +1326,8 @@ async function initDashboard(){
     renderInfluenceMap();
     renderConvPaths();
     setPeriod(28); // setPeriod calls applyDateRange which renders Sections 5 & 6
+    // Apply chart theme colors if page loaded with saved light preference
+    if(document.documentElement.getAttribute('data-theme')==='light') setTimeout(updateChartTheme,100);
   }catch(e){console.error('Dashboard error:',e);}
 }
 initDashboard();
@@ -1372,5 +1415,45 @@ initDashboard();
     </div>
   </div>
 </div>
+
+<script>
+function toggleTheme(){
+  var html = document.documentElement;
+  var isLight = html.getAttribute('data-theme') === 'light';
+  html.setAttribute('data-theme', isLight ? '' : 'light');
+  localStorage.setItem('wds-theme', isLight ? 'dark' : 'light');
+  document.getElementById('themeToggle').textContent = isLight ? '☀' : '🌙';
+  // Update Chart.js colors after theme switch
+  setTimeout(updateChartTheme, 50);
+}
+function updateChartTheme(){
+  var light = document.documentElement.getAttribute('data-theme') === 'light';
+  var gridColor = light ? 'rgba(0,0,0,.08)'  : 'rgba(255,255,255,.06)';
+  var tickColor = light ? '#5a6380'           : '#8b90a8';
+  var charts = (typeof G !== 'undefined' && G.charts) ? G.charts : {};
+  Object.values(charts).forEach(function(ch){
+    if(!ch || !ch.options) return;
+    ['x','y','y1'].forEach(function(ax){
+      if(ch.options.scales && ch.options.scales[ax]){
+        if(ch.options.scales[ax].grid) ch.options.scales[ax].grid.color = gridColor;
+        if(ch.options.scales[ax].ticks) ch.options.scales[ax].ticks.color = tickColor;
+      }
+    });
+    if(ch.options.plugins && ch.options.plugins.legend && ch.options.plugins.legend.labels)
+      ch.options.plugins.legend.labels.color = tickColor;
+    ch.update('none');
+  });
+}
+(function(){
+  var saved = localStorage.getItem('wds-theme');
+  if(saved === 'light'){
+    document.documentElement.setAttribute('data-theme','light');
+    document.addEventListener('DOMContentLoaded',function(){
+      var btn = document.getElementById('themeToggle');
+      if(btn) btn.textContent = '🌙';
+    });
+  }
+})();
+</script>
 </body>
 </html>
