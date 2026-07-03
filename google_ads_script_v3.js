@@ -202,10 +202,10 @@ function exportTimeLag(dates) {
   var rows = [];
   var iter = AdsApp.search(
     'SELECT campaign.name, segments.days_to_conversion, ' +
-    '  metrics.conversions, metrics.conversions_value ' +
+    '  metrics.all_conversions, metrics.all_conversions_value ' +
     'FROM campaign ' +
     'WHERE segments.date BETWEEN "' + dates.start + '" AND "' + dates.end + '" ' +
-    '  AND metrics.conversions > 0'
+    '  AND metrics.all_conversions > 0'
   );
   while (iter.hasNext()) {
     var r    = iter.next();
@@ -215,8 +215,8 @@ function exportTimeLag(dates) {
       json: {
         days_to_conversion: days,
         campaign:           r.campaign.name,
-        conversions:        r2(r.metrics.conversions || 0),
-        conversion_value:   r2(r.metrics.conversionsValue || 0),
+        conversions:        r2(r.metrics.allConversions || 0),
+        conversion_value:   r2(r.metrics.allConversionsValue || 0),
         date_range:         dates.label,
         pulled_at:          new Date().toISOString()
       }
@@ -233,10 +233,10 @@ function exportPathLength(dates) {
   var rows = [];
   var iter = AdsApp.search(
     'SELECT campaign.name, segments.interactions_to_conversion, ' +
-    '  metrics.conversions, metrics.conversions_value ' +
+    '  metrics.all_conversions, metrics.all_conversions_value ' +
     'FROM campaign ' +
     'WHERE segments.date BETWEEN "' + dates.start + '" AND "' + dates.end + '" ' +
-    '  AND metrics.conversions > 0'
+    '  AND metrics.all_conversions > 0'
   );
   while (iter.hasNext()) {
     var r    = iter.next();
@@ -246,8 +246,8 @@ function exportPathLength(dates) {
       json: {
         interactions:     ints,
         campaign:         r.campaign.name,
-        conversions:      r2(r.metrics.conversions || 0),
-        conversion_value: r2(r.metrics.conversionsValue || 0),
+        conversions:      r2(r.metrics.allConversions || 0),
+        conversion_value: r2(r.metrics.allConversionsValue || 0),
         date_range:       dates.label,
         pulled_at:        new Date().toISOString()
       }
@@ -267,8 +267,7 @@ function exportConvPaths(dates) {
   var pathMap = {};
   try {
     var iter = AdsApp.search(
-      'SELECT top_combinations_view.conversion_action_name, ' +
-      '  top_combinations_view.path_attribution_type, ' +
+      'SELECT segments.conversion_action_name, ' +
       '  metrics.conversions, metrics.conversions_value ' +
       'FROM top_combinations_view ' +
       'WHERE segments.date BETWEEN "' + dates.start + '" AND "' + dates.end + '"'
@@ -280,14 +279,14 @@ function exportConvPaths(dates) {
       var pathStr = pArr.map(function(p) {
         return p.campaignName || p.campaignGroup || p.channelType || '?';
       }).join(' > ');
-      var action = r.topCombinationsView.conversionActionName || '';
+      var action = r.segments.conversionActionName || '';
       var key    = pathStr + '||' + action;
 
       if (!pathMap[key]) {
         pathMap[key] = {
-          path:             pathStr,
+          path:              pathStr,
           conversion_action: action,
-          attribution_type:  r.topCombinationsView.pathAttributionType || '',
+          attribution_type:  '',
           conversions:       0,
           conversion_value:  0
         };
