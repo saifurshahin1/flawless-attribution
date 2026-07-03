@@ -288,46 +288,117 @@ def gen_path_length():
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 5. CONVERSION PATHS
-#    new table: ads_conv_paths       (path, conversion_action, attribution_type)
-#    old table: ads_conversion_paths (path_label)
+# 5. CONVERSION PATHS — from GA4 BigQuery export (events_* tables)
+#    Reconstructs actual campaign touch sequences per converting user.
+#    Falls back to ads_conv_paths (Google Ads Scripts) if GA4 not available.
 # ─────────────────────────────────────────────────────────────────────────────
 def gen_conv_paths():
+    from datetime import date, timedelta
+
+    # Auto-discover the GA4 analytics dataset (analytics_XXXXXXXXX)
+    ga4_ds = None
+    try:
+        for ds in client.list_datasets(project=PROJECT):
+            if ds.dataset_id.startswith("analytics_"):
+                ga4_ds = ds.dataset_id
+                break
+    except Exception as e:
+        print(f"  GA4 dataset discovery failed: {e}")
+
+    if ga4_ds:
+        print(f"  Using GA4 BigQuery export: {ga4_ds}")
+        end_dt   = date.today() - timedelta(days=1)
+        start_dt = end_dt - timedelta(days=89)
+        start_s  = start_dt.strftime("%Y%m%d")
+        end_s    = end_dt.strftime("%Y%m%d")
+
+        sql = f"""
+        WITH sessions AS (
+          SELECT
+            user_pseudo_id,
+            TIMESTAMP_MICROS(event_timestamp) AS ts,
+            COALESCE(
+              IF(NULLIF(collected_traffic_source.manual_campaign_name, '') IS NOT NULL
+                 AND collected_traffic_source.manual_campaign_name NOT IN ('(not set)', '(direct)'),
+                 collected_traffic_source.manual_campaign_name, NULL),
+              IF(collected_traffic_source.gclid IS NOT NULL, 'Google Ads', NULL),
+              IF(NULLIF(traffic_source.name, '') IS NOT NULL
+                 AND traffic_source.name NOT IN ('(not set)', '(direct)'),
+                 traffic_source.name, NULL)
+            ) AS campaign
+          FROM `{PROJECT}.{ga4_ds}.events_*`
+          WHERE event_name = 'session_start'
+            AND _TABLE_SUFFIX BETWEEN '{start_s}' AND '{end_s}'
+        ),
+        purchases AS (
+          SELECT
+            user_pseudo_id,
+            TIMESTAMP_MICROS(event_timestamp) AS ts,
+            (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'transaction_id') AS txn_id,
+            COALESCE(
+              (SELECT value.double_value FROM UNNEST(event_params) WHERE key = 'value'),
+              (SELECT SAFE_CAST(value.string_value AS FLOAT64) FROM UNNEST(event_params) WHERE key = 'value'),
+              0.0
+            ) AS revenue
+          FROM `{PROJECT}.{ga4_ds}.events_*`
+          WHERE event_name = 'purchase'
+            AND _TABLE_SUFFIX BETWEEN '{start_s}' AND '{end_s}'
+        ),
+        path_build AS (
+          SELECT
+            p.txn_id,
+            p.revenue,
+            ARRAY_TO_STRING(
+              ARRAY_AGG(s.campaign IGNORE NULLS ORDER BY s.ts),
+              ' > '
+            ) AS path
+          FROM purchases p
+          JOIN sessions s ON s.user_pseudo_id = p.user_pseudo_id
+            AND s.ts <= p.ts
+            AND s.ts >= TIMESTAMP_SUB(p.ts, INTERVAL 90 DAY)
+          GROUP BY p.txn_id, p.revenue
+        )
+        SELECT
+          path,
+          COUNT(*)             AS conversions,
+          ROUND(SUM(revenue),2) AS conversion_value
+        FROM path_build
+        WHERE path IS NOT NULL AND path != ''
+        GROUP BY path
+        ORDER BY conversions DESC, conversion_value DESC
+        LIMIT 50
+        """
+        try:
+            rows = q(sql)
+            for r in rows:
+                r["conversions"]      = f2(r.get("conversions"))
+                r["conversion_value"] = f2(r.get("conversion_value"))
+                r["source"] = "ga4"
+            print(f"  GA4 conv paths: {len(rows)} unique paths")
+            save("conv_paths.json", {"rows": rows, "source": "ga4",
+                                     "date_range": f"{start_dt} to {end_dt}"})
+            return
+        except Exception as e:
+            print(f"  GA4 path query failed: {e}")
+
+    # Fallback: Google Ads Scripts table
     if cols("ads_conv_paths"):
         sql = f"""
-        SELECT
-            path, conversion_action,
-            SUM(conversions)      AS conversions,
-            SUM(conversion_value) AS conversion_value
+        SELECT path, conversion_action,
+            SUM(conversions) AS conversions, SUM(conversion_value) AS conversion_value
         FROM `{PROJECT}.{DATASET}.ads_conv_paths`
-        WHERE DATE(pulled_at) = (
-            SELECT DATE(MAX(pulled_at)) FROM `{PROJECT}.{DATASET}.ads_conv_paths`
-        )
+        WHERE DATE(pulled_at) = (SELECT DATE(MAX(pulled_at)) FROM `{PROJECT}.{DATASET}.ads_conv_paths`)
         GROUP BY path, conversion_action
-        ORDER BY conversions DESC
-        LIMIT 20
+        ORDER BY conversions DESC LIMIT 30
         """
-    elif cols("ads_conversion_paths"):
-        sql = f"""
-        SELECT
-            path_label        AS path,
-            '' AS conversion_action,
-            conversions,
-            conversion_value
-        FROM `{PROJECT}.{DATASET}.ads_conversion_paths`
-        WHERE is_other_paths = FALSE OR is_other_paths IS NULL
-        ORDER BY conversions DESC
-        LIMIT 20
-        """
+        rows = q(sql)
+        for r in rows:
+            r["conversions"]      = f2(r.get("conversions"))
+            r["conversion_value"] = f2(r.get("conversion_value"))
+            r["source"] = "ads_scripts"
+        save("conv_paths.json", {"rows": rows, "source": "ads_scripts"})
     else:
-        print("  no conv_paths table - skipping"); return
-
-    rows = q(sql)
-    for r in rows:
-        r["conversions"]      = f2(r.get("conversions"))
-        r["conversion_value"] = f2(r.get("conversion_value"))
-
-    save("conv_paths.json", {"rows": rows})
+        print("  no conv_paths data available - skipping")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -176,6 +176,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .ag-legend-dot{width:10px;height:7px;border-radius:2px;display:inline-block;margin-right:4px}
 .ag-legend-item{font-size:10px;color:var(--muted);display:flex;align-items:center}
 
+/* ── CONVERSION PATHS ── */
+.path-str{font-size:11px;color:var(--text);line-height:1.5}
+.path-camp{display:inline-block;padding:1px 6px;border-radius:3px;margin:1px 2px;font-size:10px;font-weight:500;white-space:nowrap}
+.path-arrow{color:var(--muted);font-size:10px;margin:0 1px}
+.path-bar{height:4px;border-radius:2px;background:var(--blue);opacity:.6;margin-top:4px}
+
 /* ── FOOTER ── */
 .footer{text-align:center;color:var(--muted);font-size:11px;padding:24px;border-top:1px solid var(--border);margin-top:16px}
 
@@ -241,9 +247,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <a href="#kpis">KPI Overview</a>
   <a href="#roles">1. Campaign Roles</a>
   <a href="#attr-models">2. Attribution Models</a>
-  <a href="#influence-map">3. Campaign Paths</a>
-  <a href="#conv-breakdown">4. Conversion Types</a>
-  <a href="#appt-value">5. Appointments</a>
+  <a href="#influence-map">3. Attribution Gap</a>
+  <a href="#conv-paths">4. Conversion Paths</a>
+  <a href="#conv-breakdown">5. Conversion Types</a>
+  <a href="#appt-value">6. Appointments</a>
 </div>
 </div><!-- /sticky-top -->
 
@@ -346,7 +353,36 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div id="agInsight" class="insight"></div>
 </section>
 
-<!-- ── SECTION 4: CONVERSION TYPE BREAKDOWN ── -->
+<!-- ── SECTION 4: CONVERSION PATHS ── -->
+<section id="conv-paths">
+  <div class="section-title"><div class="num">4</div>Conversion Paths — Actual Campaign Sequences <span class="fixed-badge" style="margin-left:auto">90D · GA4</span></div>
+  <div class="bq-line">Business Question</div>
+  <div class="bq-q">Which sequences of campaigns lead to conversions — and specifically, which campaigns assisted Sales PMax, and which did PMax assist?</div>
+  <div id="pathSummaryCards" class="ag-summary" style="grid-template-columns:repeat(3,1fr)"></div>
+  <div style="display:flex;align-items:center;gap:10px;margin:12px 0 8px">
+    <span style="font-size:11px;color:var(--muted)">Filter by campaign:</span>
+    <select id="pathCampFilter" class="pag-sel" style="min-width:220px">
+      <option value="">All paths</option>
+    </select>
+    <span style="font-size:11px;color:var(--muted)" id="pathFilterCount"></span>
+  </div>
+  <div class="table-card">
+    <table>
+      <thead><tr>
+        <th>Campaign Path</th>
+        <th class="num" style="width:90px">Conversions</th>
+        <th class="num" style="width:100px">Revenue</th>
+        <th class="num" style="width:60px">Steps</th>
+      </tr></thead>
+      <tbody id="pathTbody"></tbody>
+    </table>
+  </div>
+  <div id="pathNoData" style="display:none;text-align:center;padding:32px;color:var(--muted);font-size:12px">
+    No GA4 conversion path data available yet. Run the GitHub Actions workflow after the next script run.
+  </div>
+</section>
+
+<!-- ── SECTION 5: CONVERSION TYPE BREAKDOWN ── -->
 <section id="conv-breakdown">
   <div class="section-title"><div class="num">4</div>Conversion Type Breakdown — What Each Campaign Converts <span class="fixed-badge" id="convBadge" style="margin-left:auto">Last 28 days</span></div>
   <div class="bq-line">Business Question</div>
@@ -482,6 +518,7 @@ async function loadData(){
   G.timeLag=timeLag.rows||timeLag;
   G.pathLen=pathLen.rows||pathLen;
   G.paths=paths.rows||paths;
+  G.pathsMeta={source:paths.source||'',dateRange:paths.date_range||''};
   G.breakdown=breakdown.rows||breakdown;
 }
 
@@ -1114,6 +1151,107 @@ function renderInfluenceMap(){
 
 }
 
+/* ─── SECTION 4: CONVERSION PATHS (GA4) ─── */
+function renderConvPaths(){
+  const rows=G.paths||[];
+  const noData=document.getElementById('pathNoData');
+  const tbody=document.getElementById('pathTbody');
+  const cards=document.getElementById('pathSummaryCards');
+  const filter=document.getElementById('pathCampFilter');
+
+  if(!rows.length){
+    if(noData)noData.style.display='block';
+    return;
+  }
+  if(noData)noData.style.display='none';
+
+  // Parse each path into an array of campaign names
+  const parsed=rows.map(r=>({
+    ...r,
+    steps:(r.path||'').split(' > ').map(s=>s.trim()).filter(Boolean)
+  }));
+
+  // Campaign colour palette (auto-assigned)
+  const campColors={};
+  const palette=['#6366f1','#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#84cc16','#ec4899','#14b8a6','#a78bfa'];
+  let ci=0;
+  function campColor(name){
+    if(!campColors[name]){campColors[name]=palette[ci%palette.length];ci++;}
+    return campColors[name];
+  }
+
+  // Identify the PMax campaign name dynamically
+  const pmax=parsed.flatMap(r=>r.steps).find(s=>s.toLowerCase().includes('performance max')||s.toLowerCase().includes('pmax'))||'';
+
+  // Summary cards
+  const totalConv=parsed.reduce((s,r)=>s+(r.conversions||0),0);
+  const multiStep=parsed.filter(r=>r.steps.length>1);
+  const multiConv=multiStep.reduce((s,r)=>s+(r.conversions||0),0);
+  const pmaxPaths=parsed.filter(r=>r.steps.some(s=>s===pmax||s.toLowerCase().includes('performance max')));
+  const pmaxConv=pmaxPaths.reduce((s,r)=>s+(r.conversions||0),0);
+  const pmaxAssist=pmaxPaths.filter(r=>r.steps.length>1&&r.steps[r.steps.length-1]!==pmax);
+  const pmaxClose=pmaxPaths.filter(r=>r.steps[r.steps.length-1]===pmax);
+
+  if(cards) cards.innerHTML=`
+    <div class="ag-card">
+      <div class="ag-card-label">Multi-Touch Conversions</div>
+      <div class="ag-card-val" style="color:var(--blue)">${multiConv.toFixed(0)}</div>
+      <div class="ag-card-sub">${totalConv>0?Math.round(multiConv/totalConv*100):0}% of all ${totalConv.toFixed(0)} conversions involved 2+ campaigns</div>
+    </div>
+    <div class="ag-card">
+      <div class="ag-card-label">PMax as Closer</div>
+      <div class="ag-card-val" style="color:var(--green)">${pmaxClose.reduce((s,r)=>s+(r.conversions||0),0).toFixed(0)} conv</div>
+      <div class="ag-card-sub">${pmaxClose.length} path types where ${pmax||'PMax'} was the final touch</div>
+    </div>
+    <div class="ag-card">
+      <div class="ag-card-label">PMax as Assister</div>
+      <div class="ag-card-val" style="color:var(--gold2)">${pmaxAssist.reduce((s,r)=>s+(r.conversions||0),0).toFixed(0)} conv</div>
+      <div class="ag-card-sub">${pmaxAssist.length} path types where ${pmax||'PMax'} assisted another campaign</div>
+    </div>`;
+
+  // Populate campaign filter dropdown
+  const allCamps=[...new Set(parsed.flatMap(r=>r.steps))].sort();
+  if(filter){
+    filter.innerHTML='<option value="">All paths</option>'+
+      allCamps.map(c=>`<option value="${c}">${c}</option>`).join('');
+    filter.onchange=()=>renderPathTable(filter.value);
+  }
+
+  // Max conversions for bar scaling
+  const maxConv=Math.max(...parsed.map(r=>r.conversions||0),1);
+
+  function renderPathTable(campFilter){
+    const filtered=campFilter
+      ?parsed.filter(r=>r.steps.includes(campFilter))
+      :parsed;
+    const cnt=document.getElementById('pathFilterCount');
+    if(cnt) cnt.textContent=campFilter?`${filtered.length} paths found`:'';
+
+    if(!tbody)return;
+    tbody.innerHTML=filtered.map(r=>{
+      const pathHtml=r.steps.map((s,i)=>{
+        const col=campColor(s);
+        const isLast=i===r.steps.length-1;
+        return (i>0?'<span class="path-arrow">›</span>':'')+
+          `<span class="path-camp" style="background:${col}22;color:${col};border:1px solid ${col}44">${s}</span>`+
+          (isLast?'<span style="font-size:9px;color:var(--muted);margin-left:3px">[close]</span>':'');
+      }).join('');
+      const barW=Math.round(((r.conversions||0)/maxConv)*100);
+      return`<tr>
+        <td>
+          <div class="path-str">${pathHtml}</div>
+          <div class="path-bar" style="width:${barW}%"></div>
+        </td>
+        <td class="num">${(r.conversions||0).toFixed(0)}</td>
+        <td class="num">${r.conversion_value>0?fmtGBP(r.conversion_value):'—'}</td>
+        <td class="num dim">${r.steps.length}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  renderPathTable('');
+}
+
 /* ─── INIT ─── */
 async function initDashboard(){
   try{
@@ -1123,7 +1261,8 @@ async function initDashboard(){
     renderAttrModels();
     renderRoles();
     renderInfluenceMap();
-    setPeriod(28); // setPeriod calls applyDateRange which renders Sections 4 & 5
+    renderConvPaths();
+    setPeriod(28); // setPeriod calls applyDateRange which renders Sections 5 & 6
   }catch(e){console.error('Dashboard error:',e);}
 }
 initDashboard();
