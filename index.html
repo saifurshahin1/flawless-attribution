@@ -151,18 +151,30 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .pag-btn:hover:not([disabled]){border-color:var(--blue);color:var(--blue)}
 .pag-btn[disabled]{opacity:.3;cursor:not-allowed}
 
-/* ── INFLUENCE MAP ── */
-.influence-flow{display:grid;grid-template-columns:1fr 48px 1fr 48px 1fr;gap:0;align-items:start;margin:16px 0}
-.inf-col-hd{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;text-align:center;padding:7px 10px;border-radius:6px;margin-bottom:8px}
-.inf-col-hd.intro{background:rgba(168,85,247,.18);color:#c084fc}
-.inf-col-hd.assist{background:rgba(59,130,246,.18);color:#60a5fa}
-.inf-col-hd.closer{background:rgba(34,197,94,.18);color:#4ade80}
-.inf-card{background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:9px 12px;margin-bottom:6px}
-.inf-name{font-size:11px;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:3px}
-.inf-meta{font-size:10px;color:var(--muted)}
-.inf-arrow{display:flex;align-items:center;justify-content:center;color:var(--border);font-size:26px;padding-top:36px;user-select:none}
-.inf-pct-bar{height:3px;border-radius:2px;margin-top:4px;background:var(--border)}
-.inf-pct-fill{height:100%;border-radius:2px}
+/* ── ATTRIBUTION GAP ── */
+.ag-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.ag-card{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+.ag-card-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
+.ag-card-val{font-size:22px;font-weight:700;color:var(--text);line-height:1.1}
+.ag-card-sub{font-size:10px;color:var(--muted);margin-top:3px}
+.ag-chart{margin:18px 0}
+.ag-row{display:grid;grid-template-columns:160px 1fr 70px 70px;gap:8px;align-items:center;margin-bottom:7px}
+.ag-name{font-size:10px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ag-bars{display:flex;flex-direction:column;gap:3px}
+.ag-bar-wrap{display:flex;align-items:center;gap:5px}
+.ag-bar{height:7px;border-radius:3px;min-width:2px;transition:width .4s}
+.ag-bar.lc{background:var(--blue);opacity:.7}
+.ag-bar.mta{background:var(--green)}
+.ag-bar-val{font-size:9px;color:var(--muted);white-space:nowrap}
+.ag-signal{font-size:9px;font-weight:600;padding:2px 7px;border-radius:10px;text-align:center;white-space:nowrap}
+.ag-signal.scale{background:rgba(34,197,94,.15);color:#4ade80}
+.ag-signal.hidden{background:rgba(59,130,246,.15);color:#60a5fa}
+.ag-signal.dont-cut{background:rgba(234,179,8,.15);color:#facc15}
+.ag-signal.review{background:rgba(239,68,68,.15);color:#f87171}
+.ag-signal.ok{background:rgba(100,116,139,.15);color:#94a3b8}
+.ag-legend{display:flex;gap:14px;margin-bottom:10px}
+.ag-legend-dot{width:10px;height:7px;border-radius:2px;display:inline-block;margin-right:4px}
+.ag-legend-item{font-size:10px;color:var(--muted);display:flex;align-items:center}
 
 /* ── FOOTER ── */
 .footer{text-align:center;color:var(--muted);font-size:11px;padding:24px;border-top:1px solid var(--border);margin-top:16px}
@@ -307,26 +319,31 @@ tr:hover td{background:rgba(255,255,255,.02)}
 </section>
 
 
-<!-- ── SECTION 3: CAMPAIGN INFLUENCE MAP ── -->
+<!-- ── SECTION 3: ATTRIBUTION GAP ── -->
 <section id="influence-map">
-  <div class="section-title"><div class="num">3</div>Campaign Influence Map — Who Introduces, Assists &amp; Closes <span class="fixed-badge" style="margin-left:auto">90D Fixed</span></div>
+  <div class="section-title"><div class="num">3</div>Attribution Gap — Where Last-Click Misleads You <span class="fixed-badge" style="margin-left:auto">90D Fixed</span></div>
   <div class="bq-line">Business Question</div>
-  <div class="bq-q">Which campaigns introduce customers to Flawless, which assist mid-journey, and which close the sale — and how many conversions were multi-touch?</div>
-  <div id="influenceFlow" class="influence-flow"></div>
+  <div class="bq-q">Which campaigns are being under- or over-valued by last-click attribution — and where should budget actually go?</div>
+  <div id="agSummary" class="ag-summary"></div>
+  <div class="ag-legend">
+    <span class="ag-legend-item"><span class="ag-legend-dot" style="background:var(--blue);opacity:.7"></span>Last-Click ROAS</span>
+    <span class="ag-legend-item"><span class="ag-legend-dot" style="background:var(--green)"></span>MTA ROAS (true contribution)</span>
+  </div>
+  <div id="agChart" class="ag-chart"></div>
   <div class="table-card" style="margin-top:4px">
     <table>
       <thead><tr>
-        <th>Campaign</th><th>Role</th>
-        <th class="num">Last-Click Conv</th>
-        <th class="num">Received Assists</th>
-        <th class="num">% Multi-Touch</th>
-        <th class="num">MTA Revenue</th>
-        <th class="num">Assists Given</th>
+        <th>Campaign</th>
+        <th class="num">Spend</th>
+        <th class="num">LC ROAS</th>
+        <th class="num">MTA ROAS</th>
+        <th class="num">MTA Uplift</th>
+        <th class="num">Signal</th>
       </tr></thead>
-      <tbody id="influenceTbody"></tbody>
+      <tbody id="agTbody"></tbody>
     </table>
   </div>
-  <div id="influenceInsight" class="insight"></div>
+  <div id="agInsight" class="insight"></div>
 </section>
 
 <!-- ── SECTION 4: CONVERSION TYPE BREAKDOWN ── -->
@@ -1006,98 +1023,114 @@ function renderAppointments(bkData){
 }
 
 
-/* ─── SECTION 3: CAMPAIGN INFLUENCE MAP ─── */
+/* ─── SECTION 3: ATTRIBUTION GAP ─── */
 function renderInfluenceMap(){
-  const rows=G.assisted;
+  const all=G.assisted;
+  if(!all.length)return;
+
+  // Active campaigns only (has spend or any conversions)
+  const rows=all.filter(r=>(r.spend||0)>0||(r.all_conversions||0)>0);
   if(!rows.length)return;
 
-  const intro=[],asst=[],closer=[];
-  rows.forEach(r=>{
-    const role=(r.campaign_role||'').toLowerCase();
-    const hasActivity=(r.last_click_conv||0)>0||(r.all_conversions||0)>0||(r.assists||0)>0;
-    if(!hasActivity)return; // skip inactive campaigns
-    if(role.includes('introducer'))intro.push(r);
-    else if(role.includes('assist'))asst.push(r);
-    else closer.push(r);
-  });
-  intro.sort((a,b)=>(b.assists||0)-(a.assists||0));
-  asst.sort((a,b)=>(b.assists||0)-(a.assists||0));
-  closer.sort((a,b)=>(b.last_click_value||0)-(a.last_click_value||0));
+  // Signal classification
+  function signal(r){
+    const lc=r.lc_roas||0, mta=r.mta_roas||0, sp=r.spend||0;
+    if(sp===0)return null;
+    if(mta>=10&&mta>=lc*3)return{cls:'scale',label:'Scale Up'};
+    if(lc<1&&mta>=2)return{cls:'dont-cut',label:"Don't Cut"};
+    if(mta>=lc*2)return{cls:'hidden',label:'Hidden Value'};
+    if(mta<1&&lc<1)return{cls:'review',label:'Review'};
+    return{cls:'ok',label:'On Track'};
+  }
 
-  function card(r,type){
-    const isC=type==='closer';
-    const lcRoas=r.lc_roas||0;
-    const main=isC
-      ?`<b>${(r.last_click_conv||0).toFixed(0)}</b> conversions closed`
-      :`<b>${(r.assists||0).toFixed(0)}</b> assists given`;
-    const sub=isC
-      ?`LC ROAS ${lcRoas.toFixed(2)}x · ${(r.assists||0).toFixed(0)} assists given to others`
-      :`${(r.last_click_conv||0).toFixed(0)} also closed directly`;
-    return`<div class="inf-card">
-      <div class="inf-name">${r.campaign}</div>
-      <div class="inf-meta">${main}</div>
-      <div class="inf-meta" style="opacity:.65">${sub}</div>
+  // Summary cards
+  const active=rows.filter(r=>(r.spend||0)>0);
+  const undervalued=active.filter(r=>(r.mta_roas||0)>=(r.lc_roas||0)*2&&(r.mta_roas||0)>0);
+  const dontCut=active.filter(r=>(r.lc_roas||0)<1&&(r.mta_roas||0)>=2);
+  const totalMtaRev=active.reduce((s,r)=>s+(r.mta_roas||0)*(r.spend||0),0);
+  const totalLcRev=active.reduce((s,r)=>s+(r.lc_roas||0)*(r.spend||0),0);
+  const hiddenVal=totalMtaRev-totalLcRev;
+
+  const sumEl=document.getElementById('agSummary');
+  if(sumEl) sumEl.innerHTML=`
+    <div class="ag-card">
+      <div class="ag-card-label">Undervalued by Last-Click</div>
+      <div class="ag-card-val" style="color:var(--blue)">${undervalued.length} campaigns</div>
+      <div class="ag-card-sub">MTA ROAS ≥ 2× their LC ROAS</div>
+    </div>
+    <div class="ag-card">
+      <div class="ag-card-label">Hidden Revenue (MTA vs LC gap)</div>
+      <div class="ag-card-val" style="color:var(--green)">${fmtGBP(hiddenVal)}</div>
+      <div class="ag-card-sub">Revenue last-click doesn't credit</div>
+    </div>
+    <div class="ag-card">
+      <div class="ag-card-label">At Risk of Being Cut</div>
+      <div class="ag-card-val" style="color:var(--gold2)">${dontCut.length} campaigns</div>
+      <div class="ag-card-sub">LC ROAS &lt;1 but MTA ROAS ≥2</div>
     </div>`;
-  }
 
-  function col(arr,type,label){
-    const shown=arr.slice(0,5);
-    const rest=arr.length-5;
-    return`<div>
-      <div class="inf-col-hd ${type}">${label}</div>
-      ${shown.map(r=>card(r,type)).join('')}
-      ${rest>0?`<div style="font-size:10px;color:var(--muted);text-align:center;padding:4px 0">+${rest} more</div>`:''}
+  // Bar chart — sort by MTA ROAS desc
+  const chartRows=[...active].sort((a,b)=>(b.mta_roas||0)-(a.mta_roas||0));
+  const maxMta=Math.max(...chartRows.map(r=>r.mta_roas||0),1);
+
+  const chartEl=document.getElementById('agChart');
+  if(chartEl) chartEl.innerHTML=chartRows.map(r=>{
+    const lcW=Math.round(((r.lc_roas||0)/maxMta)*100);
+    const mtaW=Math.round(((r.mta_roas||0)/maxMta)*100);
+    const sig=signal(r);
+    return`<div class="ag-row">
+      <div class="ag-name" title="${r.campaign}">${r.campaign}</div>
+      <div class="ag-bars">
+        <div class="ag-bar-wrap">
+          <div class="ag-bar lc" style="width:${lcW}%"></div>
+          <span class="ag-bar-val">${(r.lc_roas||0).toFixed(1)}x</span>
+        </div>
+        <div class="ag-bar-wrap">
+          <div class="ag-bar mta" style="width:${mtaW}%"></div>
+          <span class="ag-bar-val">${(r.mta_roas||0).toFixed(1)}x</span>
+        </div>
+      </div>
+      <div></div>
+      ${sig?`<div><span class="ag-signal ${sig.cls}">${sig.label}</span></div>`:'<div></div>'}
     </div>`;
-  }
+  }).join('');
 
-  const flow=document.getElementById('influenceFlow');
-  if(flow) flow.innerHTML=
-    col(intro,'intro','Introducers')+
-    '<div class="inf-arrow">→</div>'+
-    col(asst,'assist','Assisters')+
-    '<div class="inf-arrow">→</div>'+
-    col(closer,'closer','Closers');
-
-  // All campaigns table sorted by MTA revenue
-  const sorted=[...rows].sort((a,b)=>((b.mta_roas||0)*(b.spend||0))-((a.mta_roas||0)*(a.spend||0)));
-  const tbody=document.getElementById('influenceTbody');
-  if(tbody){
-    const roleClass={Closer:'closer',Assist:'assist',Introducer:'introducer','Pure Introducer':'pure','Revenue Closer':'rev'};
-    tbody.innerHTML=sorted.map(r=>{
-      const rec=Math.max(0,(r.all_conversions||0)-(r.last_click_conv||0));
-      const pct=r.all_conversions>0?Math.round(rec/r.all_conversions*100):0;
-      const cls=roleClass[r.campaign_role]||'x';
-      return`<tr>
-        <td>${r.campaign}</td>
-        <td><span class="badge badge-${cls}">${r.campaign_role||'—'}</span></td>
-        <td class="num">${(r.last_click_conv||0).toFixed(0)}</td>
-        <td class="num">${rec.toFixed(0)}</td>
-        <td class="num ${pct>=50?'up':''}">${pct}%</td>
-        <td class="num">${fmtGBP((r.mta_roas||0)*(r.spend||0))}</td>
-        <td class="num dim">${(r.assists||0).toFixed(0)}</td>
-      </tr>`;
-    }).join('');
-  }
+  // Table — all active, sorted by MTA revenue
+  const sorted=[...active].sort((a,b)=>((b.mta_roas||0)*(b.spend||0))-((a.mta_roas||0)*(a.spend||0)));
+  const tbody=document.getElementById('agTbody');
+  if(tbody) tbody.innerHTML=sorted.map(r=>{
+    const sig=signal(r);
+    const uplift=r.lc_roas>0?((r.mta_roas||0)/(r.lc_roas||1)).toFixed(1)+'×':'—';
+    const upCls=(r.mta_roas||0)>=(r.lc_roas||0)*2?'up':'';
+    return`<tr>
+      <td>${r.campaign}</td>
+      <td class="num">${fmtGBP(r.spend||0)}</td>
+      <td class="num">${(r.lc_roas||0).toFixed(2)}x</td>
+      <td class="num up">${(r.mta_roas||0).toFixed(2)}x</td>
+      <td class="num ${upCls}">${uplift}</td>
+      <td class="num">${sig?`<span class="ag-signal ${sig.cls}">${sig.label}</span>`:'—'}</td>
+    </tr>`;
+  }).join('');
 
   // Insight
-  const topC=closer[0],topI=intro[0]||asst[0];
-  const ins=document.getElementById('influenceInsight');
-  if(ins&&topC){
-    const rec=Math.max(0,(topC.all_conversions||0)-(topC.last_click_conv||0));
-    const pct=topC.all_conversions>0?Math.round(rec/topC.all_conversions*100):0;
-    const totalAssists=rows.reduce((s,r)=>s+(r.assists||0),0);
-    ins.innerHTML=`
-      <div class="insight-row"><span class="insight-label">Key Finding:</span>
-        ${rec.toFixed(0)} of ${topC.campaign}'s ${(topC.all_conversions||0).toFixed(0)} total path appearances (${pct}%) happened after another campaign had already touched that customer.
-        Across the full account, ${totalAssists.toFixed(0)} assist interactions occurred — meaning the majority of conversions involved more than one campaign.
-      </div>
-      ${topI?`<div class="insight-row insight-muted"><span class="insight-label" style="color:var(--text)">Attribution risk:</span>
-        ${topI.campaign} contributed ${(topI.assists||0).toFixed(0)} assists but only ${(topI.last_click_conv||0).toFixed(0)} last-click conversions.
-        In standard Last-Click reporting, this campaign appears to underperform — but it is seeding ${topC.campaign} and other Closers with warm audiences that convert.
-        Cutting ${topI.campaign} would reduce ${topC.campaign}'s convertible audience within 2–3 weeks.
-      </div>`:''}
-    `;
-  }
+  const biggest=chartRows[0];
+  const biggestDontCut=dontCut.sort((a,b)=>(b.mta_roas||0)-(a.mta_roas||0))[0];
+  const ins=document.getElementById('agInsight');
+  if(ins) ins.innerHTML=`
+    <div class="insight-row"><span class="insight-label">Key Finding:</span>
+      Last-click attribution accounts for ${fmtGBP(totalLcRev)} in attributed revenue.
+      MTA (all-touch) attribution shows ${fmtGBP(totalMtaRev)} — a gap of ${fmtGBP(hiddenVal)}.
+      This gap represents revenue that campaigns earned through assisted touches but never received credit for.
+    </div>
+    ${biggest?`<div class="insight-row insight-muted"><span class="insight-label" style="color:var(--text)">Highest contributor:</span>
+      ${biggest.campaign} has an MTA ROAS of ${(biggest.mta_roas||0).toFixed(1)}x vs LC ROAS of ${(biggest.lc_roas||0).toFixed(1)}x —
+      it contributes ${fmtGBP((biggest.mta_roas||0)*(biggest.spend||0))} in assisted revenue, ${((biggest.mta_roas||0)/(biggest.lc_roas||1)).toFixed(1)}× more than last-click shows.
+    </div>`:''}
+    ${biggestDontCut?`<div class="insight-row insight-muted"><span class="insight-label" style="color:var(--gold2)">Don't cut:</span>
+      ${biggestDontCut.campaign} has LC ROAS of ${(biggestDontCut.lc_roas||0).toFixed(2)}x (looks unprofitable) but MTA ROAS of ${(biggestDontCut.mta_roas||0).toFixed(1)}x.
+      Pausing it based on last-click data alone would be a mistake.
+    </div>`:''}
+  `;
 }
 
 /* ─── INIT ─── */
