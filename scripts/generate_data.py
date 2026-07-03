@@ -311,14 +311,19 @@ def gen_conv_paths_api() -> bool:
         print("  conv_paths_api: google-ads library not installed")
         return False
 
+    login_customer_id = os.environ.get("GOOGLE_ADS_LOGIN_CUSTOMER_ID", "").replace("-", "").strip()
+
     try:
-        ads = GoogleAdsClient.load_from_dict({
+        creds = {
             "developer_token": dev_token,
             "client_id":       client_id,
             "client_secret":   client_secret,
             "refresh_token":   refresh_token,
             "use_proto_plus":  True,
-        })
+        }
+        if login_customer_id:
+            creds["login_customer_id"] = login_customer_id
+        ads = GoogleAdsClient.load_from_dict(creds)
         svc = ads.get_service("GoogleAdsService")
 
         gaql = """
@@ -385,7 +390,9 @@ def gen_conv_paths_api() -> bool:
         return True
 
     except Exception as e:
+        import traceback
         print(f"  conv_paths_api error: {e}")
+        traceback.print_exc()
         return False
 
 
