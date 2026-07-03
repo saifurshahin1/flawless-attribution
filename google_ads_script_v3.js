@@ -327,16 +327,19 @@ function bqReplace(table, schema, rows) {
 
   // Drop existing table (ignore error on first run)
   try { BigQuery.Tables.remove(CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET, table); } catch(_) {}
-  Utilities.sleep(500);
+  Utilities.sleep(3000); // wait for BQ to propagate the deletion
 
   // Create table with schema
-  BigQuery.Tables.insert(
-    {
-      tableReference: { projectId: CONFIG.BQ_PROJECT, datasetId: CONFIG.BQ_DATASET, tableId: table },
-      schema: { fields: schema }
-    },
-    CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET
-  );
+  try {
+    BigQuery.Tables.insert(
+      {
+        tableReference: { projectId: CONFIG.BQ_PROJECT, datasetId: CONFIG.BQ_DATASET, tableId: table },
+        schema: { fields: schema }
+      },
+      CONFIG.BQ_PROJECT, CONFIG.BQ_DATASET
+    );
+  } catch(e) { Logger.log(table + ' create: ' + e); }
+  Utilities.sleep(2000); // wait for table to become ready
 
   // Stream insert in batches of 500
   var n = 0;
