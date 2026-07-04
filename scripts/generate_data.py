@@ -633,7 +633,6 @@ if __name__ == "__main__":
         ("time_lag",        gen_time_lag),
         ("path_length",     gen_path_length),
         ("conv_paths",      lambda: gen_conv_paths_api() or gen_conv_paths()),
-        ("conv_paths_ga4",  lambda: gen_conv_paths("conv_paths_ga4.json")),
         ("conv_breakdown",  gen_conv_breakdown),
         ("meta",            gen_meta),
     ]
