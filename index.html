@@ -444,6 +444,25 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div id="pathNoData" style="display:none;text-align:center;padding:32px;color:var(--muted);font-size:12px">
     Waiting for Google Ads API data — workflow will populate this on next run.
   </div>
+
+  <!-- Sequential journey paths from GA4 -->
+  <div style="margin-top:24px">
+    <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">
+      Top Conversion Paths — Full Customer Journey Sequences <span style="font-weight:400;color:var(--muted);margin-left:6px">Last 90 days · GA4</span>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin:0 0 12px">Each row shows the exact campaign sequence a customer took before converting — first touchpoint → last touchpoint → conversion.</p>
+    <div class="table-card">
+      <table>
+        <thead><tr>
+          <th>Customer Journey (Campaign Sequence)</th>
+          <th class="num">Conversions</th>
+          <th class="num">% of Total</th>
+        </tr></thead>
+        <tbody id="ga4PathsTbody"></tbody>
+      </table>
+    </div>
+    <div id="ga4PathsNoData" style="display:none;text-align:center;padding:20px;color:var(--muted);font-size:12px">GA4 path data not yet available.</div>
+  </div>
 </section>
 
 <!-- ── SECTION 5: CONVERSION TYPE BREAKDOWN ── -->
@@ -567,7 +586,7 @@ function pagGo(id,dir){PAG[id].page+=dir;drawPage(id);}
 
 /* ─── DATA LOADING ─── */
 async function loadData(){
-  const [meta,stats,assisted,timeLag,pathLen,paths,breakdown]=await Promise.all([
+  const [meta,stats,assisted,timeLag,pathLen,paths,breakdown,pathsGA4]=await Promise.all([
     fetch('data/meta.json').then(r=>r.json()),
     fetch('data/campaign_stats.json').then(r=>r.json()),
     fetch('data/assisted_conv.json').then(r=>r.json()),
@@ -575,6 +594,7 @@ async function loadData(){
     fetch('data/path_length.json').then(r=>r.json()),
     fetch('data/conv_paths.json').then(r=>r.json()),
     fetch('data/conv_breakdown.json').then(r=>r.json()),
+    fetch('data/conv_paths_ga4.json').then(r=>r.json()).catch(()=>({rows:[]})),
   ]);
   G.meta=meta;
   G.stats=stats.rows||stats;
@@ -584,6 +604,7 @@ async function loadData(){
   G.paths=paths.rows||paths;
   G.pathsMeta={source:paths.source||'',dateRange:paths.date_range||''};
   G.breakdown=breakdown.rows||breakdown;
+  G.pathsGA4=(pathsGA4.rows||pathsGA4||[]).filter(r=>r.path);
 }
 
 /* ─── UPDATE META ─── */
@@ -1340,6 +1361,41 @@ function renderConvPaths(){
   </tr>`).join('');
 }
 
+/* ─── SECTION 4b: GA4 SEQUENTIAL PATHS ─── */
+function renderGA4Paths(){
+  const rows=(G.pathsGA4||[]).sort((a,b)=>(b.conversions||0)-(a.conversions||0));
+  const tbody=document.getElementById('ga4PathsTbody');
+  const noData=document.getElementById('ga4PathsNoData');
+  if(!rows.length||!tbody){if(noData)noData.style.display='block';return;}
+  if(noData)noData.style.display='none';
+  const total=rows.reduce((s,r)=>s+(r.conversions||0),0);
+
+  function cleanSeg(s){
+    s=s.trim();
+    if(s==='(organic)')return'Organic Search';
+    if(s==='(referral)')return'Referral';
+    if(s==='(direct)')return'Direct';
+    if(s==='{campaignname}'||s==='{Campaignname}')return'Google Ads';
+    if(/^\d{8,}$/.test(s))return'Google Ads';
+    return s.length>32?s.slice(0,30)+'…':s;
+  }
+  function formatPath(p){
+    const segs=p.split('>').map(cleanSeg);
+    return segs.map((s,i)=>{
+      const isLast=i===segs.length-1;
+      const color=s==='Organic Search'?'var(--teal)':s==='Referral'?'var(--blue)':s==='Direct'?'var(--muted)':'var(--gold)';
+      return`<span style="color:${color};font-weight:${isLast?700:400}">${s}</span>${isLast?'':' <span style="color:var(--muted)">→</span> '}`;
+    }).join('');
+  }
+
+  const top20=rows.slice(0,20);
+  tbody.innerHTML=top20.map(r=>`<tr>
+    <td style="font-size:11px;line-height:1.7">${formatPath(r.path)}</td>
+    <td class="num" style="font-weight:700;color:var(--green)">${(r.conversions||0).toFixed(0)}</td>
+    <td class="num" style="color:var(--muted)">${total>0?((r.conversions||0)/total*100).toFixed(1)+'%':'—'}</td>
+  </tr>`).join('');
+}
+
 /* ─── INIT ─── */
 async function initDashboard(){
   try{
@@ -1350,6 +1406,7 @@ async function initDashboard(){
     renderRoles();
     renderInfluenceMap();
     renderConvPaths();
+    renderGA4Paths();
     setPeriod(28); // setPeriod calls applyDateRange which renders Sections 5 & 6
     // Apply chart theme colors if page loaded with saved light preference
     if(document.documentElement.getAttribute('data-theme')==='light') setTimeout(updateChartTheme,100);

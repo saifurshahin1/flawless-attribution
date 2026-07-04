@@ -425,7 +425,7 @@ def gen_conv_paths_api() -> bool:
 # ─────────────────────────────────────────────────────────────────────────────
 # 5b. CONVERSION PATHS — from GA4 BigQuery export (fallback)
 # ─────────────────────────────────────────────────────────────────────────────
-def gen_conv_paths():
+def gen_conv_paths(outfile="conv_paths.json"):
     from datetime import date, timedelta
 
     # Auto-discover the GA4 analytics dataset (analytics_XXXXXXXXX)
@@ -512,7 +512,7 @@ def gen_conv_paths():
                 r["conversion_value"] = f2(r.get("conversion_value"))
                 r["source"] = "ga4"
             print(f"  GA4 conv paths: {len(rows)} unique paths")
-            save("conv_paths.json", {"rows": rows, "source": "ga4",
+            save(outfile, {"rows": rows, "source": "ga4",
                                      "date_range": f"{start_dt} to {end_dt}"})
             return
         except Exception as e:
@@ -533,7 +533,7 @@ def gen_conv_paths():
             r["conversions"]      = f2(r.get("conversions"))
             r["conversion_value"] = f2(r.get("conversion_value"))
             r["source"] = "ads_scripts"
-        save("conv_paths.json", {"rows": rows, "source": "ads_scripts"})
+        save(outfile, {"rows": rows, "source": "ads_scripts"})
     else:
         print("  no conv_paths data available - skipping")
 
@@ -633,6 +633,7 @@ if __name__ == "__main__":
         ("time_lag",        gen_time_lag),
         ("path_length",     gen_path_length),
         ("conv_paths",      lambda: gen_conv_paths_api() or gen_conv_paths()),
+        ("conv_paths_ga4",  lambda: gen_conv_paths("conv_paths_ga4.json")),
         ("conv_breakdown",  gen_conv_breakdown),
         ("meta",            gen_meta),
     ]
