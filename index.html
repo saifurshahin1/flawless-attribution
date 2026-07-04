@@ -1220,6 +1220,13 @@ function renderConvPaths(){
   let rows=(G.paths||[]).filter(r=>r.campaign); // API format: {campaign, spend, lc_conv, assists, ...}
 
   // Fallback: derive from assisted_conv BigQuery table (always available)
+  // Build role map from assisted_conv BigQuery data (accurate — not inflated by micro-conversions)
+  const _roleMap={};
+  (G.assisted||[]).forEach(r=>{if(r.campaign&&r.campaign_role)_roleMap[r.campaign]=r.campaign_role;});
+
+  // Override API roles with BigQuery roles when available
+  if(rows.length) rows=rows.map(r=>({...r,role:_roleMap[r.campaign]||r.role}));
+
   if(!rows.length&&(G.assisted||[]).length){
     rows=G.assisted.filter(r=>r.campaign&&(r.spend||r.last_click_conv||r.assists)).map(r=>{
       const lc=r.last_click_conv||0,assists=r.assists||0;

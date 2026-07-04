@@ -389,7 +389,13 @@ def gen_conv_paths_api() -> bool:
                        else "Introducer" if ratio >= 1.5
                        else "Assist"     if ratio >= 0.5
                        else "Closer")
-            top_act = max(v["actions"], key=v["actions"].get) if v["actions"] else ""
+            # Prefer appointment/purchase actions; skip micro-conversions
+            _skip = ['time spent', '5 min', 'gtm', 'scroll', 'page view',
+                     'session', 'engaged', 'visit', 'impression', 'click']
+            valuable = {k: cv for k, cv in v["actions"].items()
+                        if not any(s in k.lower() for s in _skip)}
+            top_act = (max(valuable, key=valuable.get) if valuable
+                       else max(v["actions"], key=v["actions"].get) if v["actions"] else "")
             rows.append({
                 "campaign":     name,
                 "spend":        round(v["spend"],   2),
