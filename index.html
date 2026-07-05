@@ -312,7 +312,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <a href="#influence-map">3. Attribution Gap</a>
   <a href="#conv-paths">4. Journey Contribution</a>
   <a href="#conv-breakdown">5. Conversion Types</a>
-  <a href="#appt-value">5. Appointments</a>
+  <a href="#appt-value">6. Appointments</a>
   <button onclick="document.getElementById('guideModal').style.display='flex'" style="margin-left:auto;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#818cf8;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;letter-spacing:.3px">? How to Read This Report</button>
   <button id="themeToggle" onclick="toggleTheme()" title="Toggle theme" style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.35);color:#c9a84c;padding:5px 11px;border-radius:20px;font-size:14px;cursor:pointer;line-height:1;transition:all .2s">☀</button>
 </div>
@@ -449,7 +449,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- ── SECTION 5: CONVERSION TYPE BREAKDOWN ── -->
 <section id="conv-breakdown">
-  <div class="section-title"><div class="num">4</div>Conversion Type Breakdown — What Each Campaign Converts <span class="fixed-badge" id="convBadge" style="margin-left:auto">Last 28 days</span></div>
+  <div class="section-title"><div class="num">5</div>Conversion Type Breakdown — What Each Campaign Converts <span class="fixed-badge" id="convBadge" style="margin-left:auto">Last 28 days</span></div>
   <div class="bq-line">Business Question</div>
   <div class="bq-q">Which conversion types does each campaign drive — and why do campaigns reporting £0 revenue still represent real business value?</div>
   <p class="section-sub">Conversions categorised into 3 tiers: <strong>Tier 1</strong> = Direct Revenue (Offline Invoice + Website Purchase). <strong>Tier 2</strong> = Appointment Pipeline (Appointments + Contact Form) — assigned £0 in Google Ads but feeds Offline Invoice revenue. <strong>Tier 3</strong> = Engagement Signals (WhatsApp + Checkout) — early-funnel intent indicators.</p>
@@ -467,7 +467,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- ── SECTION 7: APPOINTMENTS ── -->
 <section id="appt-value">
-  <div class="section-title"><div class="num">5</div>Appointment Pipeline <span class="fixed-badge" id="apptBadge" style="margin-left:auto">Last 28 days</span></div>
+  <div class="section-title"><div class="num">6</div>Appointment Pipeline <span class="fixed-badge" id="apptBadge" style="margin-left:auto">Last 28 days</span></div>
   <div class="bq-line">Business Question</div>
   <div class="bq-q">Which campaigns are driving the most appointment bookings — and what is the cost per booking for each appointment type?</div>
   <div class="charts-row">
@@ -1427,7 +1427,21 @@ initDashboard();
       </table>
 
       <hr class="guide-divider">
-      <h3>Section 4 — Conversion Types</h3>
+      <h3>Section 4 — Conversion Journey Contribution</h3>
+      <p>This section answers: <b>which campaigns are doing hidden work that Last Click never shows?</b></p>
+      <table class="guide-gtable">
+        <tr><th>Column</th><th>What it means</th></tr>
+        <tr><td>Journey Role</td><td><b>Introducer</b> = starts the journey, rarely closes. <b>Assist</b> = keeps customer warm mid-funnel. <b>Closer</b> = gets the final click. <b>Pure Introducer</b> = never closes, always assists.</td></tr>
+        <tr><td>Spend £</td><td>Total Google Ads spend for this campaign in the last 90 days.</td></tr>
+        <tr><td>Direct Conv</td><td>Last-click conversions — what Google Ads reports by default.</td></tr>
+        <tr><td>Journey Assists</td><td>How many conversion journeys this campaign appeared in but did not close. High assists = high hidden value.</td></tr>
+        <tr><td>Assist Ratio</td><td>Assists ÷ Direct Conversions. A ratio of 329× means: for every 1 sale it closes directly, it silently assisted 329 others that different campaigns got credit for.</td></tr>
+        <tr><td>Top Conversion Action</td><td>The most frequent valuable conversion action recorded for this campaign (appointments, ring completions, etc.).</td></tr>
+      </table>
+      <p><b>Key insight:</b> If Sales-Performance Max shows 32 direct conversions but 10,503 journey assists — cutting that campaign would collapse the pipeline that feeds every other campaign's "direct" sales.</p>
+
+      <hr class="guide-divider">
+      <h3>Section 5 — Conversion Types</h3>
       <ul>
         <li><b>Tier 1</b> — High-intent actions. In-store appointments, virtual consultations, ring builder completions, invoices. These turn into real sales.</li>
         <li><b>Tier 2</b> — Mid-intent. WhatsApp messages, contact form submissions, phone calls. Warm leads that need follow-up.</li>
@@ -1435,7 +1449,7 @@ initDashboard();
       </ul>
 
       <hr class="guide-divider">
-      <h3>Section 5 — Appointments</h3>
+      <h3>Section 6 — Appointments</h3>
       <p>Which campaigns are putting people in your showroom or on a call. Broken down by location — London in-store, Manchester in-store, virtual, and ring builder sessions. The most direct link between ad spend and your sales team's calendar.</p>
 
     </div>
